@@ -5,7 +5,7 @@ namespace Marimo.DocumentAsData;
 /// <summary>
 /// DOCXファイルとして開いた文書を表します。
 /// </summary>
-public class Document
+public class Document : IDisposable
 {
     readonly Packaging.WordprocessingDocument document;
 
@@ -27,4 +27,10 @@ public class Document
     /// </summary>
     public void Close() =>
         document.Dispose();
+
+    /// <summary>
+    /// 文書が使用しているリソースを解放します。
+    /// </summary>
+    public void Dispose() =>
+        Close();
 }

@@ -41,7 +41,7 @@ public class Documentのテスト
         ).Should().NotThrow();
     }
 
-    [Fact(Skip = "Disposeによる解放を次のGreen対象として確認するときに有効化します。")]
+    [Fact]
     public void Disposeはファイルの束縛を解除します()
     {
         var copyPath = TestDocument.CreateCopy();
