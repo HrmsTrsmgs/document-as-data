@@ -25,6 +25,8 @@ Word文書をWordのオブジェクトモデルではなく、名前の付いた
 
 * DocumentAsDataはSpreadsheetAsDataと同じ「文書を構造化データとして扱う」発想を引き継ぐ。
 * 公開API、コレクション、命名、テスト、文書、パッケージ構成を検討するときは、先にSpreadsheetAsDataの対応する実装と方針を確認する。
+* `docs/design-v0.1.md` に記載された公開API案は初期のラフ案であり、実装の参考または仕様として使用しない。
+* 公開APIはSpreadsheetAsDataの対応する既存APIとテストを基準とし、一つずつDocumentAsData向けに読み替える。
 * SpreadsheetAsDataのAPIや構成から変える場合は、Word固有の理由または新規OSSとして変更する理由を示す。
 * SpreadsheetAsDataのコード生成、型付きDTO、Ruby版など、DocumentAsDataの初期目的にない機能は機械的に移植しない。
 * SpreadsheetAsDataの依存バージョンや暫定実装を、妥当性を確認せずコピーしない。
@@ -48,7 +50,7 @@ Word文書をWordのオブジェクトモデルではなく、名前の付いた
 
 ## 設計と公開API
 
-* 詳細なv0.1設計案は `docs/design-v0.1.md` を参照する。ただし、レビュー前の記述を確定仕様として扱わない。
+* `docs/design-v0.1.md` は目的と対象範囲の確認にのみ使用し、同文書の公開API案を参照しない。
 * 初期バージョンでは `MergeFields` と `ContentControls` を別々の概念として公開し、共通の `Fields` 抽象化を作らない。
 * Open XML SDK固有の型を公開APIへ原則として露出させない。
 * MERGEFIELDとContent Controlの意味やライフサイクルの違いを内部都合で消さない。

@@ -1,5 +1,10 @@
 # DocumentAsData v0.1 設計案
 
+> [!IMPORTANT]
+> この文書にある公開API案は初期検討時のラフ案であり、実装の参考または仕様として使用しない。
+> 公開APIはSpreadsheetAsDataの既存APIとテストを一つずつDocumentAsData向けに読み替えて決める。
+> Word固有の差異が必要な場合は、対象のRedごとに提示して確認する。
+
 ## 目的と範囲
 
 v0.1 は DOCX 本文にある MERGEFIELD と、Tag を持つテキスト系 Content Control の
@@ -19,6 +24,8 @@ Content Control は各 Tag を独立した項目として列挙する。ただ�
 保証対象外とする。
 
 ## 公開API案
+
+以下は採用前の検討記録であり、実装時には参照しない。
 
 ```csharp
 using Marimo.DocumentAsData;
