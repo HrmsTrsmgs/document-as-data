@@ -23,6 +23,33 @@ public class Document : IDisposable
         new(Packaging.WordprocessingDocument.Open(filePath, true));
 
     /// <summary>
+    /// 指定したストリーム上のDOCX文書を開きます。
+    /// </summary>
+    /// <param name="stream">DOCX文書を格納したストリーム。</param>
+    /// <returns>開いた文書。</returns>
+    public static Document Open(Stream stream) =>
+        throw new NotImplementedException();
+
+    /// <summary>
+    /// 文書内のMERGEFIELDを取得するコレクションを取得します。
+    /// </summary>
+    public MergeFieldCollection MergeFields =>
+        throw new NotImplementedException();
+
+    /// <summary>
+    /// 文書内のContent Controlを取得するコレクションを取得します。
+    /// </summary>
+    public ContentControlCollection ContentControls =>
+        throw new NotImplementedException();
+
+    /// <summary>
+    /// 文書を別のDOCXファイルとして保存します。
+    /// </summary>
+    /// <param name="filePath">保存先のファイルパス。</param>
+    public void SaveAs(string filePath) =>
+        throw new NotImplementedException();
+
+    /// <summary>
     /// 文書が使用しているファイルを閉じます。
     /// </summary>
     public void Close() =>
