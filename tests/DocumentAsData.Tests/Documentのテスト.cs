@@ -170,7 +170,7 @@ public class Documentのテスト
         }
     }
 
-    [Fact(Skip = "SaveAsしたDOCXの再オープンをGreen対象にするときに有効化します。")]
+    [Fact]
     public void SaveAsしたDOCXをDocumentとして開けます()
     {
         var sourcePath = TestDocument.CreateCopy();
