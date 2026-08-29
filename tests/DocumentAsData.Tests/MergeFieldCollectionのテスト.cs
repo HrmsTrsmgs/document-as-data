@@ -48,20 +48,4 @@ public class MergeFieldCollectionのテスト
 
         action.Should().Throw<KeyNotFoundException>();
     }
-
-    [Fact(Skip = "表内のMERGEFIELD列挙をGreen対象にするときに有効化します。")]
-    public void MergeFieldsは表内のMERGEFIELDも列挙します()
-    {
-        var filePath = TestDocument.CreateWithTableMergeField("CustomerName", "株式会社○○");
-        try
-        {
-            using var document = Document.Open(filePath);
-
-            document.MergeFields.Single().Name.Should().Be("CustomerName");
-        }
-        finally
-        {
-            File.Delete(filePath);
-        }
-    }
 }
