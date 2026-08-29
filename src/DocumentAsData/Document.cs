@@ -1,4 +1,4 @@
-using Packaging = DocumentFormat.OpenXml.Packaging;
+﻿using Packaging = DocumentFormat.OpenXml.Packaging;
 
 namespace Marimo.DocumentAsData;
 
@@ -28,7 +28,7 @@ public class Document : IDisposable
     /// <param name="stream">DOCX文書を格納したストリーム。</param>
     /// <returns>開いた文書。</returns>
     public static Document Open(Stream stream) =>
-        throw new NotImplementedException();
+        new(Packaging.WordprocessingDocument.Open(stream, true));
 
     /// <summary>
     /// 文書内のMERGEFIELDを取得するコレクションを取得します。

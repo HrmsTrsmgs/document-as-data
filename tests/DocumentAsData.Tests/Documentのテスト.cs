@@ -76,7 +76,7 @@ public class Documentのテスト
         }
     }
 
-    [Fact(Skip = "MemoryStreamからのOpenをGreen対象にするときに有効化します。")]
+    [Fact]
     public void OpenはMemoryStream上の文書を開きます()
     {
         using var stream = TestDocument.CreateMemoryStream();
