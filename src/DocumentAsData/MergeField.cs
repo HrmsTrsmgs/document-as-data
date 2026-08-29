@@ -1,3 +1,5 @@
+using Wordprocessing = DocumentFormat.OpenXml.Wordprocessing;
+
 namespace Marimo.DocumentAsData;
 
 /// <summary>
@@ -5,11 +7,16 @@ namespace Marimo.DocumentAsData;
 /// </summary>
 public class MergeField
 {
+    readonly Wordprocessing.SimpleField field;
     readonly string name;
 
-    internal MergeField(Document document, string name)
+    internal MergeField(
+        Document document,
+        Wordprocessing.SimpleField field,
+        string name)
     {
         Document = document;
+        this.field = field;
         this.name = name;
     }
 
@@ -28,7 +35,7 @@ public class MergeField
     /// </summary>
     public string Value
     {
-        get => throw new NotImplementedException();
+        get => this.field.InnerText;
         set => throw new NotImplementedException();
     }
 }
