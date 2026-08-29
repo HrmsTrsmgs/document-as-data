@@ -113,7 +113,10 @@ Word文書をWordのオブジェクトモデルではなく、名前の付いた
 * NuGetパッケージ、APIドキュメント、サンプルは、中心APIがGreenになってから個別の作業単位として整備する。
 * APIキーや公開用トークンは出力、保存、コミットしない。
 
-## コミット前処理
+## テキストファイルの正規化
+
+* `apply_patch` などでテキストファイルを編集した作業単位ごとに、`scripts/Normalize-ChangedTextFiles.ps1 -IncludeUntracked` を実行する。
+* 正規化をコミット直前まで遅らせず、Visual Studioで編集結果を確認する前に改行コードとBOMの混在を解消する。
 
 * コミット前に `scripts/Normalize-ChangedTextFiles.ps1 -IncludeUntracked` を実行し、変更中のテキストファイルの改行コードとBOMを機械的に正規化する。
 * 正規化後に差分を再確認する。
