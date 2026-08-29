@@ -26,21 +26,17 @@ public class MergeFieldCollectionのテスト
         document.MergeFields["CustomerName"].Name.Should().Be("CustomerName");
     }
 
-    [Fact(Skip = "MERGEFIELDオブジェクトの同一性をGreen対象にするときに有効化します。")]
+    [Fact]
     public void MergeFieldsは列挙と名前検索で同じMERGEFIELDを返します()
     {
-        var filePath = TestDocument.CreateWithSimpleMergeFields(("CustomerName", "株式会社○○"));
-        try
-        {
-            using var document = Document.Open(filePath);
-            var enumerated = document.MergeFields.Single();
+        using var document = Document.Open(TestFilePath);
+        var enumerated = (
+            from field in document.MergeFields
+            where field.Name == "CustomerName"
+            select field
+        ).Single();
 
-            document.MergeFields["CustomerName"].Should().BeSameAs(enumerated);
-        }
-        finally
-        {
-            File.Delete(filePath);
-        }
+        document.MergeFields["CustomerName"].Should().BeSameAs(enumerated);
     }
 
     [Fact(Skip = "存在しないMERGEFIELD名の扱いをGreen対象にするときに有効化します。")]

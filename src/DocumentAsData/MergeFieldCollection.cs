@@ -9,6 +9,7 @@ namespace Marimo.DocumentAsData;
 public class MergeFieldCollection : IEnumerable<MergeField>
 {
     readonly Document document;
+    readonly Dictionary<Wordprocessing.SimpleField, MergeField> cache = [];
 
     internal MergeFieldCollection(Document document)
     {
@@ -36,12 +37,24 @@ public class MergeFieldCollection : IEnumerable<MergeField>
             from field in document.SimpleFields
             let name = MergeFieldName(field)
             where name is not null
-            select new MergeField(name)
+            select GetMergeField(field, name)
         ).GetEnumerator();
 
     /// <inheritdoc />
     IEnumerator IEnumerable.GetEnumerator() =>
         GetEnumerator();
+
+    MergeField GetMergeField(Wordprocessing.SimpleField field, string name)
+    {
+        if (cache.TryGetValue(field, out var mergeField))
+        {
+            return mergeField;
+        }
+
+        mergeField = new(name);
+        cache.Add(field, mergeField);
+        return mergeField;
+    }
 
     static string? MergeFieldName(Wordprocessing.SimpleField field)
     {
