@@ -21,7 +21,11 @@ public class MergeFieldCollection : IEnumerable<MergeField>
     /// <param name="name">取得するMERGEFIELDの名前。</param>
     /// <returns>指定した名前のMERGEFIELD。</returns>
     public MergeField this[string name] =>
-        throw new NotImplementedException();
+        (
+            from field in this
+            where field.Name == name
+            select field
+        ).First();
 
     /// <summary>
     /// MERGEFIELDを列挙する列挙子を返します。

@@ -18,20 +18,12 @@ public class MergeFieldCollectionのテスト
             .Should().Equal("CustomerName", "Address");
     }
 
-    [Fact(Skip = "MERGEFIELDの名前検索をGreen対象にするときに有効化します。")]
+    [Fact]
     public void MergeFieldsは名前からMERGEFIELDを取得します()
     {
-        var filePath = TestDocument.CreateWithSimpleMergeFields(("CustomerName", "株式会社○○"));
-        try
-        {
-            using var document = Document.Open(filePath);
+        using var document = Document.Open(TestFilePath);
 
-            document.MergeFields["CustomerName"].Name.Should().Be("CustomerName");
-        }
-        finally
-        {
-            File.Delete(filePath);
-        }
+        document.MergeFields["CustomerName"].Name.Should().Be("CustomerName");
     }
 
     [Fact(Skip = "MERGEFIELDオブジェクトの同一性をGreen対象にするときに有効化します。")]
