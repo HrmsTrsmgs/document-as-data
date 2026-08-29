@@ -39,22 +39,14 @@ public class MergeFieldCollectionのテスト
         document.MergeFields["CustomerName"].Should().BeSameAs(enumerated);
     }
 
-    [Fact(Skip = "存在しないMERGEFIELD名の扱いをGreen対象にするときに有効化します。")]
+    [Fact]
     public void MergeFieldsは存在しない名前を指定した場合に失敗します()
     {
-        var filePath = TestDocument.CreateCopy();
-        try
-        {
-            using var document = Document.Open(filePath);
+        using var document = Document.Open(TestFilePath);
 
-            var action = () => _ = document.MergeFields["not_found"];
+        var action = () => _ = document.MergeFields["not_found"];
 
-            action.Should().Throw<KeyNotFoundException>();
-        }
-        finally
-        {
-            File.Delete(filePath);
-        }
+        action.Should().Throw<KeyNotFoundException>();
     }
 
     [Fact(Skip = "表内のMERGEFIELD列挙をGreen対象にするときに有効化します。")]
