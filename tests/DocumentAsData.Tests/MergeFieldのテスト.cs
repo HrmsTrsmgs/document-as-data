@@ -5,15 +5,18 @@ namespace Marimo.DocumentAsData.Test;
 
 public class MergeFieldのテスト
 {
-    [Fact(Skip = "MERGEFIELDとDocumentの関連をGreen対象にするときに有効化します。")]
+    static readonly string TestFilePath =
+        Path.Combine("TestData", "simple-merge-fields.docx");
+
+    [Fact]
     public void DocumentプロパティはMERGEFIELDが属する文書を取得します()
     {
-        var filePath = TestDocument.CreateWithSimpleMergeFields(("CustomerName", "株式会社○○"));
+        var filePath = TestDocument.CreateTemporaryCopy(TestFilePath);
         try
         {
             using var document = Document.Open(filePath);
 
-            document.MergeFields.Single().Document.Should().BeSameAs(document);
+            document.MergeFields["CustomerName"].Document.Should().BeSameAs(document);
         }
         finally
         {

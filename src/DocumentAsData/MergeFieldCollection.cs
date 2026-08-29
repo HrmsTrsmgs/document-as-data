@@ -52,7 +52,7 @@ public class MergeFieldCollection : IEnumerable<MergeField>
             return mergeField;
         }
 
-        mergeField = new(name);
+        mergeField = new(document, name);
         cache.Add(field, mergeField);
         return mergeField;
     }

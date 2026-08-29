@@ -11,41 +11,73 @@ public class MergeFieldCollectionのテスト
     [Fact]
     public void MergeFieldsは文書内のMERGEFIELDを列挙します()
     {
-        using var document = Document.Open(TestFilePath);
+        var filePath = TestDocument.CreateTemporaryCopy(TestFilePath);
+        try
+        {
+            using var document = Document.Open(filePath);
 
-        document.MergeFields
-            .Select(it => it.Name)
-            .Should().Equal("CustomerName", "Address");
+            document.MergeFields
+                .Select(it => it.Name)
+                .Should().Equal("CustomerName", "Address");
+        }
+        finally
+        {
+            File.Delete(filePath);
+        }
     }
 
     [Fact]
     public void MergeFieldsは名前からMERGEFIELDを取得します()
     {
-        using var document = Document.Open(TestFilePath);
+        var filePath = TestDocument.CreateTemporaryCopy(TestFilePath);
+        try
+        {
+            using var document = Document.Open(filePath);
 
-        document.MergeFields["CustomerName"].Name.Should().Be("CustomerName");
+            document.MergeFields["CustomerName"].Name.Should().Be("CustomerName");
+        }
+        finally
+        {
+            File.Delete(filePath);
+        }
     }
 
     [Fact]
     public void MergeFieldsは列挙と名前検索で同じMERGEFIELDを返します()
     {
-        using var document = Document.Open(TestFilePath);
-        var enumerated = (
-            from field in document.MergeFields
-            where field.Name == "CustomerName"
-            select field
-        ).Single();
+        var filePath = TestDocument.CreateTemporaryCopy(TestFilePath);
+        try
+        {
+            using var document = Document.Open(filePath);
+            var enumerated = (
+                from field in document.MergeFields
+                where field.Name == "CustomerName"
+                select field
+            ).Single();
 
-        document.MergeFields["CustomerName"].Should().BeSameAs(enumerated);
+            document.MergeFields["CustomerName"].Should().BeSameAs(enumerated);
+        }
+        finally
+        {
+            File.Delete(filePath);
+        }
     }
 
     [Fact]
     public void MergeFieldsは存在しない名前を指定した場合に失敗します()
     {
-        using var document = Document.Open(TestFilePath);
+        var filePath = TestDocument.CreateTemporaryCopy(TestFilePath);
+        try
+        {
+            using var document = Document.Open(filePath);
 
-        var action = () => _ = document.MergeFields["not_found"];
+            var action = () => _ = document.MergeFields["not_found"];
 
-        action.Should().Throw<KeyNotFoundException>();
+            action.Should().Throw<KeyNotFoundException>();
+        }
+        finally
+        {
+            File.Delete(filePath);
+        }
     }
 }

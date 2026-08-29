@@ -7,16 +7,16 @@ public class MergeField
 {
     readonly string name;
 
-    internal MergeField(string name)
+    internal MergeField(Document document, string name)
     {
+        Document = document;
         this.name = name;
     }
 
     /// <summary>
     /// MERGEFIELDが属する文書を取得します。
     /// </summary>
-    public Document Document =>
-        throw new NotImplementedException();
+    public Document Document { get; }
 
     /// <summary>
     /// MERGEFIELDの名前を取得します。

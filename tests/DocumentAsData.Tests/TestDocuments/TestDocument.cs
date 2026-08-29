@@ -14,6 +14,13 @@ static class TestDocument
             Path.GetTempPath(),
             $"DocumentAsData-Output-{Guid.NewGuid():N}.docx");
 
+    public static string CreateTemporaryCopy(string sourcePath)
+    {
+        var filePath = CreateOutputPath();
+        File.Copy(sourcePath, filePath);
+        return filePath;
+    }
+
     public static MemoryStream CreateMemoryStream()
     {
         var filePath = CreateCopy();
