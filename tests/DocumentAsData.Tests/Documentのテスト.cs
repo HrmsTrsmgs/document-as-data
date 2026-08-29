@@ -55,7 +55,7 @@ public class Documentのテスト
         ).Should().NotThrow();
     }
 
-    [Fact(Skip = "FileStreamからのOpenをGreen対象にするときに有効化します。")]
+    [Fact]
     public void OpenはFileStream上の文書を開きます()
     {
         var filePath = TestDocument.CreateCopy();
