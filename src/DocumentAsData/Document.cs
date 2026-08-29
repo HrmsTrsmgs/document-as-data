@@ -1,5 +1,7 @@
 ﻿using Packaging = DocumentFormat.OpenXml.Packaging;
 
+using DocumentFormat.OpenXml.Packaging;
+
 namespace Marimo.DocumentAsData;
 
 /// <summary>
@@ -46,8 +48,10 @@ public class Document : IDisposable
     /// 文書を別のDOCXファイルとして保存します。
     /// </summary>
     /// <param name="filePath">保存先のファイルパス。</param>
-    public void SaveAs(string filePath) =>
-        throw new NotImplementedException();
+    public void SaveAs(string filePath)
+    {
+        using var savedDocument = document.Clone(filePath);
+    }
 
     /// <summary>
     /// 文書が使用しているファイルを閉じます。

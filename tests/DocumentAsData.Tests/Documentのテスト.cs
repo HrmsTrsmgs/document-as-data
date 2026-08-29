@@ -129,7 +129,7 @@ public class Documentのテスト
         stream.CanWrite.Should().BeTrue();
     }
 
-    [Fact(Skip = "SaveAsによるDOCX作成をGreen対象にするときに有効化します。")]
+    [Fact]
     public void SaveAsは指定したパスへDOCXを作成します()
     {
         var sourcePath = TestDocument.CreateCopy();
@@ -146,6 +146,27 @@ public class Documentのテスト
         {
             File.Delete(sourcePath);
             File.Delete(outputPath);
+        }
+    }
+
+    [Fact]
+    public void SaveAsは保存先ファイルを束縛しません()
+    {
+        var sourcePath = TestDocument.CreateCopy();
+        var outputPath = TestDocument.CreateOutputPath();
+        try
+        {
+            using var document = Document.Open(sourcePath);
+
+            document.SaveAs(outputPath);
+
+            FluentActions.Invoking(
+                () => File.Delete(outputPath)
+            ).Should().NotThrow();
+        }
+        finally
+        {
+            File.Delete(sourcePath);
         }
     }
 
