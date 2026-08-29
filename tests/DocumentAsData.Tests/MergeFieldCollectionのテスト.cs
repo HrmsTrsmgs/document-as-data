@@ -5,24 +5,17 @@ namespace Marimo.DocumentAsData.Test;
 
 public class MergeFieldCollectionのテスト
 {
-    [Fact(Skip = "MERGEFIELD列挙をGreen対象にするときに有効化します。")]
+    static readonly string TestFilePath =
+        Path.Combine("TestData", "simple-merge-fields.docx");
+
+    [Fact]
     public void MergeFieldsは文書内のMERGEFIELDを列挙します()
     {
-        var filePath = TestDocument.CreateWithSimpleMergeFields(
-            ("CustomerName", "株式会社○○"),
-            ("Address", "東京都"));
-        try
-        {
-            using var document = Document.Open(filePath);
+        using var document = Document.Open(TestFilePath);
 
-            document.MergeFields
-                .Select(it => it.Name)
-                .Should().Equal("CustomerName", "Address");
-        }
-        finally
-        {
-            File.Delete(filePath);
-        }
+        document.MergeFields
+            .Select(it => it.Name)
+            .Should().Equal("CustomerName", "Address");
     }
 
     [Fact(Skip = "MERGEFIELDの名前検索をGreen対象にするときに有効化します。")]

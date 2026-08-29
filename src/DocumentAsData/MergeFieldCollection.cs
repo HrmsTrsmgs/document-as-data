@@ -1,4 +1,5 @@
 using System.Collections;
+using Wordprocessing = DocumentFormat.OpenXml.Wordprocessing;
 
 namespace Marimo.DocumentAsData;
 
@@ -7,6 +8,13 @@ namespace Marimo.DocumentAsData;
 /// </summary>
 public class MergeFieldCollection : IEnumerable<MergeField>
 {
+    readonly Document document;
+
+    internal MergeFieldCollection(Document document)
+    {
+        this.document = document;
+    }
+
     /// <summary>
     /// 指定した名前のMERGEFIELDを取得します。
     /// </summary>
@@ -20,9 +28,28 @@ public class MergeFieldCollection : IEnumerable<MergeField>
     /// </summary>
     /// <returns>MERGEFIELDを列挙する列挙子。</returns>
     public IEnumerator<MergeField> GetEnumerator() =>
-        throw new NotImplementedException();
+        (
+            from field in document.SimpleFields
+            let name = MergeFieldName(field)
+            where name is not null
+            select new MergeField(name)
+        ).GetEnumerator();
 
     /// <inheritdoc />
     IEnumerator IEnumerable.GetEnumerator() =>
         GetEnumerator();
+
+    static string? MergeFieldName(Wordprocessing.SimpleField field)
+    {
+        const string fieldType = "MERGEFIELD";
+
+        var instruction = field.Instruction?.Value?.Trim();
+        if (instruction is null ||
+            !instruction.StartsWith(fieldType, StringComparison.OrdinalIgnoreCase))
+        {
+            return null;
+        }
+
+        return instruction[fieldType.Length..].Trim().Trim('"');
+    }
 }

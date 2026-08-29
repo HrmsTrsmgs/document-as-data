@@ -1,6 +1,7 @@
 ﻿using Packaging = DocumentFormat.OpenXml.Packaging;
 
 using DocumentFormat.OpenXml.Packaging;
+using Wordprocessing = DocumentFormat.OpenXml.Wordprocessing;
 
 namespace Marimo.DocumentAsData;
 
@@ -14,7 +15,11 @@ public class Document : IDisposable
     Document(Packaging.WordprocessingDocument document)
     {
         this.document = document;
+        MergeFields = new(this);
     }
+
+    internal IEnumerable<Wordprocessing.SimpleField> SimpleFields =>
+        document.MainDocumentPart?.Document?.Descendants<Wordprocessing.SimpleField>() ?? [];
 
     /// <summary>
     /// 指定したDOCXファイルを文書として開きます。
@@ -35,8 +40,7 @@ public class Document : IDisposable
     /// <summary>
     /// 文書内のMERGEFIELDを取得するコレクションを取得します。
     /// </summary>
-    public MergeFieldCollection MergeFields =>
-        throw new NotImplementedException();
+    public MergeFieldCollection MergeFields { get; }
 
     /// <summary>
     /// 文書内のContent Controlを取得するコレクションを取得します。

@@ -5,6 +5,13 @@ namespace Marimo.DocumentAsData;
 /// </summary>
 public class MergeField
 {
+    readonly string name;
+
+    internal MergeField(string name)
+    {
+        this.name = name;
+    }
+
     /// <summary>
     /// MERGEFIELDが属する文書を取得します。
     /// </summary>
@@ -14,8 +21,7 @@ public class MergeField
     /// <summary>
     /// MERGEFIELDの名前を取得します。
     /// </summary>
-    public string Name =>
-        throw new NotImplementedException();
+    public string Name => name;
 
     /// <summary>
     /// MERGEFIELDの値を取得または設定します。
