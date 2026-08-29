@@ -36,6 +36,6 @@ public class MergeField
     public string Value
     {
         get => this.field.InnerText;
-        set => throw new NotImplementedException();
+        set => this.field.Descendants<Wordprocessing.Text>().First().Text = value;
     }
 }

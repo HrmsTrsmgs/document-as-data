@@ -92,10 +92,10 @@ public class MergeFieldのテスト
         }
     }
 
-    [Fact(Skip = "simple MERGEFIELDの値設定をGreen対象にするときに有効化します。")]
-    public void Valueプロパティはsimple形式のMERGEFIELD値を設定します()
+    [Fact]
+    public void ValueプロパティはMERGEFIELD値を設定します()
     {
-        var filePath = TestDocument.CreateWithSimpleMergeFields(("CustomerName", "変更前"));
+        var filePath = TestDocument.CreateTemporaryCopy(TestFilePath);
         try
         {
             using var document = Document.Open(filePath);
