@@ -24,15 +24,15 @@ public class MergeFieldのテスト
         }
     }
 
-    [Fact(Skip = "simple MERGEFIELDの名前取得をGreen対象にするときに有効化します。")]
-    public void Nameプロパティはsimple形式のMERGEFIELD名を取得します()
+    [Fact]
+    public void NameプロパティはMERGEFIELD名を取得します()
     {
-        var filePath = TestDocument.CreateWithSimpleMergeFields(("Customer Name", "株式会社○○"));
+        var filePath = TestDocument.CreateTemporaryCopy(TestFilePath);
         try
         {
             using var document = Document.Open(filePath);
 
-            document.MergeFields.Single().Name.Should().Be("Customer Name");
+            document.MergeFields["CustomerName"].Name.Should().Be("CustomerName");
         }
         finally
         {
