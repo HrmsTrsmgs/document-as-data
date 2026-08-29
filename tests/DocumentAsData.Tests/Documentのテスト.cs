@@ -117,7 +117,7 @@ public class Documentのテスト
         saved.MergeFields["CustomerName"].Value.Should().Be("変更後");
     }
 
-    [Fact(Skip = "呼び出し側から渡されたStreamの所有権をGreen対象にするときに有効化します。")]
+    [Fact]
     public void Disposeは呼び出し側から渡されたStreamを閉じません()
     {
         using var stream = TestDocument.CreateMemoryStream();
