@@ -5,10 +5,17 @@ namespace Marimo.DocumentAsData.Test;
 
 public class Documentのテスト
 {
+    static readonly string EmptyDocumentPath =
+        Path.Combine("TestData", "empty.docx");
+    static readonly string SimpleMergeFieldsPath =
+        Path.Combine("TestData", "simple-merge-fields.docx");
+    static readonly string ContentControlPath =
+        Path.Combine("TestData", "content-control.docx");
+
     [Fact]
     public void Openはファイルを束縛します()
     {
-        var copyPath = TestDocument.CreateCopy();
+        var copyPath = TestDocument.CreateTemporaryCopy(EmptyDocumentPath);
         try
         {
             var tested = Document.Open(copyPath);
@@ -32,7 +39,7 @@ public class Documentのテスト
     [Fact]
     public void Closeはファイルの束縛を解除します()
     {
-        var copyPath = TestDocument.CreateCopy();
+        var copyPath = TestDocument.CreateTemporaryCopy(EmptyDocumentPath);
         var tested = Document.Open(copyPath);
 
         tested.Close();
@@ -44,7 +51,7 @@ public class Documentのテスト
     [Fact]
     public void Disposeはファイルの束縛を解除します()
     {
-        var copyPath = TestDocument.CreateCopy();
+        var copyPath = TestDocument.CreateTemporaryCopy(EmptyDocumentPath);
         var tested = Document.Open(copyPath);
         var disposable = tested as IDisposable;
 
@@ -58,7 +65,7 @@ public class Documentのテスト
     [Fact]
     public void OpenはFileStream上の文書を開きます()
     {
-        var filePath = TestDocument.CreateCopy();
+        var filePath = TestDocument.CreateTemporaryCopy(EmptyDocumentPath);
         try
         {
             using var stream = File.Open(filePath, FileMode.Open, FileAccess.ReadWrite);
@@ -79,7 +86,7 @@ public class Documentのテスト
     [Fact]
     public void OpenはMemoryStream上の文書を開きます()
     {
-        using var stream = TestDocument.CreateMemoryStream();
+        using var stream = TestDocument.CreateMemoryStream(EmptyDocumentPath);
 
         var action = () =>
         {
@@ -92,9 +99,7 @@ public class Documentのテスト
     [Fact]
     public void Stream版でもMERGEFIELDを読み取れます()
     {
-        using var stream = TestDocument.CreateMemoryStreamWithSimpleMergeField(
-            "CustomerName",
-            "株式会社○○");
+        using var stream = TestDocument.CreateMemoryStream(SimpleMergeFieldsPath);
         using var document = Document.Open(stream);
 
         document.MergeFields["CustomerName"].Value.Should().Be("株式会社○○");
@@ -103,9 +108,7 @@ public class Documentのテスト
     [Fact]
     public void Stream版でもMERGEFIELDの変更を文書へ書き込みます()
     {
-        using var stream = TestDocument.CreateMemoryStreamWithSimpleMergeField(
-            "CustomerName",
-            "変更前");
+        using var stream = TestDocument.CreateMemoryStream(SimpleMergeFieldsPath);
         using (var document = Document.Open(stream))
         {
             document.MergeFields["CustomerName"].Value = "変更後";
@@ -120,7 +123,7 @@ public class Documentのテスト
     [Fact]
     public void Disposeは呼び出し側から渡されたStreamを閉じません()
     {
-        using var stream = TestDocument.CreateMemoryStream();
+        using var stream = TestDocument.CreateMemoryStream(EmptyDocumentPath);
         var document = Document.Open(stream);
 
         document.Dispose();
@@ -132,7 +135,7 @@ public class Documentのテスト
     [Fact]
     public void SaveAsは指定したパスへDOCXを作成します()
     {
-        var sourcePath = TestDocument.CreateCopy();
+        var sourcePath = TestDocument.CreateTemporaryCopy(EmptyDocumentPath);
         var outputPath = TestDocument.CreateOutputPath();
         try
         {
@@ -152,7 +155,7 @@ public class Documentのテスト
     [Fact]
     public void SaveAsは保存先ファイルを束縛しません()
     {
-        var sourcePath = TestDocument.CreateCopy();
+        var sourcePath = TestDocument.CreateTemporaryCopy(EmptyDocumentPath);
         var outputPath = TestDocument.CreateOutputPath();
         try
         {
@@ -173,7 +176,7 @@ public class Documentのテスト
     [Fact]
     public void SaveAsしたDOCXをDocumentとして開けます()
     {
-        var sourcePath = TestDocument.CreateCopy();
+        var sourcePath = TestDocument.CreateTemporaryCopy(EmptyDocumentPath);
         var outputPath = TestDocument.CreateOutputPath();
         try
         {
@@ -199,8 +202,7 @@ public class Documentのテスト
     [Fact]
     public void SaveAsはMERGEFIELDへ設定した値を保存します()
     {
-        var sourcePath = TestDocument.CreateTemporaryCopy(
-            Path.Combine("TestData", "simple-merge-fields.docx"));
+        var sourcePath = TestDocument.CreateTemporaryCopy(SimpleMergeFieldsPath);
         var outputPath = TestDocument.CreateOutputPath();
         try
         {
@@ -223,7 +225,7 @@ public class Documentのテスト
     [Fact(Skip = "Content Control更新結果の保存をGreen対象にするときに有効化します。")]
     public void SaveAsはContentControlへ設定した値を保存します()
     {
-        var sourcePath = TestDocument.CreateWithContentControls(("CustomerName", "変更前"));
+        var sourcePath = TestDocument.CreateTemporaryCopy(ContentControlPath);
         var outputPath = TestDocument.CreateOutputPath();
         try
         {

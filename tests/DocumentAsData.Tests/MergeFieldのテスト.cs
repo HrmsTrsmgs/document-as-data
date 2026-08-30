@@ -7,6 +7,12 @@ public class MergeFieldのテスト
 {
     static readonly string TestFilePath =
         Path.Combine("TestData", "simple-merge-fields.docx");
+    static readonly string ComplexMergeFieldPath =
+        Path.Combine("TestData", "complex-merge-field.docx");
+    static readonly string SplitComplexMergeFieldPath =
+        Path.Combine("TestData", "split-complex-merge-field.docx");
+    static readonly string DuplicateMergeFieldsPath =
+        Path.Combine("TestData", "duplicate-merge-fields.docx");
 
     [Fact]
     public void DocumentプロパティはMERGEFIELDが属する文書を取得します()
@@ -59,7 +65,7 @@ public class MergeFieldのテスト
     [Fact]
     public void 複合MERGEFIELDの名前と値を取得します()
     {
-        var filePath = TestDocument.CreateWithComplexMergeField("CustomerName", "株式会社○○");
+        var filePath = TestDocument.CreateTemporaryCopy(ComplexMergeFieldPath);
         try
         {
             using var document = Document.Open(filePath);
@@ -77,7 +83,7 @@ public class MergeFieldのテスト
     [Fact(Skip = "分割された複合MERGEFIELD命令の読み取りをGreen対象にするときに有効化します。")]
     public void 複数のinstrTextに分割された複合MERGEFIELDを取得します()
     {
-        var filePath = TestDocument.CreateWithSplitComplexMergeField("CustomerName", "株式会社○○");
+        var filePath = TestDocument.CreateTemporaryCopy(SplitComplexMergeFieldPath);
         try
         {
             using var document = Document.Open(filePath);
@@ -113,7 +119,7 @@ public class MergeFieldのテスト
     [Fact(Skip = "複合MERGEFIELDの値設定をGreen対象にするときに有効化します。")]
     public void Valueプロパティは複合MERGEFIELDの値を設定します()
     {
-        var filePath = TestDocument.CreateWithComplexMergeField("CustomerName", "変更前");
+        var filePath = TestDocument.CreateTemporaryCopy(ComplexMergeFieldPath);
         try
         {
             using var document = Document.Open(filePath);
@@ -131,9 +137,7 @@ public class MergeFieldのテスト
     [Fact(Skip = "同名MERGEFIELDの一括更新をGreen対象にするときに有効化します。")]
     public void Valueプロパティは同名のMERGEFIELDをすべて更新します()
     {
-        var filePath = TestDocument.CreateWithSimpleMergeFields(
-            ("CustomerName", "変更前1"),
-            ("CustomerName", "変更前2"));
+        var filePath = TestDocument.CreateTemporaryCopy(DuplicateMergeFieldsPath);
         try
         {
             using var document = Document.Open(filePath);
