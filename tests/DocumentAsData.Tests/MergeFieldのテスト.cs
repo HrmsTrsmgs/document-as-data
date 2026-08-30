@@ -116,7 +116,7 @@ public class MergeFieldのテスト
         }
     }
 
-    [Fact(Skip = "複合MERGEFIELDの値設定をGreen対象にするときに有効化します。")]
+    [Fact]
     public void Valueプロパティは複合MERGEFIELDの値を設定します()
     {
         var filePath = TestDocument.CreateTemporaryCopy(ComplexMergeFieldPath);

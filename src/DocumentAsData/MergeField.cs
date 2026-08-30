@@ -49,14 +49,10 @@ public class MergeField
     {
         get => simpleField?.InnerText ??
             string.Concat(complexValueTexts.Select(it => it.Text));
-        set
-        {
-            if (simpleField is null)
-            {
-                throw new NotImplementedException();
-            }
-
-            simpleField.Descendants<Wordprocessing.Text>().First().Text = value;
-        }
+        set =>
+            (
+                simpleField?.Descendants<Wordprocessing.Text>().First() ??
+                complexValueTexts.First()
+            ).Text = value;
     }
 }
