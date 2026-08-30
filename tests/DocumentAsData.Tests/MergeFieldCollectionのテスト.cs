@@ -7,6 +7,8 @@ public class MergeFieldCollectionのテスト
 {
     static readonly string TestFilePath =
         Path.Combine("TestData", "simple-merge-fields.docx");
+    static readonly string DuplicateMergeFieldsPath =
+        Path.Combine("TestData", "duplicate-merge-fields.docx");
 
     [Fact]
     public void MergeFieldsは文書内のMERGEFIELDを列挙します()
@@ -74,6 +76,24 @@ public class MergeFieldCollectionのテスト
             var action = () => _ = document.MergeFields["not_found"];
 
             action.Should().Throw<KeyNotFoundException>();
+        }
+        finally
+        {
+            File.Delete(filePath);
+        }
+    }
+
+    [Fact]
+    public void MergeFieldsは同名のMERGEFIELDが複数存在する場合に失敗します()
+    {
+        var filePath = TestDocument.CreateTemporaryCopy(DuplicateMergeFieldsPath);
+        try
+        {
+            using var document = Document.Open(filePath);
+
+            var action = () => _ = document.MergeFields["CustomerName"];
+
+            action.Should().Throw<InvalidOperationException>();
         }
         finally
         {

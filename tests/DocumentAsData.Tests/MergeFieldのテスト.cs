@@ -11,8 +11,6 @@ public class MergeFieldのテスト
         Path.Combine("TestData", "complex-merge-field.docx");
     static readonly string SplitComplexMergeFieldPath =
         Path.Combine("TestData", "split-complex-merge-field.docx");
-    static readonly string DuplicateMergeFieldsPath =
-        Path.Combine("TestData", "duplicate-merge-fields.docx");
 
     [Fact]
     public void DocumentプロパティはMERGEFIELDが属する文書を取得します()
@@ -134,24 +132,4 @@ public class MergeFieldのテスト
         }
     }
 
-    [Fact(Skip = "同名MERGEFIELDの一括更新をGreen対象にするときに有効化します。")]
-    public void Valueプロパティは同名のMERGEFIELDをすべて更新します()
-    {
-        var filePath = TestDocument.CreateTemporaryCopy(DuplicateMergeFieldsPath);
-        try
-        {
-            using var document = Document.Open(filePath);
-
-            document.MergeFields["CustomerName"].Value = "変更後";
-
-            document.MergeFields
-                .Where(it => it.Name == "CustomerName")
-                .Select(it => it.Value)
-                .Should().OnlyContain(it => it == "変更後");
-        }
-        finally
-        {
-            File.Delete(filePath);
-        }
-    }
 }

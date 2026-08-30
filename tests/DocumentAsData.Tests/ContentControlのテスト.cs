@@ -7,8 +7,6 @@ public class ContentControlのテスト
 {
     static readonly string ContentControlPath =
         Path.Combine("TestData", "content-control.docx");
-    static readonly string DuplicateContentControlsPath =
-        Path.Combine("TestData", "duplicate-content-controls.docx");
 
     [Fact(Skip = "Content ControlとDocumentの関連をGreen対象にするときに有効化します。")]
     public void DocumentプロパティはContentControlが属する文書を取得します()
@@ -76,24 +74,4 @@ public class ContentControlのテスト
         }
     }
 
-    [Fact(Skip = "同一TagのContent Control一括更新をGreen対象にするときに有効化します。")]
-    public void Valueプロパティは同じTagのContentControlをすべて更新します()
-    {
-        var filePath = TestDocument.CreateTemporaryCopy(DuplicateContentControlsPath);
-        try
-        {
-            using var document = Document.Open(filePath);
-
-            document.ContentControls["CustomerName"].Value = "変更後";
-
-            document.ContentControls
-                .Where(it => it.Tag == "CustomerName")
-                .Select(it => it.Value)
-                .Should().OnlyContain(it => it == "変更後");
-        }
-        finally
-        {
-            File.Delete(filePath);
-        }
-    }
 }

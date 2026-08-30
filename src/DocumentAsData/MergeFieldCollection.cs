@@ -26,12 +26,13 @@ public class MergeFieldCollection : IEnumerable<MergeField>
     /// <param name="name">取得するMERGEFIELDの名前。</param>
     /// <returns>指定した名前のMERGEFIELD。</returns>
     /// <exception cref="KeyNotFoundException">指定した名前のMERGEFIELDが存在しない場合。</exception>
+    /// <exception cref="InvalidOperationException">指定した名前のMERGEFIELDが複数存在する場合。</exception>
     public MergeField this[string name] =>
         (
             from field in this
             where field.Name == name
             select field
-        ).FirstOrDefault() ?? throw new KeyNotFoundException();
+        ).SingleOrDefault() ?? throw new KeyNotFoundException();
 
     /// <summary>
     /// MERGEFIELDを列挙する列挙子を返します。

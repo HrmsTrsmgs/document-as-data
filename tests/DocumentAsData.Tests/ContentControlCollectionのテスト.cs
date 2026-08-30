@@ -17,6 +17,8 @@ public class ContentControlCollectionのテスト
         Path.Combine("TestData", "table-content-control.docx");
     static readonly string NestedContentControlsPath =
         Path.Combine("TestData", "nested-content-controls.docx");
+    static readonly string DuplicateContentControlsPath =
+        Path.Combine("TestData", "duplicate-content-controls.docx");
 
     [Fact(Skip = "Content Control列挙をGreen対象にするときに有効化します。")]
     public void ContentControlsは文書内のContentControlを列挙します()
@@ -80,6 +82,24 @@ public class ContentControlCollectionのテスト
             var action = () => _ = document.ContentControls["not_found"];
 
             action.Should().Throw<KeyNotFoundException>();
+        }
+        finally
+        {
+            File.Delete(filePath);
+        }
+    }
+
+    [Fact(Skip = "同一TagのContent Control重複検索をGreen対象にするときに有効化します。")]
+    public void ContentControlsは同じTagのContentControlが複数存在する場合に失敗します()
+    {
+        var filePath = TestDocument.CreateTemporaryCopy(DuplicateContentControlsPath);
+        try
+        {
+            using var document = Document.Open(filePath);
+
+            var action = () => _ = document.ContentControls["CustomerName"];
+
+            action.Should().Throw<InvalidOperationException>();
         }
         finally
         {
