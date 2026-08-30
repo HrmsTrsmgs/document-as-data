@@ -196,10 +196,11 @@ public class Documentのテスト
         }
     }
 
-    [Fact(Skip = "MERGEFIELD更新結果の保存をGreen対象にするときに有効化します。")]
+    [Fact]
     public void SaveAsはMERGEFIELDへ設定した値を保存します()
     {
-        var sourcePath = TestDocument.CreateWithSimpleMergeFields(("CustomerName", "変更前"));
+        var sourcePath = TestDocument.CreateTemporaryCopy(
+            Path.Combine("TestData", "simple-merge-fields.docx"));
         var outputPath = TestDocument.CreateOutputPath();
         try
         {
