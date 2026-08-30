@@ -56,7 +56,7 @@ public class MergeFieldのテスト
         }
     }
 
-    [Fact(Skip = "複合MERGEFIELDの読み取りをGreen対象にするときに有効化します。")]
+    [Fact]
     public void 複合MERGEFIELDの名前と値を取得します()
     {
         var filePath = TestDocument.CreateWithComplexMergeField("CustomerName", "株式会社○○");

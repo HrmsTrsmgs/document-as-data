@@ -1,5 +1,6 @@
 ﻿using Packaging = DocumentFormat.OpenXml.Packaging;
 
+using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Packaging;
 using Wordprocessing = DocumentFormat.OpenXml.Wordprocessing;
 
@@ -18,8 +19,8 @@ public class Document : IDisposable
         MergeFields = new(this);
     }
 
-    internal IEnumerable<Wordprocessing.SimpleField> SimpleFields =>
-        document.MainDocumentPart?.Document?.Descendants<Wordprocessing.SimpleField>() ?? [];
+    internal IEnumerable<OpenXmlElement> Elements =>
+        document.MainDocumentPart?.Document?.Descendants() ?? [];
 
     /// <summary>
     /// 指定したDOCXファイルを文書として開きます。

@@ -7,7 +7,8 @@ namespace Marimo.DocumentAsData;
 /// </summary>
 public class MergeField
 {
-    readonly Wordprocessing.SimpleField field;
+    readonly Wordprocessing.SimpleField? simpleField;
+    readonly IReadOnlyCollection<Wordprocessing.Text> complexValueTexts;
     readonly string name;
 
     internal MergeField(
@@ -16,7 +17,18 @@ public class MergeField
         string name)
     {
         Document = document;
-        this.field = field;
+        simpleField = field;
+        complexValueTexts = [];
+        this.name = name;
+    }
+
+    internal MergeField(
+        Document document,
+        string name,
+        IEnumerable<Wordprocessing.Text> valueTexts)
+    {
+        Document = document;
+        complexValueTexts = valueTexts.ToArray();
         this.name = name;
     }
 
@@ -35,7 +47,16 @@ public class MergeField
     /// </summary>
     public string Value
     {
-        get => this.field.InnerText;
-        set => this.field.Descendants<Wordprocessing.Text>().First().Text = value;
+        get => simpleField?.InnerText ??
+            string.Concat(complexValueTexts.Select(it => it.Text));
+        set
+        {
+            if (simpleField is null)
+            {
+                throw new NotImplementedException();
+            }
+
+            simpleField.Descendants<Wordprocessing.Text>().First().Text = value;
+        }
     }
 }

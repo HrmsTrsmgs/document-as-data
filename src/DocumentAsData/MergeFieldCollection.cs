@@ -1,4 +1,5 @@
 using System.Collections;
+using DocumentFormat.OpenXml;
 using Wordprocessing = DocumentFormat.OpenXml.Wordprocessing;
 
 namespace Marimo.DocumentAsData;
@@ -9,7 +10,7 @@ namespace Marimo.DocumentAsData;
 public class MergeFieldCollection : IEnumerable<MergeField>
 {
     readonly Document document;
-    readonly Dictionary<Wordprocessing.SimpleField, MergeField> cache = [];
+    readonly Dictionary<OpenXmlElement, MergeField> cache = [];
 
     internal MergeFieldCollection(Document document)
     {
@@ -34,34 +35,102 @@ public class MergeFieldCollection : IEnumerable<MergeField>
     /// </summary>
     /// <returns>MERGEFIELDを列挙する列挙子。</returns>
     public IEnumerator<MergeField> GetEnumerator() =>
-        (
-            from field in document.SimpleFields
-            let name = MergeFieldName(field)
-            where name is not null
-            select GetMergeField(field, name)
-        ).GetEnumerator();
+        MergeFields().GetEnumerator();
 
     /// <inheritdoc />
     IEnumerator IEnumerable.GetEnumerator() =>
         GetEnumerator();
 
-    MergeField GetMergeField(Wordprocessing.SimpleField field, string name)
+    IEnumerable<MergeField> MergeFields()
+    {
+        Wordprocessing.FieldChar? complexField = null;
+        Wordprocessing.FieldCode? instruction = null;
+        List<Wordprocessing.Text>? valueTexts = null;
+
+        foreach (var element in document.Elements)
+        {
+            if (element is Wordprocessing.SimpleField simpleField)
+            {
+                var simpleFieldName = MergeFieldName(simpleField.Instruction?.Value);
+                if (simpleFieldName is not null)
+                {
+                    yield return GetMergeField(
+                        simpleField,
+                        () => new(document, simpleField, simpleFieldName));
+                }
+
+                continue;
+            }
+
+            if (element is Wordprocessing.FieldChar fieldChar)
+            {
+                if (fieldChar.FieldCharType?.Value == Wordprocessing.FieldCharValues.Begin)
+                {
+                    complexField = fieldChar;
+                    instruction = null;
+                    valueTexts = null;
+                }
+                else if (
+                    complexField is not null &&
+                    fieldChar.FieldCharType?.Value == Wordprocessing.FieldCharValues.Separate)
+                {
+                    valueTexts = [];
+                }
+                else if (
+                    complexField is not null &&
+                    fieldChar.FieldCharType?.Value == Wordprocessing.FieldCharValues.End)
+                {
+                    var complexFieldName = MergeFieldName(instruction?.Text);
+                    if (complexFieldName is not null && valueTexts is not null)
+                    {
+                        yield return GetMergeField(
+                            complexField,
+                            () => new(document, complexFieldName, valueTexts));
+                    }
+
+                    complexField = null;
+                    instruction = null;
+                    valueTexts = null;
+                }
+
+                continue;
+            }
+
+            if (complexField is null)
+            {
+                continue;
+            }
+
+            if (valueTexts is null &&
+                instruction is null &&
+                element is Wordprocessing.FieldCode fieldCode)
+            {
+                instruction = fieldCode;
+            }
+            else if (valueTexts is not null && element is Wordprocessing.Text text)
+            {
+                valueTexts.Add(text);
+            }
+        }
+    }
+
+    MergeField GetMergeField(OpenXmlElement field, Func<MergeField> create)
     {
         if (cache.TryGetValue(field, out var mergeField))
         {
             return mergeField;
         }
 
-        mergeField = new(document, field, name);
+        mergeField = create();
         cache.Add(field, mergeField);
         return mergeField;
     }
 
-    static string? MergeFieldName(Wordprocessing.SimpleField field)
+    static string? MergeFieldName(string? fieldInstruction)
     {
         const string fieldType = "MERGEFIELD";
 
-        var instruction = field.Instruction?.Value?.Trim();
+        var instruction = fieldInstruction?.Trim();
         if (instruction is null ||
             !instruction.StartsWith(fieldType, StringComparison.OrdinalIgnoreCase))
         {
