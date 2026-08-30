@@ -31,7 +31,7 @@ public class ContentControl
             from properties in element.Elements<Wordprocessing.SdtProperties>()
             from tag in properties.Elements<Wordprocessing.Tag>()
             select tag.Val?.Value
-        ).Single()!;
+        ).Single() ?? throw new InvalidOperationException();
 
     /// <summary>
     /// Content Controlの値を取得または設定します。

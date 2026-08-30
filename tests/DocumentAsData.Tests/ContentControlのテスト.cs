@@ -42,7 +42,7 @@ public class ContentControlのテスト
         }
     }
 
-    [Fact(Skip = "不正なOOXMLのContent Control Tagの扱いをGreen対象にするときに有効化します。")]
+    [Fact]
     public void Tagプロパティは不正なOOXMLでTagに値がない場合に失敗します()
     {
         var filePath = TestDocument.CreateTemporaryCopy(InvalidContentControlWithoutTagValuePath);
