@@ -80,8 +80,8 @@ public class MergeFieldのテスト
         }
     }
 
-    [Fact(Skip = "分割された複合MERGEFIELD命令の読み取りをGreen対象にするときに有効化します。")]
-    public void 複数のinstrTextに分割された複合MERGEFIELDを取得します()
+    [Fact]
+    public void 複合MERGEFIELDが分割して保存されていても名前と値を取得します()
     {
         var filePath = TestDocument.CreateTemporaryCopy(SplitComplexMergeFieldPath);
         try

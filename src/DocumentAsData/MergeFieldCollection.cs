@@ -44,7 +44,7 @@ public class MergeFieldCollection : IEnumerable<MergeField>
     IEnumerable<MergeField> MergeFields()
     {
         Wordprocessing.FieldChar? complexField = null;
-        Wordprocessing.FieldCode? instruction = null;
+        string? instruction = null;
         List<Wordprocessing.Text>? valueTexts = null;
 
         foreach (var element in document.Elements)
@@ -80,7 +80,7 @@ public class MergeFieldCollection : IEnumerable<MergeField>
                     complexField is not null &&
                     fieldChar.FieldCharType?.Value == Wordprocessing.FieldCharValues.End)
                 {
-                    var complexFieldName = MergeFieldName(instruction?.Text);
+                    var complexFieldName = MergeFieldName(instruction);
                     if (complexFieldName is not null && valueTexts is not null)
                     {
                         yield return GetMergeField(
@@ -101,11 +101,9 @@ public class MergeFieldCollection : IEnumerable<MergeField>
                 continue;
             }
 
-            if (valueTexts is null &&
-                instruction is null &&
-                element is Wordprocessing.FieldCode fieldCode)
+            if (valueTexts is null && element is Wordprocessing.FieldCode fieldCode)
             {
-                instruction = fieldCode;
+                instruction += fieldCode.Text;
             }
             else if (valueTexts is not null && element is Wordprocessing.Text text)
             {
