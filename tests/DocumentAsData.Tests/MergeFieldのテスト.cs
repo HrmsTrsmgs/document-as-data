@@ -6,11 +6,11 @@ namespace Marimo.DocumentAsData.Test;
 public class MergeFieldのテスト
 {
     static readonly string TestFilePath =
-        Path.Combine("TestData", "simple-merge-fields.docx");
+        Path.Combine("TestData", "単純形式のMERGEFIELD.docx");
     static readonly string ComplexMergeFieldPath =
-        Path.Combine("TestData", "complex-merge-field.docx");
+        Path.Combine("TestData", "複合形式のMERGEFIELD.docx");
     static readonly string SplitComplexMergeFieldPath =
-        Path.Combine("TestData", "split-complex-merge-field.docx");
+        Path.Combine("TestData", "命令が分割された複合MERGEFIELD.docx");
 
     [Fact]
     public void DocumentプロパティはMERGEFIELDが属する文書を取得します()

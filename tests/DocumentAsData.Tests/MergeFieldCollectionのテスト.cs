@@ -6,9 +6,9 @@ namespace Marimo.DocumentAsData.Test;
 public class MergeFieldCollectionのテスト
 {
     static readonly string TestFilePath =
-        Path.Combine("TestData", "simple-merge-fields.docx");
+        Path.Combine("TestData", "単純形式のMERGEFIELD.docx");
     static readonly string DuplicateMergeFieldsPath =
-        Path.Combine("TestData", "duplicate-merge-fields.docx");
+        Path.Combine("TestData", "同名のMERGEFIELD.docx");
 
     [Fact]
     public void MergeFieldsは文書内のMERGEFIELDを列挙します()

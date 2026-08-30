@@ -6,9 +6,9 @@ namespace Marimo.DocumentAsData.Test;
 public class ContentControlのテスト
 {
     static readonly string ContentControlPath =
-        Path.Combine("TestData", "content-control.docx");
+        Path.Combine("TestData", "単一のContent Control.docx");
     static readonly string InvalidContentControlWithoutTagValuePath =
-        Path.Combine("TestData", "content-control-without-tag-value.docx");
+        Path.Combine("TestData", "Tagの値が欠落した不正なContent Control.docx");
 
     [Fact(Skip = "Content ControlとDocumentの関連をGreen対象にするときに有効化します。")]
     public void DocumentプロパティはContentControlが属する文書を取得します()

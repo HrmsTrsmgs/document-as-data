@@ -6,13 +6,13 @@ namespace Marimo.DocumentAsData.Test;
 public class Documentのテスト
 {
     static readonly string EmptyDocumentPath =
-        Path.Combine("TestData", "empty.docx");
+        Path.Combine("TestData", "空の文書.docx");
     static readonly string SimpleMergeFieldsPath =
-        Path.Combine("TestData", "simple-merge-fields.docx");
+        Path.Combine("TestData", "単純形式のMERGEFIELD.docx");
     static readonly string ContentControlPath =
-        Path.Combine("TestData", "content-control.docx");
+        Path.Combine("TestData", "単一のContent Control.docx");
     static readonly string InvalidContentControlWithoutTagValuePath =
-        Path.Combine("TestData", "content-control-without-tag-value.docx");
+        Path.Combine("TestData", "Tagの値が欠落した不正なContent Control.docx");
 
     [Fact]
     public void Openはファイルを束縛します()

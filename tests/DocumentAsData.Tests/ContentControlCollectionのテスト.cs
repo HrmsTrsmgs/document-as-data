@@ -6,19 +6,19 @@ namespace Marimo.DocumentAsData.Test;
 public class ContentControlCollectionのテスト
 {
     static readonly string EmptyDocumentPath =
-        Path.Combine("TestData", "empty.docx");
+        Path.Combine("TestData", "空の文書.docx");
     static readonly string ContentControlPath =
-        Path.Combine("TestData", "content-control.docx");
+        Path.Combine("TestData", "単一のContent Control.docx");
     static readonly string ContentControlsPath =
-        Path.Combine("TestData", "content-controls.docx");
+        Path.Combine("TestData", "複数のContent Control.docx");
     static readonly string ContentControlsWithoutTagPath =
-        Path.Combine("TestData", "content-controls-without-tag.docx");
+        Path.Combine("TestData", "Tagなしを含むContent Control.docx");
     static readonly string TableContentControlPath =
-        Path.Combine("TestData", "table-content-control.docx");
+        Path.Combine("TestData", "表内のContent Control.docx");
     static readonly string NestedContentControlsPath =
-        Path.Combine("TestData", "nested-content-controls.docx");
+        Path.Combine("TestData", "ネストしたContent Control.docx");
     static readonly string DuplicateContentControlsPath =
-        Path.Combine("TestData", "duplicate-content-controls.docx");
+        Path.Combine("TestData", "同じTagのContent Control.docx");
 
     [Fact]
     public void ContentControlsは文書内のContentControlを列挙します()
