@@ -32,12 +32,30 @@ public class Document : IDisposable
         new(Packaging.WordprocessingDocument.Open(filePath, true));
 
     /// <summary>
+    /// 指定したDOCXファイルを文書として開きます。
+    /// </summary>
+    /// <param name="filePath">開くDOCXファイルのパス。</param>
+    /// <param name="validate">開く文書をOpen XMLとして検証する場合は<c>true</c>。</param>
+    /// <returns>開いた文書。</returns>
+    public static Document Open(string filePath, bool validate) =>
+        throw new NotImplementedException();
+
+    /// <summary>
     /// 指定したストリーム上のDOCX文書を開きます。
     /// </summary>
     /// <param name="stream">DOCX文書を格納したストリーム。</param>
     /// <returns>開いた文書。</returns>
     public static Document Open(Stream stream) =>
         new(Packaging.WordprocessingDocument.Open(stream, true));
+
+    /// <summary>
+    /// 指定したストリーム上のDOCX文書を開きます。
+    /// </summary>
+    /// <param name="stream">DOCX文書を格納したストリーム。</param>
+    /// <param name="validate">開く文書をOpen XMLとして検証する場合は<c>true</c>。</param>
+    /// <returns>開いた文書。</returns>
+    public static Document Open(Stream stream, bool validate) =>
+        throw new NotImplementedException();
 
     /// <summary>
     /// 文書内のMERGEFIELDを取得するコレクションを取得します。

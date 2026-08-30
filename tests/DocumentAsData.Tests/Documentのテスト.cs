@@ -11,6 +11,8 @@ public class Documentのテスト
         Path.Combine("TestData", "simple-merge-fields.docx");
     static readonly string ContentControlPath =
         Path.Combine("TestData", "content-control.docx");
+    static readonly string InvalidContentControlWithoutTagValuePath =
+        Path.Combine("TestData", "content-control-without-tag-value.docx");
 
     [Fact]
     public void Openはファイルを束縛します()
@@ -94,6 +96,199 @@ public class Documentのテスト
         };
 
         action.Should().NotThrow();
+    }
+
+    [Fact(Skip = "Open時のOpen XML検証をGreen対象にするときに有効化します。")]
+    public void Openは検証指定を省略した場合不正なOOXMLも開きます()
+    {
+        var filePath = TestDocument.CreateTemporaryCopy(InvalidContentControlWithoutTagValuePath);
+        try
+        {
+            var action = () =>
+            {
+                using var document = Document.Open(filePath);
+            };
+
+            action.Should().NotThrow();
+        }
+        finally
+        {
+            File.Delete(filePath);
+        }
+    }
+
+    [Fact(Skip = "Open時のOpen XML検証をGreen対象にするときに有効化します。")]
+    public void Openは検証しない場合正常なOOXMLを開きます()
+    {
+        var filePath = TestDocument.CreateTemporaryCopy(EmptyDocumentPath);
+        try
+        {
+            var action = () =>
+            {
+                using var document = Document.Open(filePath, false);
+            };
+
+            action.Should().NotThrow();
+        }
+        finally
+        {
+            File.Delete(filePath);
+        }
+    }
+
+    [Fact(Skip = "Open時のOpen XML検証をGreen対象にするときに有効化します。")]
+    public void Openは検証しない場合不正なOOXMLも開きます()
+    {
+        var filePath = TestDocument.CreateTemporaryCopy(InvalidContentControlWithoutTagValuePath);
+        try
+        {
+            var action = () =>
+            {
+                using var document = Document.Open(filePath, false);
+            };
+
+            action.Should().NotThrow();
+        }
+        finally
+        {
+            File.Delete(filePath);
+        }
+    }
+
+    [Fact(Skip = "Open時のOpen XML検証をGreen対象にするときに有効化します。")]
+    public void Openは検証する場合正常なOOXMLを開きます()
+    {
+        var filePath = TestDocument.CreateTemporaryCopy(EmptyDocumentPath);
+        try
+        {
+            var action = () =>
+            {
+                using var document = Document.Open(filePath, true);
+            };
+
+            action.Should().NotThrow();
+        }
+        finally
+        {
+            File.Delete(filePath);
+        }
+    }
+
+    [Fact(Skip = "Open時のOpen XML検証をGreen対象にするときに有効化します。")]
+    public void Openは検証する場合不正なOOXMLで失敗します()
+    {
+        var filePath = TestDocument.CreateTemporaryCopy(InvalidContentControlWithoutTagValuePath);
+        try
+        {
+            var action = () =>
+            {
+                using var document = Document.Open(filePath, true);
+            };
+
+            action.Should().Throw<InvalidDataException>();
+        }
+        finally
+        {
+            File.Delete(filePath);
+        }
+    }
+
+    [Fact(Skip = "Openの検証失敗時のファイル束縛をGreen対象にするときに有効化します。")]
+    public void Openは検証に失敗してもファイルを束縛しません()
+    {
+        var filePath = TestDocument.CreateTemporaryCopy(InvalidContentControlWithoutTagValuePath);
+        try
+        {
+            FluentActions.Invoking(
+                () => Document.Open(filePath, true)
+            ).Should().Throw<InvalidDataException>();
+
+            FluentActions.Invoking(
+                () => File.Delete(filePath)
+            ).Should().NotThrow();
+        }
+        finally
+        {
+            File.Delete(filePath);
+        }
+    }
+
+    [Fact(Skip = "Stream版Open時のOpen XML検証をGreen対象にするときに有効化します。")]
+    public void Stream版Openは検証指定を省略した場合不正なOOXMLも開きます()
+    {
+        using var stream = TestDocument.CreateMemoryStream(InvalidContentControlWithoutTagValuePath);
+
+        var action = () =>
+        {
+            using var document = Document.Open(stream);
+        };
+
+        action.Should().NotThrow();
+    }
+
+    [Fact(Skip = "Stream版Open時のOpen XML検証をGreen対象にするときに有効化します。")]
+    public void Stream版Openは検証しない場合正常なOOXMLを開きます()
+    {
+        using var stream = TestDocument.CreateMemoryStream(EmptyDocumentPath);
+
+        var action = () =>
+        {
+            using var document = Document.Open(stream, false);
+        };
+
+        action.Should().NotThrow();
+    }
+
+    [Fact(Skip = "Stream版Open時のOpen XML検証をGreen対象にするときに有効化します。")]
+    public void Stream版Openは検証しない場合不正なOOXMLも開きます()
+    {
+        using var stream = TestDocument.CreateMemoryStream(InvalidContentControlWithoutTagValuePath);
+
+        var action = () =>
+        {
+            using var document = Document.Open(stream, false);
+        };
+
+        action.Should().NotThrow();
+    }
+
+    [Fact(Skip = "Stream版Open時のOpen XML検証をGreen対象にするときに有効化します。")]
+    public void Stream版Openは検証する場合正常なOOXMLを開きます()
+    {
+        using var stream = TestDocument.CreateMemoryStream(EmptyDocumentPath);
+
+        var action = () =>
+        {
+            using var document = Document.Open(stream, true);
+        };
+
+        action.Should().NotThrow();
+    }
+
+    [Fact(Skip = "Stream版Open時のOpen XML検証をGreen対象にするときに有効化します。")]
+    public void Stream版Openは検証する場合不正なOOXMLで失敗します()
+    {
+        using var stream = TestDocument.CreateMemoryStream(InvalidContentControlWithoutTagValuePath);
+
+        var action = () =>
+        {
+            using var document = Document.Open(stream, true);
+        };
+
+        action.Should().Throw<InvalidDataException>();
+    }
+
+    [Fact(Skip = "Stream版Openの検証失敗時の所有権をGreen対象にするときに有効化します。")]
+    public void Stream版Openは検証に失敗しても呼び出し側のStreamを閉じません()
+    {
+        using var stream = TestDocument.CreateMemoryStream(InvalidContentControlWithoutTagValuePath);
+
+        FluentActions.Invoking(
+            () => Document.Open(stream, true)
+        ).Should().Throw<InvalidDataException>();
+
+        stream.CanRead.Should().BeTrue();
+        stream.CanWrite.Should().BeTrue();
     }
 
     [Fact]
