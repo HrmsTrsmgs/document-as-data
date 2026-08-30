@@ -20,8 +20,24 @@ public class ContentControlCollectionのテスト
     static readonly string DuplicateContentControlsPath =
         Path.Combine("TestData", "duplicate-content-controls.docx");
 
-    [Fact(Skip = "Content Control列挙をGreen対象にするときに有効化します。")]
+    [Fact]
     public void ContentControlsは文書内のContentControlを列挙します()
+    {
+        var filePath = TestDocument.CreateTemporaryCopy(ContentControlsPath);
+        try
+        {
+            using var document = Document.Open(filePath);
+
+            document.ContentControls.Should().HaveCount(2);
+        }
+        finally
+        {
+            File.Delete(filePath);
+        }
+    }
+
+    [Fact(Skip = "Content ControlのTag取得をGreen対象にした後に有効化します。")]
+    public void ContentControlsは文書内の順序で列挙します()
     {
         var filePath = TestDocument.CreateTemporaryCopy(ContentControlsPath);
         try

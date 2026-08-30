@@ -17,6 +17,7 @@ public class Document : IDisposable
     {
         this.document = document;
         MergeFields = new(this);
+        ContentControls = new(this);
     }
 
     internal IEnumerable<OpenXmlElement> Elements =>
@@ -46,8 +47,7 @@ public class Document : IDisposable
     /// <summary>
     /// 文書内のContent Controlを取得するコレクションを取得します。
     /// </summary>
-    public ContentControlCollection ContentControls =>
-        throw new NotImplementedException();
+    public ContentControlCollection ContentControls { get; }
 
     /// <summary>
     /// 文書を別のDOCXファイルとして保存します。

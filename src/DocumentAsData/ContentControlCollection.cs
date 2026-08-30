@@ -1,4 +1,5 @@
 using System.Collections;
+using Wordprocessing = DocumentFormat.OpenXml.Wordprocessing;
 
 namespace Marimo.DocumentAsData;
 
@@ -7,6 +8,16 @@ namespace Marimo.DocumentAsData;
 /// </summary>
 public class ContentControlCollection : IEnumerable<ContentControl>
 {
+    /// <summary>
+    /// Content Controlを列挙する文書です。
+    /// </summary>
+    readonly Document document;
+
+    internal ContentControlCollection(Document document)
+    {
+        this.document = document;
+    }
+
     /// <summary>
     /// 指定したTagのContent Controlを取得します。
     /// </summary>
@@ -20,7 +31,11 @@ public class ContentControlCollection : IEnumerable<ContentControl>
     /// </summary>
     /// <returns>Content Controlを列挙する列挙子。</returns>
     public IEnumerator<ContentControl> GetEnumerator() =>
-        throw new NotImplementedException();
+        (
+            from element in document.Elements
+            where element is Wordprocessing.SdtElement
+            select new ContentControl()
+        ).GetEnumerator();
 
     /// <inheritdoc />
     IEnumerator IEnumerable.GetEnumerator() =>
