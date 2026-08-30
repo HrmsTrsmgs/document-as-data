@@ -1,3 +1,5 @@
+using Wordprocessing = DocumentFormat.OpenXml.Wordprocessing;
+
 namespace Marimo.DocumentAsData;
 
 /// <summary>
@@ -5,6 +7,16 @@ namespace Marimo.DocumentAsData;
 /// </summary>
 public class ContentControl
 {
+    /// <summary>
+    /// このContent Controlを構成するOOXML要素です。
+    /// </summary>
+    readonly Wordprocessing.SdtElement element;
+
+    internal ContentControl(Wordprocessing.SdtElement element)
+    {
+        this.element = element;
+    }
+
     /// <summary>
     /// Content Controlが属する文書を取得します。
     /// </summary>
@@ -15,7 +27,11 @@ public class ContentControl
     /// Content ControlのTagを取得します。
     /// </summary>
     public string Tag =>
-        throw new NotImplementedException();
+        (
+            from properties in element.Elements<Wordprocessing.SdtProperties>()
+            from tag in properties.Elements<Wordprocessing.Tag>()
+            select tag.Val?.Value
+        ).Single()!;
 
     /// <summary>
     /// Content Controlの値を取得または設定します。

@@ -32,9 +32,8 @@ public class ContentControlCollection : IEnumerable<ContentControl>
     /// <returns>Content Controlを列挙する列挙子。</returns>
     public IEnumerator<ContentControl> GetEnumerator() =>
         (
-            from element in document.Elements
-            where element is Wordprocessing.SdtElement
-            select new ContentControl()
+            from element in document.Elements.OfType<Wordprocessing.SdtElement>()
+            select new ContentControl(element)
         ).GetEnumerator();
 
     /// <inheritdoc />

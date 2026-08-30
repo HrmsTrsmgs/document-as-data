@@ -7,6 +7,8 @@ public class ContentControlのテスト
 {
     static readonly string ContentControlPath =
         Path.Combine("TestData", "content-control.docx");
+    static readonly string InvalidContentControlWithoutTagValuePath =
+        Path.Combine("TestData", "content-control-without-tag-value.docx");
 
     [Fact(Skip = "Content ControlとDocumentの関連をGreen対象にするときに有効化します。")]
     public void DocumentプロパティはContentControlが属する文書を取得します()
@@ -24,7 +26,7 @@ public class ContentControlのテスト
         }
     }
 
-    [Fact(Skip = "Content ControlのTag取得をGreen対象にするときに有効化します。")]
+    [Fact]
     public void TagプロパティはContentControlのTagを取得します()
     {
         var filePath = TestDocument.CreateTemporaryCopy(ContentControlPath);
@@ -33,6 +35,25 @@ public class ContentControlのテスト
             using var document = Document.Open(filePath);
 
             document.ContentControls.Single().Tag.Should().Be("CustomerName");
+        }
+        finally
+        {
+            File.Delete(filePath);
+        }
+    }
+
+    [Fact(Skip = "不正なOOXMLのContent Control Tagの扱いをGreen対象にするときに有効化します。")]
+    public void Tagプロパティは不正なOOXMLでTagに値がない場合に失敗します()
+    {
+        var filePath = TestDocument.CreateTemporaryCopy(InvalidContentControlWithoutTagValuePath);
+        try
+        {
+            using var document = Document.Open(filePath);
+
+            var action = () =>
+                _ = document.ContentControls.Single().Tag;
+
+            action.Should().Throw<InvalidOperationException>();
         }
         finally
         {
