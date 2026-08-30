@@ -100,7 +100,7 @@ public class Documentのテスト
         document.MergeFields["CustomerName"].Value.Should().Be("株式会社○○");
     }
 
-    [Fact(Skip = "Stream版での既存書き込み処理をGreen対象にするときに有効化します。")]
+    [Fact]
     public void Stream版でもMERGEFIELDの変更を文書へ書き込みます()
     {
         using var stream = TestDocument.CreateMemoryStreamWithSimpleMergeField(
