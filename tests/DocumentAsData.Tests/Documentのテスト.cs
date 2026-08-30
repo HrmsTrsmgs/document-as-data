@@ -89,7 +89,7 @@ public class Documentのテスト
         action.Should().NotThrow();
     }
 
-    [Fact(Skip = "Stream版での既存読み込み処理をGreen対象にするときに有効化します。")]
+    [Fact]
     public void Stream版でもMERGEFIELDを読み取れます()
     {
         using var stream = TestDocument.CreateMemoryStreamWithSimpleMergeField(
