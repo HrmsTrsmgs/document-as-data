@@ -48,6 +48,10 @@ public class ContentControl
             string.Concat(
                 from text in element.Descendants<Wordprocessing.Text>()
                 select text.Text);
-        set => throw new NotImplementedException();
+        set =>
+            (
+                from text in element.Descendants<Wordprocessing.Text>()
+                select text
+            ).Single().Text = value;
     }
 }

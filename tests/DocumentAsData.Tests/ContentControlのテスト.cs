@@ -97,7 +97,7 @@ public class ContentControlのテスト
         }
     }
 
-    [Fact(Skip = "Content Controlの値設定をGreen対象にするときに有効化します。")]
+    [Fact]
     public void ValueプロパティはContentControlの値を設定します()
     {
         var filePath = TestDocument.CreateTemporaryCopy(ContentControlPath);
