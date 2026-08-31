@@ -44,7 +44,11 @@ public class ContentControl
     /// </summary>
     public string Value
     {
-        get => throw new NotImplementedException();
+        get =>
+            (
+                from text in element.Descendants<Wordprocessing.Text>()
+                select text.Text
+            ).Single();
         set => throw new NotImplementedException();
     }
 }
