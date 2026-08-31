@@ -7,6 +7,8 @@ public class ContentControlのテスト
 {
     static readonly string ContentControlPath =
         Path.Combine("TestData", "単一のContent Control.docx");
+    static readonly string SplitContentControlTextPath =
+        Path.Combine("TestData", "複数の文字列要素を持つContent Control.docx");
     static readonly string InvalidContentControlWithoutTagValuePath =
         Path.Combine("TestData", "Tagの値が欠落した不正なContent Control.docx");
 
@@ -70,6 +72,24 @@ public class ContentControlのテスト
             using var document = Document.Open(filePath);
 
             document.ContentControls["CustomerName"].Value.Should().Be("山田太郎");
+        }
+        finally
+        {
+            File.Delete(filePath);
+        }
+    }
+
+    [Fact]
+    public void Valueプロパティは複数の文字列要素からContentControlの値を取得します()
+    {
+        var filePath =
+            TestDocument.CreateTemporaryCopy(SplitContentControlTextPath);
+        try
+        {
+            using var document = Document.Open(filePath);
+
+            document.ContentControls["CustomerName"].Value
+                .Should().Be("山田太郎");
         }
         finally
         {

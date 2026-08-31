@@ -45,10 +45,9 @@ public class ContentControl
     public string Value
     {
         get =>
-            (
+            string.Concat(
                 from text in element.Descendants<Wordprocessing.Text>()
-                select text.Text
-            ).Single();
+                select text.Text);
         set => throw new NotImplementedException();
     }
 }
