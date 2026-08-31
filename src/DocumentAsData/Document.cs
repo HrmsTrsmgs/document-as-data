@@ -2,6 +2,7 @@
 
 using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Packaging;
+using Validation = DocumentFormat.OpenXml.Validation;
 using Wordprocessing = DocumentFormat.OpenXml.Wordprocessing;
 
 namespace Marimo.DocumentAsData;
@@ -37,8 +38,20 @@ public class Document : IDisposable
     /// <param name="filePath">開くDOCXファイルのパス。</param>
     /// <param name="validate">開く文書をOpen XMLとして検証する場合は<c>true</c>。</param>
     /// <returns>開いた文書。</returns>
-    public static Document Open(string filePath, bool validate) =>
-        Open(filePath);
+    /// <exception cref="InvalidDataException">
+    /// <paramref name="validate" />が<c>true</c>で、文書にOpen XML検証エラーがある場合。
+    /// </exception>
+    public static Document Open(string filePath, bool validate)
+    {
+        var opened = Open(filePath);
+        if (!validate || !new Validation.OpenXmlValidator().Validate(opened.document).Any())
+        {
+            return opened;
+        }
+
+        opened.Dispose();
+        throw new InvalidDataException();
+    }
 
     /// <summary>
     /// 指定したストリーム上のDOCX文書を開きます。
