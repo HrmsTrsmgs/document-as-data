@@ -123,7 +123,7 @@ public class ContentControlCollectionのテスト
         }
     }
 
-    [Fact(Skip = "TagなしContent Controlの除外をGreen対象にするときに有効化します。")]
+    [Fact]
     public void ContentControlsはTagのないContentControlを列挙しません()
     {
         var filePath = TestDocument.CreateTemporaryCopy(ContentControlsWithoutTagPath);

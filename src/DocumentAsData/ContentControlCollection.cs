@@ -44,8 +44,21 @@ public class ContentControlCollection : IEnumerable<ContentControl>
     public IEnumerator<ContentControl> GetEnumerator() =>
         (
             from element in document.Elements.OfType<Wordprocessing.SdtElement>()
+            where HasTag(element)
             select GetOrCreateContentControl(element)
         ).GetEnumerator();
+
+    /// <summary>
+    /// 指定したContent Control自身にTagが設定されているかを取得します。
+    /// </summary>
+    /// <param name="element">確認するContent ControlのOOXML要素。</param>
+    /// <returns>Tagが設定されている場合は<c>true</c>。</returns>
+    static bool HasTag(Wordprocessing.SdtElement element) =>
+        (
+            from properties in element.Elements<Wordprocessing.SdtProperties>()
+            from tag in properties.Elements<Wordprocessing.Tag>()
+            select tag
+        ).Any();
 
     /// <summary>
     /// 指定したOOXML要素に対応する既存または新しいContent Controlを取得します。
