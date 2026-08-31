@@ -54,7 +54,7 @@ public class ContentControlCollectionのテスト
         }
     }
 
-    [Fact(Skip = "Content ControlのTag検索をGreen対象にするときに有効化します。")]
+    [Fact]
     public void ContentControlsはTagからContentControlを取得します()
     {
         var filePath = TestDocument.CreateTemporaryCopy(ContentControlPath);

@@ -24,7 +24,11 @@ public class ContentControlCollection : IEnumerable<ContentControl>
     /// <param name="tag">取得するContent ControlのTag。</param>
     /// <returns>指定したTagのContent Control。</returns>
     public ContentControl this[string tag] =>
-        throw new NotImplementedException();
+        (
+            from contentControl in this
+            where contentControl.Tag == tag
+            select contentControl
+        ).First();
 
     /// <summary>
     /// Content Controlを列挙する列挙子を返します。
