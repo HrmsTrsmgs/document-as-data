@@ -72,7 +72,7 @@ public class ContentControlCollection : IEnumerable<ContentControl>
             return contentControl;
         }
 
-        contentControl = new(element);
+        contentControl = new(document, element);
         cache.Add(element, contentControl);
         return contentControl;
     }

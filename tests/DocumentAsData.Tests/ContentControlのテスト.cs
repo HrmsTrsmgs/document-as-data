@@ -10,7 +10,7 @@ public class ContentControlのテスト
     static readonly string InvalidContentControlWithoutTagValuePath =
         Path.Combine("TestData", "Tagの値が欠落した不正なContent Control.docx");
 
-    [Fact(Skip = "Content ControlとDocumentの関連をGreen対象にするときに有効化します。")]
+    [Fact]
     public void DocumentプロパティはContentControlが属する文書を取得します()
     {
         var filePath = TestDocument.CreateTemporaryCopy(ContentControlPath);
