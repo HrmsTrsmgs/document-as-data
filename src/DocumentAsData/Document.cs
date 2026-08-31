@@ -67,8 +67,20 @@ public class Document : IDisposable
     /// <param name="stream">DOCX文書を格納したストリーム。</param>
     /// <param name="validate">開く文書をOpen XMLとして検証する場合は<c>true</c>。</param>
     /// <returns>開いた文書。</returns>
-    public static Document Open(Stream stream, bool validate) =>
-        Open(stream);
+    /// <exception cref="InvalidDataException">
+    /// <paramref name="validate" />が<c>true</c>で、文書にOpen XML検証エラーがある場合。
+    /// </exception>
+    public static Document Open(Stream stream, bool validate)
+    {
+        var opened = Open(stream);
+        if (!validate || !new Validation.OpenXmlValidator().Validate(opened.document).Any())
+        {
+            return opened;
+        }
+
+        opened.Dispose();
+        throw new InvalidDataException();
+    }
 
     /// <summary>
     /// 文書内のMERGEFIELDを取得するコレクションを取得します。
