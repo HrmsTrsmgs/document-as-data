@@ -87,7 +87,7 @@ public class ContentControlCollectionのテスト
         }
     }
 
-    [Fact(Skip = "存在しないContent Control Tagの扱いをGreen対象にするときに有効化します。")]
+    [Fact]
     public void ContentControlsは存在しないTagを指定した場合に失敗します()
     {
         var filePath = TestDocument.CreateTemporaryCopy(EmptyDocumentPath);
