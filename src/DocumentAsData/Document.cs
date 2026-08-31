@@ -41,17 +41,8 @@ public class Document : IDisposable
     /// <exception cref="InvalidDataException">
     /// <paramref name="validate" />が<c>true</c>で、文書にOpen XML検証エラーがある場合。
     /// </exception>
-    public static Document Open(string filePath, bool validate)
-    {
-        var opened = Open(filePath);
-        if (!validate || !new Validation.OpenXmlValidator().Validate(opened.document).Any())
-        {
-            return opened;
-        }
-
-        opened.Dispose();
-        throw new InvalidDataException();
-    }
+    public static Document Open(string filePath, bool validate) =>
+        ValidateIfRequested(Open(filePath), validate);
 
     /// <summary>
     /// 指定したストリーム上のDOCX文書を開きます。
@@ -70,9 +61,11 @@ public class Document : IDisposable
     /// <exception cref="InvalidDataException">
     /// <paramref name="validate" />が<c>true</c>で、文書にOpen XML検証エラーがある場合。
     /// </exception>
-    public static Document Open(Stream stream, bool validate)
+    public static Document Open(Stream stream, bool validate) =>
+        ValidateIfRequested(Open(stream), validate);
+
+    static Document ValidateIfRequested(Document opened, bool validate)
     {
-        var opened = Open(stream);
         if (!validate || !new Validation.OpenXmlValidator().Validate(opened.document).Any())
         {
             return opened;
