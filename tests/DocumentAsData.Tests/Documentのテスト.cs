@@ -278,7 +278,7 @@ public class Documentのテスト
         action.Should().Throw<InvalidDataException>();
     }
 
-    [Fact(Skip = "Stream版Openの検証失敗時の所有権をGreen対象にするときに有効化します。")]
+    [Fact]
     public void Stream版Openは検証に失敗しても呼び出し側のStreamを閉じません()
     {
         using var stream = TestDocument.CreateMemoryStream(InvalidContentControlWithoutTagValuePath);
