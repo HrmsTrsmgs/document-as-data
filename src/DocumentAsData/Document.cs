@@ -38,7 +38,7 @@ public class Document : IDisposable
     /// <param name="validate">開く文書をOpen XMLとして検証する場合は<c>true</c>。</param>
     /// <returns>開いた文書。</returns>
     public static Document Open(string filePath, bool validate) =>
-        validate ? throw new NotImplementedException() : Open(filePath);
+        Open(filePath);
 
     /// <summary>
     /// 指定したストリーム上のDOCX文書を開きます。
