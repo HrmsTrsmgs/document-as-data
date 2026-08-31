@@ -70,7 +70,7 @@ public class ContentControlCollectionのテスト
         }
     }
 
-    [Fact(Skip = "Content Controlオブジェクトの同一性をGreen対象にするときに有効化します。")]
+    [Fact]
     public void ContentControlsは列挙とTag検索で同じContentControlを返します()
     {
         var filePath = TestDocument.CreateTemporaryCopy(ContentControlPath);

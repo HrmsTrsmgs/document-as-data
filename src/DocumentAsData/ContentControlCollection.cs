@@ -13,6 +13,11 @@ public class ContentControlCollection : IEnumerable<ContentControl>
     /// </summary>
     readonly Document document;
 
+    /// <summary>
+    /// 同じOOXML要素から生成したContent Controlをコレクションの生存期間中共有します。
+    /// </summary>
+    readonly Dictionary<Wordprocessing.SdtElement, ContentControl> cache = [];
+
     internal ContentControlCollection(Document document)
     {
         this.document = document;
@@ -37,8 +42,25 @@ public class ContentControlCollection : IEnumerable<ContentControl>
     public IEnumerator<ContentControl> GetEnumerator() =>
         (
             from element in document.Elements.OfType<Wordprocessing.SdtElement>()
-            select new ContentControl(element)
+            select GetOrCreateContentControl(element)
         ).GetEnumerator();
+
+    /// <summary>
+    /// 指定したOOXML要素に対応する既存または新しいContent Controlを取得します。
+    /// </summary>
+    /// <param name="element">Content Controlを表すOOXML要素。</param>
+    /// <returns>指定した要素に対応するContent Control。</returns>
+    ContentControl GetOrCreateContentControl(Wordprocessing.SdtElement element)
+    {
+        if (cache.TryGetValue(element, out var contentControl))
+        {
+            return contentControl;
+        }
+
+        contentControl = new(element);
+        cache.Add(element, contentControl);
+        return contentControl;
+    }
 
     /// <inheritdoc />
     IEnumerator IEnumerable.GetEnumerator() =>
