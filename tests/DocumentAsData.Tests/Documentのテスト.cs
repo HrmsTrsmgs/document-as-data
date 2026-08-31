@@ -193,7 +193,7 @@ public class Documentのテスト
         }
     }
 
-    [Fact(Skip = "Openの検証失敗時のファイル束縛をGreen対象にするときに有効化します。")]
+    [Fact]
     public void Openは検証に失敗してもファイルを束縛しません()
     {
         var filePath = TestDocument.CreateTemporaryCopy(InvalidContentControlWithoutTagValuePath);
