@@ -239,7 +239,7 @@ public class Documentのテスト
         action.Should().NotThrow();
     }
 
-    [Fact(Skip = "Stream版Open時のOpen XML検証をGreen対象にするときに有効化します。")]
+    [Fact]
     public void Stream版Openは検証しない場合不正なOOXMLも開きます()
     {
         using var stream = TestDocument.CreateMemoryStream(InvalidContentControlWithoutTagValuePath);
