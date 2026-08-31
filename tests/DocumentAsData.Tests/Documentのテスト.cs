@@ -417,7 +417,7 @@ public class Documentのテスト
         }
     }
 
-    [Fact(Skip = "Content Control更新結果の保存をGreen対象にするときに有効化します。")]
+    [Fact]
     public void SaveAsはContentControlへ設定した値を保存します()
     {
         var sourcePath = TestDocument.CreateTemporaryCopy(ContentControlPath);
