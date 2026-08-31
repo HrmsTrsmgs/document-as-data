@@ -36,7 +36,7 @@ public class ContentControlCollectionのテスト
         }
     }
 
-    [Fact(Skip = "Content ControlのTag取得をGreen対象にした後に有効化します。")]
+    [Fact]
     public void ContentControlsは文書内の順序で列挙します()
     {
         var filePath = TestDocument.CreateTemporaryCopy(ContentControlsPath);
