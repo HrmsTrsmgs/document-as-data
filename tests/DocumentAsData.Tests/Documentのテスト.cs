@@ -98,7 +98,7 @@ public class Documentのテスト
         action.Should().NotThrow();
     }
 
-    [Fact(Skip = "Open時のOpen XML検証をGreen対象にするときに有効化します。")]
+    [Fact]
     public void Openは検証指定を省略した場合不正なOOXMLも開きます()
     {
         var filePath = TestDocument.CreateTemporaryCopy(InvalidContentControlWithoutTagValuePath);
