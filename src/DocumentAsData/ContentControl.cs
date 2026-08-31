@@ -48,10 +48,12 @@ public class ContentControl
             string.Concat(
                 from text in element.Descendants<Wordprocessing.Text>()
                 select text.Text);
-        set =>
-            (
-                from text in element.Descendants<Wordprocessing.Text>()
-                select text
-            ).Single().Text = value;
+        set
+        {
+            var texts = element.Descendants<Wordprocessing.Text>().ToArray();
+
+            texts.First().Text = value;
+            Array.ForEach(texts[1..], it => it.Text = "");
+        }
     }
 }

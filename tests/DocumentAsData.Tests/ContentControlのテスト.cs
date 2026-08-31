@@ -1,5 +1,7 @@
+using DocumentFormat.OpenXml.Packaging;
 using FluentAssertions;
 using Marimo.DocumentAsData.Test.TestDocuments;
+using Wordprocessing = DocumentFormat.OpenXml.Wordprocessing;
 
 namespace Marimo.DocumentAsData.Test;
 
@@ -108,6 +110,34 @@ public class ContentControlのテスト
             document.ContentControls["CustomerName"].Value = "変更後";
 
             document.ContentControls["CustomerName"].Value.Should().Be("変更後");
+        }
+        finally
+        {
+            File.Delete(filePath);
+        }
+    }
+
+    [Fact]
+    public void Valueプロパティは複数の文字列要素の先頭へ値を設定して残りを空にします()
+    {
+        var filePath =
+            TestDocument.CreateTemporaryCopy(SplitContentControlTextPath);
+        try
+        {
+            using (var document = Document.Open(filePath))
+            {
+                document.ContentControls["CustomerName"].Value = "変更後";
+            }
+
+            using var saved = WordprocessingDocument.Open(filePath, false);
+            // Content Controlの表示文字列は、OOXML上で複数のw:t要素に
+            // 分かれることがあります。保存後のOOXMLでは先頭のw:tだけに
+            // 設定値を残し、2個目以降を空にすることを直接確認します。
+            // Valueの再取得だけでは、w:tごとの保存位置を区別できないためです。
+            saved.MainDocumentPart!.Document!
+                .Descendants<Wordprocessing.Text>()
+                .Select(it => it.Text)
+                .Should().Equal("変更後", "");
         }
         finally
         {
