@@ -105,7 +105,7 @@ public class ContentControlCollectionのテスト
         }
     }
 
-    [Fact(Skip = "同一TagのContent Control重複検索をGreen対象にするときに有効化します。")]
+    [Fact]
     public void ContentControlsは同じTagのContentControlが複数存在する場合に失敗します()
     {
         var filePath = TestDocument.CreateTemporaryCopy(DuplicateContentControlsPath);

@@ -29,12 +29,13 @@ public class ContentControlCollection : IEnumerable<ContentControl>
     /// <param name="tag">取得するContent ControlのTag。</param>
     /// <returns>指定したTagのContent Control。</returns>
     /// <exception cref="KeyNotFoundException">指定したTagのContent Controlが存在しない場合。</exception>
+    /// <exception cref="InvalidOperationException">指定したTagのContent Controlが複数存在する場合。</exception>
     public ContentControl this[string tag] =>
         (
             from contentControl in this
             where contentControl.Tag == tag
             select contentControl
-        ).FirstOrDefault() ?? throw new KeyNotFoundException();
+        ).SingleOrDefault() ?? throw new KeyNotFoundException();
 
     /// <summary>
     /// Content Controlを列挙する列挙子を返します。
