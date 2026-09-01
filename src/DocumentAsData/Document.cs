@@ -13,10 +13,17 @@ namespace Marimo.DocumentAsData;
 public class Document : IDisposable
 {
     readonly Packaging.WordprocessingDocument document;
+    readonly Stream? sourceStream;
+    readonly Stream? workingStream;
 
-    Document(Packaging.WordprocessingDocument document)
+    Document(
+        Packaging.WordprocessingDocument document,
+        Stream? sourceStream = null,
+        Stream? workingStream = null)
     {
         this.document = document;
+        this.sourceStream = sourceStream;
+        this.workingStream = workingStream;
         MergeFields = new(this);
         ContentControls = new(this);
     }
@@ -29,8 +36,38 @@ public class Document : IDisposable
     /// </summary>
     /// <param name="filePath">開くDOCXファイルのパス。</param>
     /// <returns>開いた文書。</returns>
-    public static Document Open(string filePath) =>
-        new(Packaging.WordprocessingDocument.Open(filePath, true));
+    public static Document Open(string filePath)
+    {
+        var sourceStream = File.OpenRead(filePath);
+        try
+        {
+            return OpenWorkingCopy(sourceStream);
+        }
+        catch
+        {
+            sourceStream.Dispose();
+            throw;
+        }
+    }
+
+    static Document OpenWorkingCopy(Stream sourceStream)
+    {
+        var workingStream = new MemoryStream();
+        try
+        {
+            sourceStream.CopyTo(workingStream);
+            workingStream.Position = 0;
+            return new(
+                Packaging.WordprocessingDocument.Open(workingStream, true),
+                sourceStream,
+                workingStream);
+        }
+        catch
+        {
+            workingStream.Dispose();
+            throw;
+        }
+    }
 
     /// <summary>
     /// 指定したDOCXファイルを文書として開きます。
@@ -97,8 +134,12 @@ public class Document : IDisposable
     /// <summary>
     /// 文書が使用しているファイルを閉じます。
     /// </summary>
-    public void Close() =>
+    public void Close()
+    {
         document.Dispose();
+        workingStream?.Dispose();
+        sourceStream?.Dispose();
+    }
 
     /// <summary>
     /// 文書が使用しているリソースを解放します。

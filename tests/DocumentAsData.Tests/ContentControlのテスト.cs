@@ -120,16 +120,18 @@ public class ContentControlのテスト
     [Fact]
     public void Valueプロパティは複数の文字列要素の先頭へ値を設定して残りを空にします()
     {
-        var filePath =
+        var sourcePath =
             TestDocument.CreateTemporaryCopy(SplitContentControlTextPath);
+        var outputPath = TestDocument.CreateOutputPath();
         try
         {
-            using (var document = Document.Open(filePath))
+            using (var document = Document.Open(sourcePath))
             {
                 document.ContentControls["CustomerName"].Value = "変更後";
+                document.SaveAs(outputPath);
             }
 
-            using var saved = WordprocessingDocument.Open(filePath, false);
+            using var saved = WordprocessingDocument.Open(outputPath, false);
             // Content Controlの表示文字列は、OOXML上で複数のw:t要素に
             // 分かれることがあります。保存後のOOXMLでは先頭のw:tだけに
             // 設定値を残し、2個目以降を空にすることを直接確認します。
@@ -141,7 +143,8 @@ public class ContentControlのテスト
         }
         finally
         {
-            File.Delete(filePath);
+            File.Delete(sourcePath);
+            File.Delete(outputPath);
         }
     }
 

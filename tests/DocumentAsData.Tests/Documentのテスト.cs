@@ -418,6 +418,49 @@ public class Documentのテスト
     }
 
     [Fact]
+    public void SaveAsは保存元ファイルを変更しません()
+    {
+        var sourcePath = TestDocument.CreateTemporaryCopy(SimpleMergeFieldsPath);
+        var outputPath = TestDocument.CreateOutputPath();
+        try
+        {
+            using (var document = Document.Open(sourcePath))
+            {
+                document.MergeFields["CustomerName"].Value = "変更後";
+                document.SaveAs(outputPath);
+            }
+
+            using var source = Document.Open(sourcePath);
+            source.MergeFields["CustomerName"].Value.Should().Be("株式会社○○");
+        }
+        finally
+        {
+            File.Delete(sourcePath);
+            File.Delete(outputPath);
+        }
+    }
+
+    [Fact]
+    public void Disposeは保存元ファイルへ変更を書き込みません()
+    {
+        var sourcePath = TestDocument.CreateTemporaryCopy(SimpleMergeFieldsPath);
+        try
+        {
+            using (var document = Document.Open(sourcePath))
+            {
+                document.MergeFields["CustomerName"].Value = "変更後";
+            }
+
+            using var source = Document.Open(sourcePath);
+            source.MergeFields["CustomerName"].Value.Should().Be("株式会社○○");
+        }
+        finally
+        {
+            File.Delete(sourcePath);
+        }
+    }
+
+    [Fact]
     public void SaveAsはContentControlへ設定した値を保存します()
     {
         var sourcePath = TestDocument.CreateTemporaryCopy(ContentControlPath);
