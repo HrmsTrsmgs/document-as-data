@@ -15,8 +15,8 @@ public class MergeFieldCollectionのテスト
             "Word標準の書式維持スイッチを持つ複合MERGEFIELD.docx");
     static readonly string MultipleComplexMergeFieldsPath =
         Path.Combine("TestData", "複数の複合MERGEFIELD.docx");
-    static readonly string OtherFieldsPath =
-        Path.Combine("TestData", "MERGEFIELD以外のフィールド.docx");
+    static readonly string DateFieldPath =
+        Path.Combine("TestData", "DATEフィールド.docx");
 
     [Fact]
     public void MergeFieldsは文書内のMERGEFIELDを列挙します()
@@ -157,14 +157,21 @@ public class MergeFieldCollectionのテスト
         }
     }
 
-    [Fact(Skip = "MERGEFIELD以外のWordフィールドを持つ固定テストデータを追加してから有効化します。")]
-    public void MergeFieldsはMERGEFIELD以外のWordフィールドを列挙しません()
+    [Fact]
+    public void MergeFieldsはDATEフィールドを列挙しません()
     {
-        var filePath = TestDocument.CreateTemporaryCopy(OtherFieldsPath);
+        var filePath = TestDocument.CreateTemporaryCopy(DateFieldPath);
         try
         {
             using var document = Document.Open(filePath);
 
+            // 固定データには、MERGEFIELDと同じくbegin、instrText、
+            // separate、表示結果、endの要素列で構成されたDATEフィールドが
+            // 保存されています。w:instrTextの命令は次の内容です。
+            //   DATE \@ "yyyy/MM/dd"
+            // 複合フィールドという内部構造が同じでも、命令の種類がDATEなら
+            // 名前付きデータ項目であるMERGEFIELDとして扱わないことを
+            // 確認します。
             document.MergeFields.Should().BeEmpty();
         }
         finally
