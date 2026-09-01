@@ -17,6 +17,11 @@ public class ContentControl
     /// </summary>
     readonly Wordprocessing.SdtElement element;
 
+    /// <summary>
+    /// 文書内のOOXML要素への参照を保持し、Valueの読み書きを同じ要素へ反映できるようにします。
+    /// </summary>
+    /// <param name="document">Content Controlが属する文書。</param>
+    /// <param name="element">Content Controlを構成するOOXML要素。</param>
     internal ContentControl(Document document, Wordprocessing.SdtElement element)
     {
         this.document = document;
@@ -32,6 +37,9 @@ public class ContentControl
     /// <summary>
     /// Content ControlのTagを取得します。
     /// </summary>
+    /// <exception cref="InvalidOperationException">
+    /// Tagの値が欠落しているか、Tagが複数存在する場合。
+    /// </exception>
     public string Tag =>
         (
             from properties in element.Elements<Wordprocessing.SdtProperties>()
@@ -42,6 +50,9 @@ public class ContentControl
     /// <summary>
     /// Content Controlの値を取得または設定します。
     /// </summary>
+    /// <exception cref="InvalidOperationException">
+    /// 値の設定時に文字列要素が存在しない場合。
+    /// </exception>
     public string Value
     {
         get =>

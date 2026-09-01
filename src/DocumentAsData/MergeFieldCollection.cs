@@ -15,6 +15,10 @@ public class MergeFieldCollection : IEnumerable<MergeField>
     /// </summary>
     readonly MergeFieldReader reader;
 
+    /// <summary>
+    /// 文書の解析処理と生成済みMERGEFIELDのキャッシュを、コレクションの生存期間中共有できるようにします。
+    /// </summary>
+    /// <param name="document">MERGEFIELDを取得する文書。</param>
     internal MergeFieldCollection(Document document)
     {
         reader = new(document);

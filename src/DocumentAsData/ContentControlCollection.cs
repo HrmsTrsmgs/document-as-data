@@ -18,6 +18,10 @@ public class ContentControlCollection : IEnumerable<ContentControl>
     /// </summary>
     readonly Dictionary<Wordprocessing.SdtElement, ContentControl> cache = [];
 
+    /// <summary>
+    /// 文書全体を列挙対象とし、列挙とTag検索で生成したContent Controlを共有できるようにします。
+    /// </summary>
+    /// <param name="document">Content Controlを取得する文書。</param>
     internal ContentControlCollection(Document document)
     {
         this.document = document;
