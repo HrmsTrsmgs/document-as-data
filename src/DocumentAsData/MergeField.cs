@@ -14,10 +14,22 @@ public class MergeField
     readonly Wordprocessing.SimpleField? simpleField;
 
     /// <summary>
-    /// 複合形式の表示値を構成する文字列要素を文書順に保持します。
-    /// 読み取り時はこれらを連結します。
+    /// 複合形式の命令部分と表示結果を区切る要素です。
+    /// 単純形式の場合はnullです。
     /// </summary>
-    readonly IReadOnlyCollection<Wordprocessing.Text> complexValueTexts;
+    readonly Wordprocessing.FieldChar? complexResultSeparator;
+
+    /// <summary>
+    /// 複合形式の終了要素です。
+    /// 単純形式の場合はnullです。
+    /// </summary>
+    readonly Wordprocessing.FieldChar? complexFieldEnd;
+
+    /// <summary>
+    /// 複合形式の表示値を構成する文字列要素を文書順に保持します。
+    /// 読み取り時はこれらを連結し、書き込み時は置換後の要素へ更新します。
+    /// </summary>
+    readonly List<Wordprocessing.Text> complexValueTexts;
 
     /// <summary>
     /// OOXMLのフィールド命令から解析した名前を、単純形式と複合形式で共通に公開するため保持します。
@@ -37,6 +49,8 @@ public class MergeField
     {
         Document = document;
         simpleField = field;
+        complexResultSeparator = null;
+        complexFieldEnd = null;
         complexValueTexts = [];
         this.name = name;
     }
@@ -46,14 +60,20 @@ public class MergeField
     /// </summary>
     /// <param name="document">MERGEFIELDが属する文書。</param>
     /// <param name="name">MERGEFIELDの名前。</param>
+    /// <param name="resultSeparator">命令部分と表示結果を区切る要素。</param>
+    /// <param name="fieldEnd">複合フィールドの終了要素。</param>
     /// <param name="valueTexts">MERGEFIELDの表示値を構成する文字列要素。</param>
     internal MergeField(
         Document document,
         string name,
+        Wordprocessing.FieldChar resultSeparator,
+        Wordprocessing.FieldChar fieldEnd,
         IEnumerable<Wordprocessing.Text> valueTexts)
     {
         Document = document;
-        complexValueTexts = valueTexts.ToArray();
+        complexResultSeparator = resultSeparator;
+        complexFieldEnd = fieldEnd;
+        complexValueTexts = valueTexts.ToList();
         this.name = name;
     }
 
@@ -71,16 +91,55 @@ public class MergeField
     /// MERGEFIELDの値を取得または設定します。
     /// </summary>
     /// <exception cref="InvalidOperationException">
-    /// 値の設定時に表示値の文字列要素が存在しない場合。
+    /// 値の設定時に表示結果が存在しないか、複合フィールドの結果領域を取得できない場合。
     /// </exception>
     public string Value
     {
         get => simpleField?.InnerText ??
             string.Concat(complexValueTexts.Select(it => it.Text));
-        set =>
-            (
-                simpleField?.Descendants<Wordprocessing.Text>().First() ??
-                complexValueTexts.First()
-            ).Text = value;
+        set
+        {
+            if (simpleField is not null)
+            {
+                simpleField.Descendants<Wordprocessing.Text>().First().Text = value;
+                return;
+            }
+
+            SetComplexValue(value);
+        }
+    }
+
+    /// <summary>
+    /// 複合フィールドの古い表示結果を除去し、新しい値を持つ結果だけに置き換えます。
+    /// </summary>
+    /// <param name="value">設定する値。</param>
+    /// <exception cref="InvalidOperationException">
+    /// 表示結果が存在しないか、結果領域の境界を取得できない場合。
+    /// </exception>
+    void SetComplexValue(string value)
+    {
+        if (complexValueTexts.Count == 0)
+        {
+            throw new InvalidOperationException();
+        }
+
+        var resultStart = complexResultSeparator?.Parent ??
+            throw new InvalidOperationException();
+        var resultEnd = complexFieldEnd?.Parent ??
+            throw new InvalidOperationException();
+        if (resultStart.Parent != resultEnd.Parent)
+        {
+            throw new InvalidOperationException();
+        }
+
+        var oldResult = resultStart.ElementsAfter()
+            .TakeWhile(it => it != resultEnd)
+            .ToArray();
+        Array.ForEach(oldResult, it => it.Remove());
+
+        var text = new Wordprocessing.Text(value);
+        resultEnd.InsertBeforeSelf(new Wordprocessing.Run(text));
+        complexValueTexts.Clear();
+        complexValueTexts.Add(text);
     }
 }

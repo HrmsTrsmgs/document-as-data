@@ -167,7 +167,12 @@ public class MergeFieldCollection : IEnumerable<MergeField>
                 mergeField =
                     GetOrCreateMergeField(
                         field.Element,
-                        () => new(document, name, field.ResultTexts));
+                        () => new(
+                            document,
+                            name,
+                            field.ResultSeparator,
+                            field.FieldEnd,
+                            field.ResultTexts));
                 return true;
             }
 
@@ -236,6 +241,11 @@ public class MergeFieldCollection : IEnumerable<MergeField>
             string? instruction;
 
             /// <summary>
+            /// 命令部分と表示結果を区切る要素です。表示結果の開始前はnullです。
+            /// </summary>
+            Wordprocessing.FieldChar? resultSeparator;
+
+            /// <summary>
             /// 結果開始後に現れた表示文字列を保持します。結果開始前はnullです。
             /// </summary>
             List<Wordprocessing.Text>? resultTexts;
@@ -286,11 +296,11 @@ public class MergeFieldCollection : IEnumerable<MergeField>
                 }
                 else if (type == Wordprocessing.FieldCharValues.Separate)
                 {
-                    StartResult();
+                    StartResult(fieldChar);
                 }
                 else if (type == Wordprocessing.FieldCharValues.End)
                 {
-                    return TryCompleteField(out field);
+                    return TryCompleteField(fieldChar, out field);
                 }
 
                 field = null;
@@ -324,16 +334,19 @@ public class MergeFieldCollection : IEnumerable<MergeField>
             {
                 begin = fieldChar;
                 instruction = null;
+                resultSeparator = null;
                 resultTexts = null;
             }
 
             /// <summary>
             /// 複合フィールドの命令部分を終了し、表示結果の収集を開始します。
             /// </summary>
-            void StartResult()
+            /// <param name="fieldChar">命令部分と表示結果を区切る要素。</param>
+            void StartResult(Wordprocessing.FieldChar fieldChar)
             {
                 if (begin is not null)
                 {
+                    resultSeparator = fieldChar;
                     resultTexts = [];
                 }
             }
@@ -341,19 +354,26 @@ public class MergeFieldCollection : IEnumerable<MergeField>
             /// <summary>
             /// 開始要素と表示結果が揃っている場合だけ複合フィールドを完成させ、読み取り状態を初期化します。
             /// </summary>
+            /// <param name="fieldEnd">複合フィールドの終了要素。</param>
             /// <param name="field">完成した複合フィールド。必要な要素が不足している場合はnull。</param>
             /// <returns>複合フィールドを構成できた場合はtrue。</returns>
             bool TryCompleteField(
+                Wordprocessing.FieldChar fieldEnd,
                 [NotNullWhen(true)] out ComplexField? field)
             {
-                if (begin is null || resultTexts is null)
+                if (begin is null || resultSeparator is null || resultTexts is null)
                 {
                     field = null;
                     Reset();
                     return false;
                 }
 
-                field = new ComplexField(begin, instruction, resultTexts);
+                field = new ComplexField(
+                    begin,
+                    instruction,
+                    resultSeparator,
+                    fieldEnd,
+                    resultTexts);
                 Reset();
                 return true;
             }
@@ -365,6 +385,7 @@ public class MergeFieldCollection : IEnumerable<MergeField>
             {
                 begin = null;
                 instruction = null;
+                resultSeparator = null;
                 resultTexts = null;
             }
         }
@@ -374,10 +395,14 @@ public class MergeFieldCollection : IEnumerable<MergeField>
         /// </summary>
         /// <param name="Element">キャッシュの識別子となる開始要素。</param>
         /// <param name="Instruction">分割された要素を連結したフィールド命令。</param>
+        /// <param name="ResultSeparator">命令部分と表示結果を区切る要素。</param>
+        /// <param name="FieldEnd">複合フィールドの終了要素。</param>
         /// <param name="ResultTexts">表示結果を構成する文字列要素。</param>
         sealed record ComplexField(
             OpenXmlElement Element,
             string? Instruction,
+            Wordprocessing.FieldChar ResultSeparator,
+            Wordprocessing.FieldChar FieldEnd,
             IReadOnlyCollection<Wordprocessing.Text> ResultTexts);
     }
 }
