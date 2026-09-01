@@ -138,7 +138,7 @@ public class MergeFieldのテスト
         }
     }
 
-    [Fact(Skip = "複合MERGEFIELDへ繰り返し設定する振る舞いを確認してから有効化します。")]
+    [Fact]
     public void Valueプロパティは複合MERGEFIELDへ最後に設定した値を取得します()
     {
         var filePath = TestDocument.CreateTemporaryCopy(ComplexMergeFieldPath);
