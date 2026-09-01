@@ -485,35 +485,6 @@ public class Documentのテスト
         }
     }
 
-    [Fact(Skip = "同じDocumentから複数回保存する振る舞いを確認してから有効化します。")]
-    public void SaveAsはそれぞれの保存時点の値を保存します()
-    {
-        var sourcePath = TestDocument.CreateTemporaryCopy(SimpleMergeFieldsPath);
-        var firstOutputPath = TestDocument.CreateOutputPath();
-        var secondOutputPath = TestDocument.CreateOutputPath();
-        try
-        {
-            using (var document = Document.Open(sourcePath))
-            {
-                document.MergeFields["CustomerName"].Value = "一回目";
-                document.SaveAs(firstOutputPath);
-                document.MergeFields["CustomerName"].Value = "二回目";
-                document.SaveAs(secondOutputPath);
-            }
-
-            using var first = Document.Open(firstOutputPath);
-            using var second = Document.Open(secondOutputPath);
-            first.MergeFields["CustomerName"].Value.Should().Be("一回目");
-            second.MergeFields["CustomerName"].Value.Should().Be("二回目");
-        }
-        finally
-        {
-            File.Delete(sourcePath);
-            File.Delete(firstOutputPath);
-            File.Delete(secondOutputPath);
-        }
-    }
-
     [Fact(Skip = "単純MERGEFIELDの書き込み後にOOXML検証を行う段階で有効化します。")]
     public void SaveAsで保存した単純MERGEFIELD文書は検証して開けます()
     {

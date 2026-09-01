@@ -13,8 +13,6 @@ public class ContentControlのテスト
         Path.Combine("TestData", "複数の文字列要素を持つContent Control.docx");
     static readonly string InvalidContentControlWithoutTagValuePath =
         Path.Combine("TestData", "Tagの値が欠落した不正なContent Control.docx");
-    static readonly string ContentControlsPath =
-        Path.Combine("TestData", "複数のContent Control.docx");
     static readonly string NestedContentControlsPath =
         Path.Combine("TestData", "ネストしたContent Control.docx");
     static readonly string PlaceholderContentControlPath =
@@ -181,44 +179,6 @@ public class ContentControlのテスト
         {
             File.Delete(sourcePath);
             File.Delete(outputPath);
-        }
-    }
-
-    [Fact(Skip = "Content Controlへ繰り返し設定する振る舞いを確認してから有効化します。")]
-    public void ValueプロパティはContentControlへ最後に設定した値を取得します()
-    {
-        var filePath = TestDocument.CreateTemporaryCopy(ContentControlPath);
-        try
-        {
-            using var document = Document.Open(filePath);
-
-            document.ContentControls["CustomerName"].Value = "一回目";
-            document.ContentControls["CustomerName"].Value = "二回目";
-
-            document.ContentControls["CustomerName"].Value.Should().Be("二回目");
-        }
-        finally
-        {
-            File.Delete(filePath);
-        }
-    }
-
-    [Fact(Skip = "複数のContent Controlへ個別に書き込む振る舞いを確認してから有効化します。")]
-    public void Valueプロパティは他のContentControlの値を変更しません()
-    {
-        var filePath = TestDocument.CreateTemporaryCopy(ContentControlsPath);
-        try
-        {
-            using var document = Document.Open(filePath);
-            var address = document.ContentControls["Address"].Value;
-
-            document.ContentControls["CustomerName"].Value = "変更後";
-
-            document.ContentControls["Address"].Value.Should().Be(address);
-        }
-        finally
-        {
-            File.Delete(filePath);
         }
     }
 

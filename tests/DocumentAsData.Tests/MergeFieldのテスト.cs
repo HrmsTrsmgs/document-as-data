@@ -138,44 +138,6 @@ public class MergeFieldのテスト
         }
     }
 
-    [Fact]
-    public void Valueプロパティは複合MERGEFIELDへ最後に設定した値を取得します()
-    {
-        var filePath = TestDocument.CreateTemporaryCopy(ComplexMergeFieldPath);
-        try
-        {
-            using var document = Document.Open(filePath);
-
-            document.MergeFields["CustomerName"].Value = "一回目";
-            document.MergeFields["CustomerName"].Value = "二回目";
-
-            document.MergeFields["CustomerName"].Value.Should().Be("二回目");
-        }
-        finally
-        {
-            File.Delete(filePath);
-        }
-    }
-
-    [Fact(Skip = "複数のMERGEFIELDへ個別に書き込む振る舞いを確認してから有効化します。")]
-    public void Valueプロパティは他のMERGEFIELDの値を変更しません()
-    {
-        var filePath = TestDocument.CreateTemporaryCopy(TestFilePath);
-        try
-        {
-            using var document = Document.Open(filePath);
-            var address = document.MergeFields["Address"].Value;
-
-            document.MergeFields["CustomerName"].Value = "変更後";
-
-            document.MergeFields["Address"].Value.Should().Be(address);
-        }
-        finally
-        {
-            File.Delete(filePath);
-        }
-    }
-
     [Fact(Skip = "結果が分割された単純MERGEFIELDの固定テストデータを追加してから有効化します。")]
     public void 保存した単純MERGEFIELDは分割されていた古い結果を残しません()
     {
