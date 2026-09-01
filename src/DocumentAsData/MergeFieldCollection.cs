@@ -220,8 +220,27 @@ public class MergeFieldCollection : IEnumerable<MergeField>
                 return false;
             }
 
-            name = instruction[fieldType.Length..].Trim().Trim('"');
+            name = ParseMergeFieldName(instruction[fieldType.Length..]);
             return true;
+        }
+
+        /// <summary>
+        /// MERGEFIELD命令の引数部分からMERGEFIELD名を取得します。
+        /// </summary>
+        /// <param name="fieldParameters">MERGEFIELDキーワードより後ろの命令。</param>
+        /// <returns>命令から取得したMERGEFIELD名。</returns>
+        static string ParseMergeFieldName(string fieldParameters)
+        {
+            var parameters = fieldParameters.Trim();
+            if (!parameters.StartsWith('"'))
+            {
+                return parameters;
+            }
+
+            var closingQuoteIndex = parameters.IndexOf('"', 1);
+            return closingQuoteIndex < 0
+                ? parameters.Trim('"')
+                : parameters[1..closingQuoteIndex];
         }
 
         /// <summary>

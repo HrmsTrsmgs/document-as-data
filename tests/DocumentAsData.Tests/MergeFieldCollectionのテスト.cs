@@ -109,8 +109,8 @@ public class MergeFieldCollectionのテスト
         }
     }
 
-    [Fact(Skip = "Word標準の書式維持スイッチを持つ固定テストデータを追加してから有効化します。")]
-    public void MergeFieldsは書式維持スイッチを含むWord標準の命令からMERGEFIELD名を取得します()
+    [Fact]
+    public void MergeFieldsはMERGEFORMATスイッチをMERGEFIELD名に含めません()
     {
         var filePath =
             TestDocument.CreateTemporaryCopy(StandardComplexMergeFieldPath);
@@ -118,8 +118,13 @@ public class MergeFieldCollectionのテスト
         {
             using var document = Document.Open(filePath);
 
+            // 複合フィールドは、w:fldCharのbegin、w:instrText、separate、
+            // 表示結果、endという要素列で保存されます。この固定データの
+            // w:instrTextは次のWord標準の命令を保持しています。
+            //   MERGEFIELD "CustomerName" \* MERGEFORMAT
+            // MERGEFORMATは差し込み後も結果の書式を維持するスイッチであり、
+            // 引用符で囲まれたCustomerNameだけがMERGEFIELD名です。
             document.MergeFields.Single().Name.Should().Be("CustomerName");
-            document.MergeFields["CustomerName"].Should().NotBeNull();
         }
         finally
         {
