@@ -13,8 +13,6 @@ public class ContentControlCollectionのテスト
         Path.Combine("TestData", "複数のContent Control.docx");
     static readonly string ContentControlsWithoutTagPath =
         Path.Combine("TestData", "Tagなしを含むContent Control.docx");
-    static readonly string TableContentControlPath =
-        Path.Combine("TestData", "表内のContent Control.docx");
     static readonly string NestedContentControlsPath =
         Path.Combine("TestData", "ネストしたContent Control.docx");
     static readonly string DuplicateContentControlsPath =
@@ -139,23 +137,7 @@ public class ContentControlCollectionのテスト
         }
     }
 
-    [Fact(Skip = "表内のContent Control列挙をGreen対象にするときに有効化します。")]
-    public void ContentControlsは表内のContentControlも列挙します()
-    {
-        var filePath = TestDocument.CreateTemporaryCopy(TableContentControlPath);
-        try
-        {
-            using var document = Document.Open(filePath);
-
-            document.ContentControls.Single().Tag.Should().Be("CustomerName");
-        }
-        finally
-        {
-            File.Delete(filePath);
-        }
-    }
-
-    [Fact(Skip = "ネストしたContent Control列挙をGreen対象にするときに有効化します。")]
+    [Fact]
     public void ContentControlsはネストしたContentControlをそれぞれ列挙します()
     {
         var filePath = TestDocument.CreateTemporaryCopy(NestedContentControlsPath);
