@@ -9,6 +9,8 @@ public class Documentのテスト
         Path.Combine("TestData", "空の文書.docx");
     static readonly string SimpleMergeFieldsPath =
         Path.Combine("TestData", "単純形式のMERGEFIELD.docx");
+    static readonly string ComplexMergeFieldPath =
+        Path.Combine("TestData", "複合形式のMERGEFIELD.docx");
     static readonly string ContentControlPath =
         Path.Combine("TestData", "単一のContent Control.docx");
     static readonly string InvalidContentControlWithoutTagValuePath =
@@ -481,5 +483,133 @@ public class Documentのテスト
             File.Delete(sourcePath);
             File.Delete(outputPath);
         }
+    }
+
+    [Fact(Skip = "同じDocumentから複数回保存する振る舞いを確認してから有効化します。")]
+    public void SaveAsはそれぞれの保存時点の値を保存します()
+    {
+        var sourcePath = TestDocument.CreateTemporaryCopy(SimpleMergeFieldsPath);
+        var firstOutputPath = TestDocument.CreateOutputPath();
+        var secondOutputPath = TestDocument.CreateOutputPath();
+        try
+        {
+            using (var document = Document.Open(sourcePath))
+            {
+                document.MergeFields["CustomerName"].Value = "一回目";
+                document.SaveAs(firstOutputPath);
+                document.MergeFields["CustomerName"].Value = "二回目";
+                document.SaveAs(secondOutputPath);
+            }
+
+            using var first = Document.Open(firstOutputPath);
+            using var second = Document.Open(secondOutputPath);
+            first.MergeFields["CustomerName"].Value.Should().Be("一回目");
+            second.MergeFields["CustomerName"].Value.Should().Be("二回目");
+        }
+        finally
+        {
+            File.Delete(sourcePath);
+            File.Delete(firstOutputPath);
+            File.Delete(secondOutputPath);
+        }
+    }
+
+    [Fact(Skip = "単純MERGEFIELDの書き込み後にOOXML検証を行う段階で有効化します。")]
+    public void SaveAsで保存した単純MERGEFIELD文書は検証して開けます()
+    {
+        var sourcePath = TestDocument.CreateTemporaryCopy(SimpleMergeFieldsPath);
+        var outputPath = TestDocument.CreateOutputPath();
+        try
+        {
+            using (var document = Document.Open(sourcePath))
+            {
+                document.MergeFields["CustomerName"].Value = "変更後";
+                document.SaveAs(outputPath);
+            }
+
+            var action = () =>
+            {
+                using var saved = Document.Open(outputPath, true);
+            };
+
+            action.Should().NotThrow();
+        }
+        finally
+        {
+            File.Delete(sourcePath);
+            File.Delete(outputPath);
+        }
+    }
+
+    [Fact(Skip = "複合MERGEFIELDの書き込み後にOOXML検証を行う段階で有効化します。")]
+    public void SaveAsで保存した複合MERGEFIELD文書は検証して開けます()
+    {
+        var sourcePath = TestDocument.CreateTemporaryCopy(ComplexMergeFieldPath);
+        var outputPath = TestDocument.CreateOutputPath();
+        try
+        {
+            using (var document = Document.Open(sourcePath))
+            {
+                document.MergeFields["CustomerName"].Value = "変更後";
+                document.SaveAs(outputPath);
+            }
+
+            var action = () =>
+            {
+                using var saved = Document.Open(outputPath, true);
+            };
+
+            action.Should().NotThrow();
+        }
+        finally
+        {
+            File.Delete(sourcePath);
+            File.Delete(outputPath);
+        }
+    }
+
+    [Fact(Skip = "Content Controlの書き込み後にOOXML検証を行う段階で有効化します。")]
+    public void SaveAsで保存したContentControl文書は検証して開けます()
+    {
+        var sourcePath = TestDocument.CreateTemporaryCopy(ContentControlPath);
+        var outputPath = TestDocument.CreateOutputPath();
+        try
+        {
+            using (var document = Document.Open(sourcePath))
+            {
+                document.ContentControls["CustomerName"].Value = "変更後";
+                document.SaveAs(outputPath);
+            }
+
+            var action = () =>
+            {
+                using var saved = Document.Open(outputPath, true);
+            };
+
+            action.Should().NotThrow();
+        }
+        finally
+        {
+            File.Delete(sourcePath);
+            File.Delete(outputPath);
+        }
+    }
+
+    [Fact(Skip = "Stream上の書き込み後にOOXML検証を行う段階で有効化します。")]
+    public void Stream版で変更した文書は検証して開けます()
+    {
+        using var stream = TestDocument.CreateMemoryStream(SimpleMergeFieldsPath);
+        using (var document = Document.Open(stream))
+        {
+            document.MergeFields["CustomerName"].Value = "変更後";
+        }
+
+        stream.Position = 0;
+        var action = () =>
+        {
+            using var saved = Document.Open(stream, true);
+        };
+
+        action.Should().NotThrow();
     }
 }

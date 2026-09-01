@@ -15,6 +15,8 @@ public class MergeFieldのテスト
         Path.Combine("TestData", "命令が分割された複合MERGEFIELD.docx");
     static readonly string SplitComplexMergeFieldResultPath =
         Path.Combine("TestData", "結果が分割された複合MERGEFIELD.docx");
+    static readonly string SplitSimpleMergeFieldResultPath =
+        Path.Combine("TestData", "結果が分割された単純MERGEFIELD.docx");
 
     [Fact]
     public void DocumentプロパティはMERGEFIELDが属する文書を取得します()
@@ -133,6 +135,397 @@ public class MergeFieldのテスト
         finally
         {
             File.Delete(filePath);
+        }
+    }
+
+    [Fact(Skip = "複合MERGEFIELDへ繰り返し設定する振る舞いを確認してから有効化します。")]
+    public void Valueプロパティは複合MERGEFIELDへ最後に設定した値を取得します()
+    {
+        var filePath = TestDocument.CreateTemporaryCopy(ComplexMergeFieldPath);
+        try
+        {
+            using var document = Document.Open(filePath);
+
+            document.MergeFields["CustomerName"].Value = "一回目";
+            document.MergeFields["CustomerName"].Value = "二回目";
+
+            document.MergeFields["CustomerName"].Value.Should().Be("二回目");
+        }
+        finally
+        {
+            File.Delete(filePath);
+        }
+    }
+
+    [Fact(Skip = "複数のMERGEFIELDへ個別に書き込む振る舞いを確認してから有効化します。")]
+    public void Valueプロパティは他のMERGEFIELDの値を変更しません()
+    {
+        var filePath = TestDocument.CreateTemporaryCopy(TestFilePath);
+        try
+        {
+            using var document = Document.Open(filePath);
+            var address = document.MergeFields["Address"].Value;
+
+            document.MergeFields["CustomerName"].Value = "変更後";
+
+            document.MergeFields["Address"].Value.Should().Be(address);
+        }
+        finally
+        {
+            File.Delete(filePath);
+        }
+    }
+
+    [Fact(Skip = "結果が分割された単純MERGEFIELDの固定テストデータを追加してから有効化します。")]
+    public void 保存した単純MERGEFIELDは分割されていた古い結果を残しません()
+    {
+        var sourcePath =
+            TestDocument.CreateTemporaryCopy(SplitSimpleMergeFieldResultPath);
+        var outputPath = TestDocument.CreateOutputPath();
+        try
+        {
+            using (var document = Document.Open(sourcePath))
+            {
+                document.MergeFields["CustomerName"].Value = "変更後";
+                document.SaveAs(outputPath);
+            }
+
+            using var saved = Document.Open(outputPath);
+            saved.MergeFields["CustomerName"].Value.Should().Be("変更後");
+        }
+        finally
+        {
+            File.Delete(sourcePath);
+            File.Delete(outputPath);
+        }
+    }
+
+    [Fact(Skip = "複合MERGEFIELDを保存して開き直す振る舞いを確認してから有効化します。")]
+    public void 保存した複合MERGEFIELDから設定値を取得します()
+    {
+        var sourcePath =
+            TestDocument.CreateTemporaryCopy(ComplexMergeFieldPath);
+        var outputPath = TestDocument.CreateOutputPath();
+        try
+        {
+            using (var document = Document.Open(sourcePath))
+            {
+                document.MergeFields["CustomerName"].Value = "変更後";
+                document.SaveAs(outputPath);
+            }
+
+            using var saved = Document.Open(outputPath);
+            saved.MergeFields["CustomerName"].Value.Should().Be("変更後");
+        }
+        finally
+        {
+            File.Delete(sourcePath);
+            File.Delete(outputPath);
+        }
+    }
+
+    [Fact(Skip = "単純MERGEFIELDへ空文字列を設定する振る舞いを確認してから有効化します。")]
+    public void 保存した単純MERGEFIELDから空文字列を取得します()
+    {
+        var sourcePath = TestDocument.CreateTemporaryCopy(TestFilePath);
+        var outputPath = TestDocument.CreateOutputPath();
+        try
+        {
+            using (var document = Document.Open(sourcePath))
+            {
+                document.MergeFields["CustomerName"].Value = "";
+                document.SaveAs(outputPath);
+            }
+
+            using var saved = Document.Open(outputPath);
+            saved.MergeFields["CustomerName"].Value.Should().BeEmpty();
+        }
+        finally
+        {
+            File.Delete(sourcePath);
+            File.Delete(outputPath);
+        }
+    }
+
+    [Fact(Skip = "複合MERGEFIELDへ空文字列を設定する振る舞いを確認してから有効化します。")]
+    public void 保存した複合MERGEFIELDから空文字列を取得します()
+    {
+        var sourcePath =
+            TestDocument.CreateTemporaryCopy(ComplexMergeFieldPath);
+        var outputPath = TestDocument.CreateOutputPath();
+        try
+        {
+            using (var document = Document.Open(sourcePath))
+            {
+                document.MergeFields["CustomerName"].Value = "";
+                document.SaveAs(outputPath);
+            }
+
+            using var saved = Document.Open(outputPath);
+            saved.MergeFields["CustomerName"].Value.Should().BeEmpty();
+        }
+        finally
+        {
+            File.Delete(sourcePath);
+            File.Delete(outputPath);
+        }
+    }
+
+    [Fact(Skip = "単純MERGEFIELDで前後の空白を保持する仕様を確認してから有効化します。")]
+    public void 保存した単純MERGEFIELDは値の前後の空白を保持します()
+    {
+        var sourcePath = TestDocument.CreateTemporaryCopy(TestFilePath);
+        var outputPath = TestDocument.CreateOutputPath();
+        const string value = " 変更後 ";
+        try
+        {
+            using (var document = Document.Open(sourcePath))
+            {
+                document.MergeFields["CustomerName"].Value = value;
+                document.SaveAs(outputPath);
+            }
+
+            using var saved = Document.Open(outputPath);
+            saved.MergeFields["CustomerName"].Value.Should().Be(value);
+        }
+        finally
+        {
+            File.Delete(sourcePath);
+            File.Delete(outputPath);
+        }
+    }
+
+    [Fact(Skip = "複合MERGEFIELDで前後の空白を保持する仕様を確認してから有効化します。")]
+    public void 保存した複合MERGEFIELDは値の前後の空白を保持します()
+    {
+        var sourcePath =
+            TestDocument.CreateTemporaryCopy(ComplexMergeFieldPath);
+        var outputPath = TestDocument.CreateOutputPath();
+        const string value = " 変更後 ";
+        try
+        {
+            using (var document = Document.Open(sourcePath))
+            {
+                document.MergeFields["CustomerName"].Value = value;
+                document.SaveAs(outputPath);
+            }
+
+            using var saved = Document.Open(outputPath);
+            saved.MergeFields["CustomerName"].Value.Should().Be(value);
+        }
+        finally
+        {
+            File.Delete(sourcePath);
+            File.Delete(outputPath);
+        }
+    }
+
+    [Fact(Skip = "単純MERGEFIELDの改行とタブをValueで表す仕様を確認してから有効化します。")]
+    public void 保存した単純MERGEFIELDは値の改行とタブを保持します()
+    {
+        var sourcePath = TestDocument.CreateTemporaryCopy(TestFilePath);
+        var outputPath = TestDocument.CreateOutputPath();
+        const string value = "一行目\t二列目\r\n二行目";
+        try
+        {
+            using (var document = Document.Open(sourcePath))
+            {
+                document.MergeFields["CustomerName"].Value = value;
+                document.SaveAs(outputPath);
+            }
+
+            using var saved = Document.Open(outputPath);
+            saved.MergeFields["CustomerName"].Value.Should().Be(value);
+        }
+        finally
+        {
+            File.Delete(sourcePath);
+            File.Delete(outputPath);
+        }
+    }
+
+    [Fact(Skip = "複合MERGEFIELDの改行とタブをValueで表す仕様を確認してから有効化します。")]
+    public void 保存した複合MERGEFIELDは値の改行とタブを保持します()
+    {
+        var sourcePath =
+            TestDocument.CreateTemporaryCopy(ComplexMergeFieldPath);
+        var outputPath = TestDocument.CreateOutputPath();
+        const string value = "一行目\t二列目\r\n二行目";
+        try
+        {
+            using (var document = Document.Open(sourcePath))
+            {
+                document.MergeFields["CustomerName"].Value = value;
+                document.SaveAs(outputPath);
+            }
+
+            using var saved = Document.Open(outputPath);
+            saved.MergeFields["CustomerName"].Value.Should().Be(value);
+        }
+        finally
+        {
+            File.Delete(sourcePath);
+            File.Delete(outputPath);
+        }
+    }
+
+    [Fact(Skip = "単純MERGEFIELDの前後の空白をWordでも保持するOOXMLを確認するときに有効化します。")]
+    public void Valueプロパティは単純MERGEFIELDの空白を保持する属性を設定します()
+    {
+        var sourcePath = TestDocument.CreateTemporaryCopy(TestFilePath);
+        var outputPath = TestDocument.CreateOutputPath();
+        const string value = " 変更後 ";
+        try
+        {
+            using (var document = Document.Open(sourcePath))
+            {
+                document.MergeFields["CustomerName"].Value = value;
+                document.SaveAs(outputPath);
+            }
+
+            using var saved = WordprocessingDocument.Open(outputPath, false);
+            // XMLでは、前後の空白をWordの表示内容として保持するために
+            // xml:space="preserve"が必要です。DocumentAsDataで開き直して
+            // 文字列を読めるだけでなく、Wordでも失われないことを確認します。
+            var text = saved.MainDocumentPart!.Document!
+                .Descendants<Wordprocessing.Text>()
+                .Single(it => it.Text == value);
+            text.Space?.Value.Should().Be(
+                DocumentFormat.OpenXml.SpaceProcessingModeValues.Preserve);
+        }
+        finally
+        {
+            File.Delete(sourcePath);
+            File.Delete(outputPath);
+        }
+    }
+
+    [Fact(Skip = "複合MERGEFIELDの前後の空白をWordでも保持するOOXMLを確認するときに有効化します。")]
+    public void Valueプロパティは複合MERGEFIELDの空白を保持する属性を設定します()
+    {
+        var sourcePath =
+            TestDocument.CreateTemporaryCopy(ComplexMergeFieldPath);
+        var outputPath = TestDocument.CreateOutputPath();
+        const string value = " 変更後 ";
+        try
+        {
+            using (var document = Document.Open(sourcePath))
+            {
+                document.MergeFields["CustomerName"].Value = value;
+                document.SaveAs(outputPath);
+            }
+
+            using var saved = WordprocessingDocument.Open(outputPath, false);
+            // 複合MERGEFIELDでは結果用のw:tを新しく作るため、その要素にも
+            // xml:space="preserve"が設定されることを直接確認します。
+            var text = saved.MainDocumentPart!.Document!
+                .Descendants<Wordprocessing.Text>()
+                .Single(it => it.Text == value);
+            text.Space?.Value.Should().Be(
+                DocumentFormat.OpenXml.SpaceProcessingModeValues.Preserve);
+        }
+        finally
+        {
+            File.Delete(sourcePath);
+            File.Delete(outputPath);
+        }
+    }
+
+    [Fact(Skip = "単純MERGEFIELDの改行とタブをWordで表示できるOOXMLを確認するときに有効化します。")]
+    public void Valueプロパティは単純MERGEFIELDの改行とタブを専用要素で保存します()
+    {
+        var sourcePath = TestDocument.CreateTemporaryCopy(TestFilePath);
+        var outputPath = TestDocument.CreateOutputPath();
+        try
+        {
+            using (var document = Document.Open(sourcePath))
+            {
+                document.MergeFields["CustomerName"].Value =
+                    "一行目\t二列目\r\n二行目";
+                document.SaveAs(outputPath);
+            }
+
+            using var saved = WordprocessingDocument.Open(outputPath, false);
+            // Wordのタブと改行はw:t内の制御文字ではなく、それぞれ
+            // w:tabとw:brで表します。Wordで同じ表示になる内部構造を
+            // 保存できていることを直接確認します。
+            var field = saved.MainDocumentPart!.Document!
+                .Descendants<Wordprocessing.SimpleField>()
+                .Single(it =>
+                    it.Instruction?.Value?.Contains("CustomerName") == true);
+            field.Descendants<Wordprocessing.TabChar>()
+                .Should().ContainSingle();
+            field.Descendants<Wordprocessing.Break>()
+                .Should().ContainSingle();
+        }
+        finally
+        {
+            File.Delete(sourcePath);
+            File.Delete(outputPath);
+        }
+    }
+
+    [Fact(Skip = "複合MERGEFIELDの改行とタブをWordで表示できるOOXMLを確認するときに有効化します。")]
+    public void Valueプロパティは複合MERGEFIELDの改行とタブを専用要素で保存します()
+    {
+        var sourcePath =
+            TestDocument.CreateTemporaryCopy(ComplexMergeFieldPath);
+        var outputPath = TestDocument.CreateOutputPath();
+        try
+        {
+            using (var document = Document.Open(sourcePath))
+            {
+                document.MergeFields["CustomerName"].Value =
+                    "一行目\t二列目\r\n二行目";
+                document.SaveAs(outputPath);
+            }
+
+            using var saved = WordprocessingDocument.Open(outputPath, false);
+            // 複合MERGEFIELDの結果領域でも、Wordが解釈できるw:tabと
+            // w:brを保存することを直接確認します。
+            saved.MainDocumentPart!.Document!
+                .Descendants<Wordprocessing.TabChar>()
+                .Should().ContainSingle();
+            saved.MainDocumentPart.Document
+                .Descendants<Wordprocessing.Break>()
+                .Should().ContainSingle();
+        }
+        finally
+        {
+            File.Delete(sourcePath);
+            File.Delete(outputPath);
+        }
+    }
+
+    [Fact(Skip = "結果が分割された単純MERGEFIELDの固定テストデータを追加してから有効化します。")]
+    public void Valueプロパティは分割して保存された単純MERGEFIELDの結果全体を置き換えます()
+    {
+        var sourcePath =
+            TestDocument.CreateTemporaryCopy(SplitSimpleMergeFieldResultPath);
+        var outputPath = TestDocument.CreateOutputPath();
+        try
+        {
+            using (var document = Document.Open(sourcePath))
+            {
+                document.MergeFields["CustomerName"].Value = "変更後";
+                document.SaveAs(outputPath);
+            }
+
+            using var saved = WordprocessingDocument.Open(outputPath, false);
+            // 単純MERGEFIELDの表示結果も、書式などによって複数のw:t要素へ
+            // 分かれることがあります。Wordの差し込み後と同様に、古い結果の
+            // 断片を残さず、新しい値だけになることを直接確認します。
+            saved.MainDocumentPart!.Document!
+                .Descendants<Wordprocessing.SimpleField>()
+                .Single()
+                .Descendants<Wordprocessing.Text>()
+                .Select(it => it.Text)
+                .Should().Equal("変更後");
+        }
+        finally
+        {
+            File.Delete(sourcePath);
+            File.Delete(outputPath);
         }
     }
 
