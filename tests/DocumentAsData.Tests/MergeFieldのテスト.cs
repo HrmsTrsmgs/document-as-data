@@ -165,30 +165,6 @@ public class MergeFieldのテスト
         }
     }
 
-    [Fact(Skip = "複合MERGEFIELDを保存して開き直す振る舞いを確認してから有効化します。")]
-    public void 保存した複合MERGEFIELDから設定値を取得します()
-    {
-        var sourcePath =
-            TestDocument.CreateTemporaryCopy(ComplexMergeFieldPath);
-        var outputPath = TestDocument.CreateOutputPath();
-        try
-        {
-            using (var document = Document.Open(sourcePath))
-            {
-                document.MergeFields["CustomerName"].Value = "変更後";
-                document.SaveAs(outputPath);
-            }
-
-            using var saved = Document.Open(outputPath);
-            saved.MergeFields["CustomerName"].Value.Should().Be("変更後");
-        }
-        finally
-        {
-            File.Delete(sourcePath);
-            File.Delete(outputPath);
-        }
-    }
-
     [Fact(Skip = "単純MERGEFIELDへ空文字列を設定する振る舞いを確認してから有効化します。")]
     public void 保存した単純MERGEFIELDから空文字列を取得します()
     {
