@@ -101,7 +101,9 @@ public class MergeField
         {
             if (simpleField is not null)
             {
-                simpleField.Descendants<Wordprocessing.Text>().First().Text = value;
+                simpleField.RemoveAllChildren();
+                simpleField.AppendChild(
+                    new Wordprocessing.Run(new Wordprocessing.Text(value)));
                 return;
             }
 

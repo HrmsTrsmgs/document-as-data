@@ -138,7 +138,7 @@ public class MergeFieldのテスト
         }
     }
 
-    [Fact(Skip = "結果が分割された単純MERGEFIELDの固定テストデータを追加してから有効化します。")]
+    [Fact]
     public void 保存した単純MERGEFIELDは分割されていた古い結果を残しません()
     {
         var sourcePath =
@@ -153,6 +153,9 @@ public class MergeFieldのテスト
             }
 
             using var saved = Document.Open(outputPath);
+            // 固定データでは、単純MERGEFIELDの表示結果「株式会社○○」が
+            // 二つのw:rとw:tへ分割されています。値の設定後に古い二つ目の
+            // 文字列「○○」が残らないことを、保存して開き直して確認します。
             saved.MergeFields["CustomerName"].Value.Should().Be("変更後");
         }
         finally
