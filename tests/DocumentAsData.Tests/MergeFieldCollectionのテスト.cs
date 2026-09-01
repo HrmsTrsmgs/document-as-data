@@ -26,6 +26,12 @@ public class MergeFieldCollectionのテスト
         {
             using var document = Document.Open(filePath);
 
+            // 固定データには、begin、instrText、separate、表示結果、endの
+            // 要素列で構成された複合MERGEFIELDが二つ続けて保存されています。
+            // 一つ目のw:instrTextはCustomerName、二つ目はAddressです。
+            // 一要素で完結するw:fldSimpleとは異なり、最初のendまで読み終えた
+            // 状態を次のbeginへ持ち越さず、二つを文書順に列挙することを
+            // 確認します。
             document.MergeFields
                 .Select(it => it.Name)
                 .Should().Equal("CustomerName", "Address");
@@ -132,7 +138,7 @@ public class MergeFieldCollectionのテスト
         }
     }
 
-    [Fact(Skip = "複数の複合MERGEFIELDを持つ固定テストデータを追加してから有効化します。")]
+    [Fact]
     public void MergeFieldsは複数の複合MERGEFIELDを文書内の順序で列挙します()
     {
         var filePath =
