@@ -263,7 +263,7 @@ public class MergeFieldのテスト
         }
     }
 
-    [Fact(Skip = "単純MERGEFIELDの前後の空白をWordでも保持するOOXMLを確認するときに有効化します。")]
+    [Fact]
     public void Valueプロパティは単純MERGEFIELDの空白を保持する属性を設定します()
     {
         var sourcePath = TestDocument.CreateTemporaryCopy(TestFilePath);
