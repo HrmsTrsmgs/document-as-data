@@ -165,53 +165,6 @@ public class MergeFieldのテスト
         }
     }
 
-    [Fact(Skip = "単純MERGEFIELDへ空文字列を設定する振る舞いを確認してから有効化します。")]
-    public void 保存した単純MERGEFIELDから空文字列を取得します()
-    {
-        var sourcePath = TestDocument.CreateTemporaryCopy(TestFilePath);
-        var outputPath = TestDocument.CreateOutputPath();
-        try
-        {
-            using (var document = Document.Open(sourcePath))
-            {
-                document.MergeFields["CustomerName"].Value = "";
-                document.SaveAs(outputPath);
-            }
-
-            using var saved = Document.Open(outputPath);
-            saved.MergeFields["CustomerName"].Value.Should().BeEmpty();
-        }
-        finally
-        {
-            File.Delete(sourcePath);
-            File.Delete(outputPath);
-        }
-    }
-
-    [Fact(Skip = "複合MERGEFIELDへ空文字列を設定する振る舞いを確認してから有効化します。")]
-    public void 保存した複合MERGEFIELDから空文字列を取得します()
-    {
-        var sourcePath =
-            TestDocument.CreateTemporaryCopy(ComplexMergeFieldPath);
-        var outputPath = TestDocument.CreateOutputPath();
-        try
-        {
-            using (var document = Document.Open(sourcePath))
-            {
-                document.MergeFields["CustomerName"].Value = "";
-                document.SaveAs(outputPath);
-            }
-
-            using var saved = Document.Open(outputPath);
-            saved.MergeFields["CustomerName"].Value.Should().BeEmpty();
-        }
-        finally
-        {
-            File.Delete(sourcePath);
-            File.Delete(outputPath);
-        }
-    }
-
     [Fact(Skip = "単純MERGEFIELDで前後の空白を保持する仕様を確認してから有効化します。")]
     public void 保存した単純MERGEFIELDは値の前後の空白を保持します()
     {
