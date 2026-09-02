@@ -121,7 +121,7 @@ public class ContentControlのテスト
         }
     }
 
-    [Fact(Skip = "プレースホルダー表示中のContent Controlの固定テストデータを追加してから有効化します。")]
+    [Fact]
     public void Valueプロパティはプレースホルダー表示中なら空文字列を取得します()
     {
         var filePath =

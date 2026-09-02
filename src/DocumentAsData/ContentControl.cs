@@ -50,12 +50,15 @@ public class ContentControl
     /// <summary>
     /// Content Controlの値を取得または設定します。
     /// </summary>
+    /// <remarks>
+    /// プレースホルダー表示中は、表示用文字列ではなく空文字列を返します。
+    /// </remarks>
     /// <exception cref="InvalidOperationException">
     /// 値の設定時に文字列要素が存在しない場合。
     /// </exception>
     public string Value
     {
-        get =>
+        get => IsShowingPlaceholder ? "" :
             string.Concat(
                 from text in element.Descendants<Wordprocessing.Text>()
                 select text.Text);
@@ -67,4 +70,14 @@ public class ContentControl
             Array.ForEach(texts[1..], it => it.Text = "");
         }
     }
+
+    /// <summary>
+    /// このContent Controlがプレースホルダー表示中かを取得します。
+    /// </summary>
+    bool IsShowingPlaceholder =>
+        (
+            from properties in element.Elements<Wordprocessing.SdtProperties>()
+            from placeholder in properties.Elements<Wordprocessing.ShowingPlaceholder>()
+            select placeholder
+        ).Any();
 }
