@@ -228,13 +228,16 @@ public class MergeFieldCollection : IEnumerable<MergeField>
         /// MERGEFIELD命令の引数部分からMERGEFIELD名を取得します。
         /// </summary>
         /// <param name="fieldParameters">MERGEFIELDキーワードより後ろの命令。</param>
-        /// <returns>命令から取得したMERGEFIELD名。</returns>
+        /// <returns>引用符で囲まれた名前、または引用符なしの先頭トークン。</returns>
         static string ParseMergeFieldName(string fieldParameters)
         {
             var parameters = fieldParameters.Trim();
             if (!parameters.StartsWith('"'))
             {
-                return parameters;
+                var nameLength = parameters
+                    .TakeWhile(it => !char.IsWhiteSpace(it))
+                    .Count();
+                return parameters[..nameLength];
             }
 
             var closingQuoteIndex = parameters.IndexOf('"', 1);

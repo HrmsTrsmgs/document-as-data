@@ -13,6 +13,10 @@ public class MergeFieldCollectionのテスト
         Path.Combine(
             "TestData",
             "Word標準の書式維持スイッチを持つ複合MERGEFIELD.docx");
+    static readonly string UnquotedComplexMergeFieldPath =
+        Path.Combine(
+            "TestData",
+            "引用符なしの書式維持スイッチを持つ複合MERGEFIELD.docx");
     static readonly string MultipleComplexMergeFieldsPath =
         Path.Combine("TestData", "複数の複合MERGEFIELD.docx");
     static readonly string DateFieldPath =
@@ -124,6 +128,28 @@ public class MergeFieldCollectionのテスト
             //   MERGEFIELD "CustomerName" \* MERGEFORMAT
             // MERGEFORMATは差し込み後も結果の書式を維持するスイッチであり、
             // 引用符で囲まれたCustomerNameだけがMERGEFIELD名です。
+            document.MergeFields.Single().Name.Should().Be("CustomerName");
+        }
+        finally
+        {
+            File.Delete(filePath);
+        }
+    }
+
+    [Fact]
+    public void MergeFieldsは引用符なしの名前にMERGEFORMATスイッチを含めません()
+    {
+        var filePath =
+            TestDocument.CreateTemporaryCopy(UnquotedComplexMergeFieldPath);
+        try
+        {
+            using var document = Document.Open(filePath);
+
+            // MERGEFIELD名は引用符なしでも保存できます。固定データの
+            // w:instrTextは次の命令を保持しています。
+            //   MERGEFIELD CustomerName \* MERGEFORMAT
+            // 空白に続くMERGEFORMATはフィールドの書式維持スイッチであり、
+            // CustomerNameだけがMERGEFIELD名です。
             document.MergeFields.Single().Name.Should().Be("CustomerName");
         }
         finally
