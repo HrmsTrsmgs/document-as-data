@@ -251,7 +251,7 @@ public class ContentControlのテスト
         }
     }
 
-    [Fact(Skip = "複数の文字列要素を持つContent Controlの公開API上の振る舞いを確認してから有効化します。")]
+    [Fact]
     public void 保存したContentControlは分割されていた古い値を残しません()
     {
         var sourcePath =
