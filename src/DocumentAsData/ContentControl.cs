@@ -87,11 +87,9 @@ public class ContentControl
     /// 値の書き込み後に表示文字列がプレースホルダーとして扱われないよう、表示状態を解除します。
     /// </summary>
     void RemovePlaceholderState() =>
-        Array.ForEach(
-            (
-                from properties in element.Elements<Wordprocessing.SdtProperties>()
-                from placeholder in properties.Elements<Wordprocessing.ShowingPlaceholder>()
-                select placeholder
-            ).ToArray(),
-            it => it.Remove());
+        (
+            from properties in element.Elements<Wordprocessing.SdtProperties>()
+            from placeholder in properties.Elements<Wordprocessing.ShowingPlaceholder>()
+            select placeholder
+        ).SingleOrDefault()?.Remove();
 }
