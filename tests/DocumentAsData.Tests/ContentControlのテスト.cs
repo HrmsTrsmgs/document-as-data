@@ -204,7 +204,7 @@ public class ContentControlのテスト
         }
     }
 
-    [Fact(Skip = "複数行Content Controlの固定テストデータとValueの改行・タブ表現を確認してから有効化します。")]
+    [Fact]
     public void 保存した複数行ContentControlは値の改行とタブを保持します()
     {
         var sourcePath =

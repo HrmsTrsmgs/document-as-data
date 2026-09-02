@@ -1,3 +1,5 @@
+using DocumentFormat.OpenXml;
+using System.Text.RegularExpressions;
 using Wordprocessing = DocumentFormat.OpenXml.Wordprocessing;
 
 namespace Marimo.DocumentAsData;
@@ -60,18 +62,70 @@ public class ContentControl
     public string Value
     {
         get => IsShowingPlaceholder ? "" :
-            string.Concat(
-                from text in element.Descendants<Wordprocessing.Text>()
-                select text.Text);
+            ReadValue(element.Descendants());
         set
         {
             var texts = element.Descendants<Wordprocessing.Text>().ToArray();
 
             RemovePlaceholderState();
-            texts.First().Text = value;
+            ReplaceFirstText(texts.First(), value);
             Array.ForEach(texts[1..], it => it.Text = "");
         }
     }
+
+    /// <summary>
+    /// OOXMLの文字列、タブ、改行を公開APIの文字列表現へ戻します。
+    /// </summary>
+    /// <param name="elements">値を構成するOOXML要素。</param>
+    /// <returns>タブをタブ文字、改行をCRLFで表した値。</returns>
+    static string ReadValue(IEnumerable<OpenXmlElement> elements) =>
+        string.Concat(
+            from element in elements
+            where element is Wordprocessing.Text or
+                Wordprocessing.TabChar or
+                Wordprocessing.Break
+            select element switch
+            {
+                Wordprocessing.Text text => text.Text,
+                Wordprocessing.TabChar => "\t",
+                Wordprocessing.Break => "\r\n",
+                _ => throw new InvalidOperationException()
+            });
+
+    /// <summary>
+    /// 最初の文字列要素を、Wordが表示できる文字列、タブ、改行要素へ置き換えます。
+    /// </summary>
+    /// <param name="text">置換対象の最初の文字列要素。</param>
+    /// <param name="value">設定する値。</param>
+    static void ReplaceFirstText(Wordprocessing.Text text, string value)
+    {
+        var parent = text.Parent ?? throw new InvalidOperationException();
+
+        text.Remove();
+        parent.Append(CreateValueElements(value));
+    }
+
+    /// <summary>
+    /// 公開APIの文字列をWordが表示できる文字列、タブ、改行要素へ分解します。
+    /// </summary>
+    /// <param name="value">要素へ変換する値。</param>
+    /// <returns>文書順に並んだOOXML要素。</returns>
+    static IEnumerable<OpenXmlElement> CreateValueElements(string value) =>
+        from part in Regex.Split(value, "(\r\n|\t)")
+        where part.Length > 0
+        select CreateValueElement(part);
+
+    /// <summary>
+    /// 分解済みの文字列片を対応するOOXML要素へ変換します。
+    /// </summary>
+    /// <param name="part">通常文字列、タブ、またはCRLF。</param>
+    /// <returns>文字列片に対応するOOXML要素。</returns>
+    static OpenXmlElement CreateValueElement(string part) => part switch
+    {
+        "\t" => new Wordprocessing.TabChar(),
+        "\r\n" => new Wordprocessing.Break(),
+        _ => new Wordprocessing.Text(part)
+    };
 
     /// <summary>
     /// このContent Controlがプレースホルダー表示中かを取得します。
