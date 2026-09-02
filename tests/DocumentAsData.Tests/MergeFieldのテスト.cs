@@ -139,6 +139,26 @@ public class MergeFieldのテスト
     }
 
     [Fact]
+    public void Valueプロパティは空文字列を設定した複合MERGEFIELDへ値を再設定します()
+    {
+        var filePath = TestDocument.CreateTemporaryCopy(ComplexMergeFieldPath);
+        try
+        {
+            using var document = Document.Open(filePath);
+            var tested = document.MergeFields["CustomerName"];
+            tested.Value = "";
+
+            tested.Value = "再設定";
+
+            tested.Value.Should().Be("再設定");
+        }
+        finally
+        {
+            File.Delete(filePath);
+        }
+    }
+
+    [Fact]
     public void 保存した単純MERGEFIELDは分割されていた古い結果を残しません()
     {
         var sourcePath =

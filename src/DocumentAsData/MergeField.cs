@@ -156,6 +156,7 @@ public class MergeField
 
     /// <summary>
     /// 複合フィールドの古い表示結果を除去し、新しい値を持つ結果だけに置き換えます。
+    /// 空文字列でも、次回の書き込み位置として空の文字列要素を結果領域に残します。
     /// </summary>
     /// <param name="value">設定する値。</param>
     /// <exception cref="InvalidOperationException">
@@ -182,7 +183,9 @@ public class MergeField
             .ToArray();
         Array.ForEach(oldResult, it => it.Remove());
 
-        var valueElements = CreateValueElements(value).ToArray();
+        var valueElements = CreateValueElements(value)
+            .DefaultIfEmpty(new Wordprocessing.Text())
+            .ToArray();
         resultEnd.InsertBeforeSelf(new Wordprocessing.Run(valueElements));
         complexValueElements.Clear();
         complexValueElements.AddRange(valueElements);
