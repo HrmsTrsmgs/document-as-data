@@ -214,7 +214,7 @@ public class MergeFieldのテスト
         }
     }
 
-    [Fact(Skip = "単純MERGEFIELDの改行とタブをValueで表す仕様を確認してから有効化します。")]
+    [Fact]
     public void 保存した単純MERGEFIELDは値の改行とタブを保持します()
     {
         var sourcePath = TestDocument.CreateTemporaryCopy(TestFilePath);

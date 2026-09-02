@@ -1,3 +1,5 @@
+using DocumentFormat.OpenXml;
+using System.Text.RegularExpressions;
 using Wordprocessing = DocumentFormat.OpenXml.Wordprocessing;
 
 namespace Marimo.DocumentAsData;
@@ -95,21 +97,63 @@ public class MergeField
     /// </exception>
     public string Value
     {
-        get => simpleField?.InnerText ??
-            string.Concat(complexValueTexts.Select(it => it.Text));
+        get => simpleField is null ?
+            string.Concat(complexValueTexts.Select(it => it.Text)) :
+            ReadSimpleValue(simpleField);
         set
         {
             if (simpleField is not null)
             {
                 simpleField.RemoveAllChildren();
                 simpleField.AppendChild(
-                    new Wordprocessing.Run(new Wordprocessing.Text(value)));
+                    new Wordprocessing.Run(CreateValueElements(value)));
                 return;
             }
 
             SetComplexValue(value);
         }
     }
+
+    /// <summary>
+    /// 単純フィールドの文字列、タブ、改行を公開APIの文字列表現へ戻します。
+    /// </summary>
+    /// <param name="field">値を読み取る単純フィールド。</param>
+    /// <returns>タブをタブ文字、改行をCRLFで表した値。</returns>
+    static string ReadSimpleValue(Wordprocessing.SimpleField field) =>
+        string.Concat(
+            from element in field.Descendants()
+            where element is Wordprocessing.Text or
+                Wordprocessing.TabChar or
+                Wordprocessing.Break
+            select element switch
+            {
+                Wordprocessing.Text text => text.Text,
+                Wordprocessing.TabChar => "\t",
+                Wordprocessing.Break => "\r\n",
+                _ => throw new InvalidOperationException()
+            });
+
+    /// <summary>
+    /// 公開APIの文字列をWordが表示できる文字列、タブ、改行要素へ分解します。
+    /// </summary>
+    /// <param name="value">要素へ変換する値。</param>
+    /// <returns>文書順に並んだOOXML要素。</returns>
+    static IEnumerable<OpenXmlElement> CreateValueElements(string value) =>
+        from part in Regex.Split(value, "(\r\n|\t)")
+        where part.Length > 0
+        select CreateValueElement(part);
+
+    /// <summary>
+    /// 分解済みの文字列片を対応するOOXML要素へ変換します。
+    /// </summary>
+    /// <param name="part">通常文字列、タブ、またはCRLF。</param>
+    /// <returns>文字列片に対応するOOXML要素。</returns>
+    static OpenXmlElement CreateValueElement(string part) => part switch
+    {
+        "\t" => new Wordprocessing.TabChar(),
+        "\r\n" => new Wordprocessing.Break(),
+        _ => new Wordprocessing.Text(part)
+    };
 
     /// <summary>
     /// 複合フィールドの古い表示結果を除去し、新しい値を持つ結果だけに置き換えます。
