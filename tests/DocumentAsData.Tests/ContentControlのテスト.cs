@@ -230,6 +230,26 @@ public class ContentControlのテスト
     }
 
     [Fact]
+    public void Valueプロパティは改行とタブを含むContentControlへ再設定したとき最後の値だけを取得します()
+    {
+        var filePath = TestDocument.CreateTemporaryCopy(ContentControlPath);
+        try
+        {
+            using var document = Document.Open(filePath);
+            var tested = document.ContentControls["CustomerName"];
+            tested.Value = "一行目\t二列目\r\n二行目";
+
+            tested.Value = "再設定";
+
+            tested.Value.Should().Be("再設定");
+        }
+        finally
+        {
+            File.Delete(filePath);
+        }
+    }
+
+    [Fact]
     public void 保存したContentControlは分割されていた古い値を残しません()
     {
         var sourcePath =
