@@ -107,11 +107,18 @@ public class ContentControl
 
     /// <summary>
     /// 最初の文字列要素を、Wordが表示できる文字列、タブ、改行要素へ置き換えます。
+    /// 空文字列では次回の設定先を失わないよう、文字列要素自体を残します。
     /// </summary>
     /// <param name="text">置換対象の最初の文字列要素。</param>
     /// <param name="value">設定する値。</param>
     static void ReplaceFirstText(Wordprocessing.Text text, string value)
     {
+        if (value.Length == 0)
+        {
+            text.Text = "";
+            return;
+        }
+
         var parent = text.Parent ?? throw new InvalidOperationException();
 
         text.Remove();
