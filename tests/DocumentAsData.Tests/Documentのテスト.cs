@@ -539,7 +539,7 @@ public class Documentのテスト
         }
     }
 
-    [Fact(Skip = "Content Controlの書き込み後にOOXML検証を行う段階で有効化します。")]
+    [Fact]
     public void SaveAsで保存したContentControl文書は検証して開けます()
     {
         var sourcePath = TestDocument.CreateTemporaryCopy(ContentControlPath);
