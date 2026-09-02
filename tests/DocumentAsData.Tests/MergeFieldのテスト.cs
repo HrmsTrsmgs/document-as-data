@@ -391,7 +391,7 @@ public class MergeFieldのテスト
         }
     }
 
-    [Fact(Skip = "結果が分割された単純MERGEFIELDの固定テストデータを追加してから有効化します。")]
+    [Fact]
     public void Valueプロパティは分割して保存された単純MERGEFIELDの結果全体を置き換えます()
     {
         var sourcePath =
