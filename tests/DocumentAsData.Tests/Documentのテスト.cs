@@ -512,7 +512,7 @@ public class Documentのテスト
         }
     }
 
-    [Fact(Skip = "複合MERGEFIELDの書き込み後にOOXML検証を行う段階で有効化します。")]
+    [Fact]
     public void SaveAsで保存した複合MERGEFIELD文書は検証して開けます()
     {
         var sourcePath = TestDocument.CreateTemporaryCopy(ComplexMergeFieldPath);
