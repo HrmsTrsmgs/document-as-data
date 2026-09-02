@@ -52,6 +52,7 @@ public class ContentControl
     /// </summary>
     /// <remarks>
     /// プレースホルダー表示中は、表示用文字列ではなく空文字列を返します。
+    /// 値を設定すると、プレースホルダー表示状態を解除します。
     /// </remarks>
     /// <exception cref="InvalidOperationException">
     /// 値の設定時に文字列要素が存在しない場合。
@@ -66,6 +67,7 @@ public class ContentControl
         {
             var texts = element.Descendants<Wordprocessing.Text>().ToArray();
 
+            RemovePlaceholderState();
             texts.First().Text = value;
             Array.ForEach(texts[1..], it => it.Text = "");
         }
@@ -80,4 +82,16 @@ public class ContentControl
             from placeholder in properties.Elements<Wordprocessing.ShowingPlaceholder>()
             select placeholder
         ).Any();
+
+    /// <summary>
+    /// 値の書き込み後に表示文字列がプレースホルダーとして扱われないよう、表示状態を解除します。
+    /// </summary>
+    void RemovePlaceholderState() =>
+        Array.ForEach(
+            (
+                from properties in element.Elements<Wordprocessing.SdtProperties>()
+                from placeholder in properties.Elements<Wordprocessing.ShowingPlaceholder>()
+                select placeholder
+            ).ToArray(),
+            it => it.Remove());
 }
