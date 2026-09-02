@@ -359,6 +359,39 @@ public class ContentControlのテスト
     }
 
     [Fact]
+    public void ValueプロパティはLF改行をContentControlの改行要素で保存します()
+    {
+        var sourcePath = TestDocument.CreateTemporaryCopy(ContentControlPath);
+        var outputPath = TestDocument.CreateOutputPath();
+        try
+        {
+            using (var document = Document.Open(sourcePath))
+            {
+                document.ContentControls["CustomerName"].Value =
+                    "一行目\n二行目";
+                document.SaveAs(outputPath);
+            }
+
+            using var saved = WordprocessingDocument.Open(outputPath, false);
+            // .NETの文字列ではLF単独も改行として使われますが、Word文書では
+            // w:t内のLFではなくw:br要素として保存する必要があります。
+            var contentControl = saved.MainDocumentPart!.Document!
+                .Descendants<Wordprocessing.SdtElement>()
+                .Single();
+            contentControl.Descendants<Wordprocessing.Break>()
+                .Should().ContainSingle();
+            contentControl.Descendants<Wordprocessing.Text>()
+                .Select(it => it.Text)
+                .Should().Equal("一行目", "二行目");
+        }
+        finally
+        {
+            File.Delete(sourcePath);
+            File.Delete(outputPath);
+        }
+    }
+
+    [Fact]
     public void Valueプロパティは複数の文字列要素の先頭へ値を設定して残りを空にします()
     {
         var sourcePath =
