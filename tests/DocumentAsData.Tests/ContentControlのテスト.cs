@@ -349,7 +349,7 @@ public class ContentControlのテスト
         }
     }
 
-    [Fact(Skip = "プレースホルダー表示中のContent Controlの固定テストデータを追加してから有効化します。")]
+    [Fact]
     public void Valueプロパティはプレースホルダー表示状態を解除します()
     {
         var sourcePath =
