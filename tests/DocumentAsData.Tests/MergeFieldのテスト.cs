@@ -19,6 +19,8 @@ public class MergeFieldのテスト
         Path.Combine("TestData", "結果が分割された単純MERGEFIELD.docx");
     static readonly string DirtySimpleMergeFieldPath =
         Path.Combine("TestData", "結果が古い単純MERGEFIELD.docx");
+    static readonly string DirtyComplexMergeFieldPath =
+        Path.Combine("TestData", "結果が古い複合MERGEFIELD.docx");
 
     [Fact]
     public void DocumentプロパティはMERGEFIELDが属する文書を取得します()
@@ -169,6 +171,39 @@ public class MergeFieldのテスト
         finally
         {
             File.Delete(filePath);
+        }
+    }
+
+    [Fact]
+    public void Valueプロパティは複合MERGEFIELDの結果を設定したとき古い結果の印を解除します()
+    {
+        var sourcePath =
+            TestDocument.CreateTemporaryCopy(DirtyComplexMergeFieldPath);
+        var outputPath = TestDocument.CreateOutputPath();
+        try
+        {
+            using (var document = Document.Open(sourcePath))
+            {
+                document.MergeFields["CustomerName"].Value = "変更後";
+                document.SaveAs(outputPath);
+            }
+
+            using var saved = WordprocessingDocument.Open(outputPath, false);
+            // 複合MERGEFIELDでは、w:dirtyは開始側のw:fldCharにあります。
+            // DocumentAsDataが結果を書き換えた後は、現在の表示結果をWordが
+            // 古い結果として再更新しないよう、この印が解除されることを
+            // 確認します。
+            var fieldStart = saved.MainDocumentPart!.Document!
+                .Descendants<Wordprocessing.FieldChar>()
+                .Single(it =>
+                    it.FieldCharType?.Value ==
+                    Wordprocessing.FieldCharValues.Begin);
+            (fieldStart.Dirty?.Value ?? false).Should().BeFalse();
+        }
+        finally
+        {
+            File.Delete(sourcePath);
+            File.Delete(outputPath);
         }
     }
 

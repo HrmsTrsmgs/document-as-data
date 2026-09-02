@@ -16,6 +16,13 @@ public class MergeField
     readonly Wordprocessing.SimpleField? simpleField;
 
     /// <summary>
+    /// 複合形式の開始要素です。
+    /// 値の書き込み後に、表示結果が古いことを示す状態を解除するため保持します。
+    /// 単純形式の場合はnullです。
+    /// </summary>
+    readonly Wordprocessing.FieldChar? complexFieldStart;
+
+    /// <summary>
     /// 複合形式の命令部分と表示結果を区切る要素です。
     /// 単純形式の場合はnullです。
     /// </summary>
@@ -51,6 +58,7 @@ public class MergeField
     {
         Document = document;
         simpleField = field;
+        complexFieldStart = null;
         complexResultSeparator = null;
         complexFieldEnd = null;
         complexValueElements = [];
@@ -62,17 +70,20 @@ public class MergeField
     /// </summary>
     /// <param name="document">MERGEFIELDが属する文書。</param>
     /// <param name="name">MERGEFIELDの名前。</param>
+    /// <param name="fieldStart">複合フィールドの開始要素。</param>
     /// <param name="resultSeparator">命令部分と表示結果を区切る要素。</param>
     /// <param name="fieldEnd">複合フィールドの終了要素。</param>
     /// <param name="valueElements">MERGEFIELDの表示値を構成する文字列、タブ、改行要素。</param>
     internal MergeField(
         Document document,
         string name,
+        Wordprocessing.FieldChar fieldStart,
         Wordprocessing.FieldChar resultSeparator,
         Wordprocessing.FieldChar fieldEnd,
         IEnumerable<OpenXmlElement> valueElements)
     {
         Document = document;
+        complexFieldStart = fieldStart;
         complexResultSeparator = resultSeparator;
         complexFieldEnd = fieldEnd;
         complexValueElements = valueElements.ToList();
@@ -171,6 +182,8 @@ public class MergeField
             throw new InvalidOperationException();
         }
 
+        var fieldStart = complexFieldStart ??
+            throw new InvalidOperationException();
         var resultStart = complexResultSeparator?.Parent ??
             throw new InvalidOperationException();
         var resultEnd = complexFieldEnd?.Parent ??
@@ -191,5 +204,7 @@ public class MergeField
         resultEnd.InsertBeforeSelf(new Wordprocessing.Run(valueElements));
         complexValueElements.Clear();
         complexValueElements.AddRange(valueElements);
+        // 書き換えた表示結果をWordが古い結果として扱わないようにします。
+        fieldStart.Dirty = null;
     }
 }

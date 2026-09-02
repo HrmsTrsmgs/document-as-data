@@ -166,10 +166,11 @@ public class MergeFieldCollection : IEnumerable<MergeField>
             {
                 mergeField =
                     GetOrCreateMergeField(
-                        field.Element,
+                        field.FieldStart,
                         () => new(
                             document,
                             name,
+                            field.FieldStart,
                             field.ResultSeparator,
                             field.FieldEnd,
                             field.ResultElements));
@@ -417,13 +418,13 @@ public class MergeFieldCollection : IEnumerable<MergeField>
         /// <summary>
         /// OOXML上で読み取りが完了した複合フィールドの構成要素を保持します。
         /// </summary>
-        /// <param name="Element">キャッシュの識別子となる開始要素。</param>
+        /// <param name="FieldStart">複合フィールドの開始要素。</param>
         /// <param name="Instruction">分割された要素を連結したフィールド命令。</param>
         /// <param name="ResultSeparator">命令部分と表示結果を区切る要素。</param>
         /// <param name="FieldEnd">複合フィールドの終了要素。</param>
         /// <param name="ResultElements">表示結果を構成する文字列、タブ、改行要素。</param>
         sealed record ComplexField(
-            OpenXmlElement Element,
+            Wordprocessing.FieldChar FieldStart,
             string? Instruction,
             Wordprocessing.FieldChar ResultSeparator,
             Wordprocessing.FieldChar FieldEnd,
