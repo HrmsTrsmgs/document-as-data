@@ -159,7 +159,7 @@ public class ContentControlのテスト
         }
     }
 
-    [Fact(Skip = "Content Controlへ空文字列を設定したときのプレースホルダーとの関係を確認してから有効化します。")]
+    [Fact]
     public void 保存したContentControlから空文字列を取得します()
     {
         var sourcePath = TestDocument.CreateTemporaryCopy(ContentControlPath);
