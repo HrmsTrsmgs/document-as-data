@@ -189,7 +189,7 @@ public class MergeFieldのテスト
         }
     }
 
-    [Fact(Skip = "複合MERGEFIELDで前後の空白を保持する仕様を確認してから有効化します。")]
+    [Fact]
     public void 保存した複合MERGEFIELDは値の前後の空白を保持します()
     {
         var sourcePath =
