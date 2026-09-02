@@ -325,7 +325,7 @@ public class MergeFieldのテスト
         }
     }
 
-    [Fact(Skip = "単純MERGEFIELDの改行とタブをWordで表示できるOOXMLを確認するときに有効化します。")]
+    [Fact]
     public void Valueプロパティは単純MERGEFIELDの改行とタブを専用要素で保存します()
     {
         var sourcePath = TestDocument.CreateTemporaryCopy(TestFilePath);
