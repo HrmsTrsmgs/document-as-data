@@ -172,7 +172,7 @@ public class MergeFieldCollection : IEnumerable<MergeField>
                             name,
                             field.ResultSeparator,
                             field.FieldEnd,
-                            field.ResultTexts));
+                            field.ResultElements));
                 return true;
             }
 
@@ -265,9 +265,9 @@ public class MergeFieldCollection : IEnumerable<MergeField>
             Wordprocessing.FieldChar? resultSeparator;
 
             /// <summary>
-            /// 結果開始後に現れた表示文字列を保持します。結果開始前はnullです。
+            /// 結果開始後に現れた表示用の文字列、タブ、改行要素を保持します。結果開始前はnullです。
             /// </summary>
-            List<Wordprocessing.Text>? resultTexts;
+            List<OpenXmlElement>? resultElements;
 
             /// <summary>
             /// OOXML要素を一つ読み進め、複合フィールドの終了要素に到達したときだけ完成した結果を返します。
@@ -288,9 +288,11 @@ public class MergeFieldCollection : IEnumerable<MergeField>
                 {
                     Read(fieldCode);
                 }
-                else if (element is Wordprocessing.Text text)
+                else if (element is Wordprocessing.Text or
+                    Wordprocessing.TabChar or
+                    Wordprocessing.Break)
                 {
-                    Read(text);
+                    ReadResultElement(element);
                 }
 
                 field = null;
@@ -332,18 +334,18 @@ public class MergeFieldCollection : IEnumerable<MergeField>
             /// <param name="fieldCode">命令文字列を保持するOOXML要素。</param>
             void Read(Wordprocessing.FieldCode fieldCode)
             {
-                if (begin is not null && resultTexts is null)
+                if (begin is not null && resultElements is null)
                 {
                     instruction += fieldCode.Text;
                 }
             }
 
             /// <summary>
-            /// 複合フィールドの結果開始後に現れた表示文字列を保持します。
+            /// 複合フィールドの結果開始後に現れた表示用要素を保持します。
             /// </summary>
-            /// <param name="text">表示文字列を保持するOOXML要素。</param>
-            void Read(Wordprocessing.Text text) =>
-                resultTexts?.Add(text);
+            /// <param name="element">表示値を構成する文字列、タブ、改行要素。</param>
+            void ReadResultElement(OpenXmlElement element) =>
+                resultElements?.Add(element);
 
             /// <summary>
             /// それまでの未完了状態を破棄し、新しい複合フィールドの読み取りを開始します。
@@ -354,7 +356,7 @@ public class MergeFieldCollection : IEnumerable<MergeField>
                 begin = fieldChar;
                 instruction = null;
                 resultSeparator = null;
-                resultTexts = null;
+                resultElements = null;
             }
 
             /// <summary>
@@ -366,7 +368,7 @@ public class MergeFieldCollection : IEnumerable<MergeField>
                 if (begin is not null)
                 {
                     resultSeparator = fieldChar;
-                    resultTexts = [];
+                    resultElements = [];
                 }
             }
 
@@ -380,7 +382,7 @@ public class MergeFieldCollection : IEnumerable<MergeField>
                 Wordprocessing.FieldChar fieldEnd,
                 [NotNullWhen(true)] out ComplexField? field)
             {
-                if (begin is null || resultSeparator is null || resultTexts is null)
+                if (begin is null || resultSeparator is null || resultElements is null)
                 {
                     field = null;
                     Reset();
@@ -392,7 +394,7 @@ public class MergeFieldCollection : IEnumerable<MergeField>
                     instruction,
                     resultSeparator,
                     fieldEnd,
-                    resultTexts);
+                    resultElements);
                 Reset();
                 return true;
             }
@@ -405,7 +407,7 @@ public class MergeFieldCollection : IEnumerable<MergeField>
                 begin = null;
                 instruction = null;
                 resultSeparator = null;
-                resultTexts = null;
+                resultElements = null;
             }
         }
 
@@ -416,12 +418,12 @@ public class MergeFieldCollection : IEnumerable<MergeField>
         /// <param name="Instruction">分割された要素を連結したフィールド命令。</param>
         /// <param name="ResultSeparator">命令部分と表示結果を区切る要素。</param>
         /// <param name="FieldEnd">複合フィールドの終了要素。</param>
-        /// <param name="ResultTexts">表示結果を構成する文字列要素。</param>
+        /// <param name="ResultElements">表示結果を構成する文字列、タブ、改行要素。</param>
         sealed record ComplexField(
             OpenXmlElement Element,
             string? Instruction,
             Wordprocessing.FieldChar ResultSeparator,
             Wordprocessing.FieldChar FieldEnd,
-            IReadOnlyCollection<Wordprocessing.Text> ResultTexts);
+            IReadOnlyCollection<OpenXmlElement> ResultElements);
     }
 }

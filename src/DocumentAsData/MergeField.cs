@@ -28,10 +28,10 @@ public class MergeField
     readonly Wordprocessing.FieldChar? complexFieldEnd;
 
     /// <summary>
-    /// 複合形式の表示値を構成する文字列要素を文書順に保持します。
+    /// 複合形式の表示値を構成する文字列、タブ、改行要素を文書順に保持します。
     /// 読み取り時はこれらを連結し、書き込み時は置換後の要素へ更新します。
     /// </summary>
-    readonly List<Wordprocessing.Text> complexValueTexts;
+    readonly List<OpenXmlElement> complexValueElements;
 
     /// <summary>
     /// OOXMLのフィールド命令から解析した名前を、単純形式と複合形式で共通に公開するため保持します。
@@ -53,7 +53,7 @@ public class MergeField
         simpleField = field;
         complexResultSeparator = null;
         complexFieldEnd = null;
-        complexValueTexts = [];
+        complexValueElements = [];
         this.name = name;
     }
 
@@ -64,18 +64,18 @@ public class MergeField
     /// <param name="name">MERGEFIELDの名前。</param>
     /// <param name="resultSeparator">命令部分と表示結果を区切る要素。</param>
     /// <param name="fieldEnd">複合フィールドの終了要素。</param>
-    /// <param name="valueTexts">MERGEFIELDの表示値を構成する文字列要素。</param>
+    /// <param name="valueElements">MERGEFIELDの表示値を構成する文字列、タブ、改行要素。</param>
     internal MergeField(
         Document document,
         string name,
         Wordprocessing.FieldChar resultSeparator,
         Wordprocessing.FieldChar fieldEnd,
-        IEnumerable<Wordprocessing.Text> valueTexts)
+        IEnumerable<OpenXmlElement> valueElements)
     {
         Document = document;
         complexResultSeparator = resultSeparator;
         complexFieldEnd = fieldEnd;
-        complexValueTexts = valueTexts.ToList();
+        complexValueElements = valueElements.ToList();
         this.name = name;
     }
 
@@ -97,9 +97,8 @@ public class MergeField
     /// </exception>
     public string Value
     {
-        get => simpleField is null ?
-            string.Concat(complexValueTexts.Select(it => it.Text)) :
-            ReadSimpleValue(simpleField);
+        get => ReadValue(
+            simpleField?.Descendants() ?? complexValueElements);
         set
         {
             if (simpleField is not null)
@@ -115,13 +114,13 @@ public class MergeField
     }
 
     /// <summary>
-    /// 単純フィールドの文字列、タブ、改行を公開APIの文字列表現へ戻します。
+    /// OOXMLの文字列、タブ、改行を公開APIの文字列表現へ戻します。
     /// </summary>
-    /// <param name="field">値を読み取る単純フィールド。</param>
+    /// <param name="elements">値を構成するOOXML要素。</param>
     /// <returns>タブをタブ文字、改行をCRLFで表した値。</returns>
-    static string ReadSimpleValue(Wordprocessing.SimpleField field) =>
+    static string ReadValue(IEnumerable<OpenXmlElement> elements) =>
         string.Concat(
-            from element in field.Descendants()
+            from element in elements
             where element is Wordprocessing.Text or
                 Wordprocessing.TabChar or
                 Wordprocessing.Break
@@ -164,7 +163,7 @@ public class MergeField
     /// </exception>
     void SetComplexValue(string value)
     {
-        if (complexValueTexts.Count == 0)
+        if (complexValueElements.Count == 0)
         {
             throw new InvalidOperationException();
         }
@@ -183,9 +182,9 @@ public class MergeField
             .ToArray();
         Array.ForEach(oldResult, it => it.Remove());
 
-        var text = new Wordprocessing.Text(value);
-        resultEnd.InsertBeforeSelf(new Wordprocessing.Run(text));
-        complexValueTexts.Clear();
-        complexValueTexts.Add(text);
+        var valueElements = CreateValueElements(value).ToArray();
+        resultEnd.InsertBeforeSelf(new Wordprocessing.Run(valueElements));
+        complexValueElements.Clear();
+        complexValueElements.AddRange(valueElements);
     }
 }

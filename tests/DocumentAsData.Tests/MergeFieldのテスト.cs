@@ -238,7 +238,7 @@ public class MergeFieldのテスト
         }
     }
 
-    [Fact(Skip = "複合MERGEFIELDの改行とタブをValueで表す仕様を確認してから有効化します。")]
+    [Fact]
     public void 保存した複合MERGEFIELDは値の改行とタブを保持します()
     {
         var sourcePath =
