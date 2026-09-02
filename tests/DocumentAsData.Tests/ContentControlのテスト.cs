@@ -284,7 +284,7 @@ public class ContentControlのテスト
         }
     }
 
-    [Fact(Skip = "複数行Content Controlの改行とタブをWordで表示できるOOXMLを確認するときに有効化します。")]
+    [Fact]
     public void ValueプロパティはContentControlの改行とタブを専用要素で保存します()
     {
         var sourcePath =
