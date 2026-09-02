@@ -275,7 +275,7 @@ public class ContentControlのテスト
         }
     }
 
-    [Fact(Skip = "Content Controlの前後の空白をWordでも保持するOOXMLを確認するときに有効化します。")]
+    [Fact]
     public void ValueプロパティはContentControlの空白を保持する属性を設定します()
     {
         var sourcePath = TestDocument.CreateTemporaryCopy(ContentControlPath);
