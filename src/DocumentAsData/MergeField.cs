@@ -138,19 +138,19 @@ public class MergeField
     /// <param name="value">要素へ変換する値。</param>
     /// <returns>文書順に並んだOOXML要素。</returns>
     static IEnumerable<OpenXmlElement> CreateValueElements(string value) =>
-        from part in Regex.Split(value, "(\r\n|\t)")
+        from part in Regex.Split(value, "(\r\n|\n|\t)")
         where part.Length > 0
         select CreateValueElement(part);
 
     /// <summary>
     /// 分解済みの文字列片を対応するOOXML要素へ変換します。
     /// </summary>
-    /// <param name="part">通常文字列、タブ、またはCRLF。</param>
+    /// <param name="part">通常文字列、タブ、CRLF、またはLF。</param>
     /// <returns>文字列片に対応するOOXML要素。</returns>
     static OpenXmlElement CreateValueElement(string part) => part switch
     {
         "\t" => new Wordprocessing.TabChar(),
-        "\r\n" => new Wordprocessing.Break(),
+        "\r\n" or "\n" => new Wordprocessing.Break(),
         _ => new Wordprocessing.Text(part)
     };
 

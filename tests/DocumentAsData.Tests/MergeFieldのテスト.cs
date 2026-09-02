@@ -380,6 +380,40 @@ public class MergeFieldのテスト
     }
 
     [Fact]
+    public void ValueプロパティはLF改行を単純MERGEFIELDの改行要素で保存します()
+    {
+        var sourcePath = TestDocument.CreateTemporaryCopy(TestFilePath);
+        var outputPath = TestDocument.CreateOutputPath();
+        try
+        {
+            using (var document = Document.Open(sourcePath))
+            {
+                document.MergeFields["CustomerName"].Value =
+                    "一行目\n二行目";
+                document.SaveAs(outputPath);
+            }
+
+            using var saved = WordprocessingDocument.Open(outputPath, false);
+            // .NETの文字列ではLF単独も改行として使われますが、Word文書では
+            // w:t内のLFではなくw:br要素として保存する必要があります。
+            var field = saved.MainDocumentPart!.Document!
+                .Descendants<Wordprocessing.SimpleField>()
+                .Single(it =>
+                    it.Instruction?.Value?.Contains("CustomerName") == true);
+            field.Descendants<Wordprocessing.Break>()
+                .Should().ContainSingle();
+            field.Descendants<Wordprocessing.Text>()
+                .Select(it => it.Text)
+                .Should().Equal("一行目", "二行目");
+        }
+        finally
+        {
+            File.Delete(sourcePath);
+            File.Delete(outputPath);
+        }
+    }
+
+    [Fact]
     public void Valueプロパティは複合MERGEFIELDの改行とタブを専用要素で保存します()
     {
         var sourcePath =
