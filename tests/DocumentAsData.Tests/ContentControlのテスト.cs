@@ -202,7 +202,7 @@ public class ContentControlのテスト
         }
     }
 
-    [Fact(Skip = "Content Controlで前後の空白を保持する仕様を確認してから有効化します。")]
+    [Fact]
     public void 保存したContentControlは値の前後の空白を保持します()
     {
         var sourcePath = TestDocument.CreateTemporaryCopy(ContentControlPath);
