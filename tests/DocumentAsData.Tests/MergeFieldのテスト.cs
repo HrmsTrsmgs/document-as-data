@@ -359,7 +359,7 @@ public class MergeFieldのテスト
         }
     }
 
-    [Fact(Skip = "複合MERGEFIELDの改行とタブをWordで表示できるOOXMLを確認するときに有効化します。")]
+    [Fact]
     public void Valueプロパティは複合MERGEFIELDの改行とタブを専用要素で保存します()
     {
         var sourcePath =
