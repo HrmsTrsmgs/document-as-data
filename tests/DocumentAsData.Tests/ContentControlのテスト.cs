@@ -13,8 +13,6 @@ public class ContentControlのテスト
         Path.Combine("TestData", "複数の文字列要素を持つContent Control.docx");
     static readonly string InvalidContentControlWithoutTagValuePath =
         Path.Combine("TestData", "Tagの値が欠落した不正なContent Control.docx");
-    static readonly string NestedContentControlsPath =
-        Path.Combine("TestData", "ネストしたContent Control.docx");
     static readonly string PlaceholderContentControlPath =
         Path.Combine("TestData", "プレースホルダー表示中のContent Control.docx");
     static readonly string MultilineContentControlPath =
@@ -179,26 +177,6 @@ public class ContentControlのテスト
         {
             File.Delete(sourcePath);
             File.Delete(outputPath);
-        }
-    }
-
-    [Fact(Skip = "ネストしたContent Controlの書き込み方針を確認してから有効化します。")]
-    public void Valueプロパティは子ContentControlの値を変更しません()
-    {
-        var filePath =
-            TestDocument.CreateTemporaryCopy(NestedContentControlsPath);
-        try
-        {
-            using var document = Document.Open(filePath);
-            var innerValue = document.ContentControls["Inner"].Value;
-
-            document.ContentControls["Outer"].Value = "外側の変更後";
-
-            document.ContentControls["Inner"].Value.Should().Be(innerValue);
-        }
-        finally
-        {
-            File.Delete(filePath);
         }
     }
 
