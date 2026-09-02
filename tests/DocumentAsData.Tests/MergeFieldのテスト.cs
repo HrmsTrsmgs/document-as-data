@@ -17,6 +17,8 @@ public class MergeFieldのテスト
         Path.Combine("TestData", "結果が分割された複合MERGEFIELD.docx");
     static readonly string SplitSimpleMergeFieldResultPath =
         Path.Combine("TestData", "結果が分割された単純MERGEFIELD.docx");
+    static readonly string DirtySimpleMergeFieldPath =
+        Path.Combine("TestData", "結果が古い単純MERGEFIELD.docx");
 
     [Fact]
     public void DocumentプロパティはMERGEFIELDが属する文書を取得します()
@@ -117,6 +119,38 @@ public class MergeFieldのテスト
         finally
         {
             File.Delete(filePath);
+        }
+    }
+
+    [Fact]
+    public void Valueプロパティは単純MERGEFIELDの結果を設定したとき古い結果の印を解除します()
+    {
+        var sourcePath =
+            TestDocument.CreateTemporaryCopy(DirtySimpleMergeFieldPath);
+        var outputPath = TestDocument.CreateOutputPath();
+        try
+        {
+            using (var document = Document.Open(sourcePath))
+            {
+                document.MergeFields["CustomerName"].Value = "変更後";
+                document.SaveAs(outputPath);
+            }
+
+            using var saved = WordprocessingDocument.Open(outputPath, false);
+            // w:dirty=trueは、フィールドの現在の表示結果が古く、次に文書を
+            // 処理するアプリケーションが更新すべきことを表します。
+            // DocumentAsDataが結果を書き換えた後は、既に新しい結果なので
+            // この印が解除されることを確認します。
+            var field = saved.MainDocumentPart!.Document!
+                .Descendants<Wordprocessing.SimpleField>()
+                .Single(it =>
+                    it.Instruction?.Value?.Contains("CustomerName") == true);
+            (field.Dirty?.Value ?? false).Should().BeFalse();
+        }
+        finally
+        {
+            File.Delete(sourcePath);
+            File.Delete(outputPath);
         }
     }
 

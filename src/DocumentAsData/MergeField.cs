@@ -106,6 +106,8 @@ public class MergeField
                 simpleField.RemoveAllChildren();
                 simpleField.AppendChild(
                     new Wordprocessing.Run(CreateValueElements(value)));
+                // 書き換えた表示結果をWordが古い結果として扱わないようにします。
+                simpleField.Dirty = null;
                 return;
             }
 
