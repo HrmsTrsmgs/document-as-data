@@ -566,21 +566,4 @@ public class Documentのテスト
         }
     }
 
-    [Fact(Skip = "Stream上の書き込み後にOOXML検証を行う段階で有効化します。")]
-    public void Stream版で変更した文書は検証して開けます()
-    {
-        using var stream = TestDocument.CreateMemoryStream(SimpleMergeFieldsPath);
-        using (var document = Document.Open(stream))
-        {
-            document.MergeFields["CustomerName"].Value = "変更後";
-        }
-
-        stream.Position = 0;
-        var action = () =>
-        {
-            using var saved = Document.Open(stream, true);
-        };
-
-        action.Should().NotThrow();
-    }
 }
