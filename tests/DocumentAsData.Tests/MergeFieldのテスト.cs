@@ -294,7 +294,7 @@ public class MergeFieldのテスト
         }
     }
 
-    [Fact(Skip = "複合MERGEFIELDの前後の空白をWordでも保持するOOXMLを確認するときに有効化します。")]
+    [Fact]
     public void Valueプロパティは複合MERGEFIELDの空白を保持する属性を設定します()
     {
         var sourcePath =
