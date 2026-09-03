@@ -1,4 +1,5 @@
 using System.Collections;
+using DocumentFormat.OpenXml;
 using Word2010 = DocumentFormat.OpenXml.Office2010.Word;
 using Wordprocessing = DocumentFormat.OpenXml.Wordprocessing;
 
@@ -50,8 +51,8 @@ public class ContentControlCollection : IEnumerable<ContentControl>
         (
             from element in document.Elements.OfType<Wordprocessing.SdtElement>()
             where HasTag(element) &&
-                !IsCheckBox(element) &&
-                !IsDatePicker(element)
+                !HasContentControlProperty<Word2010.SdtContentCheckBox>(element) &&
+                !HasContentControlProperty<Wordprocessing.SdtContentDate>(element)
             select GetOrCreateContentControl(element)
         ).GetEnumerator();
 
@@ -68,27 +69,17 @@ public class ContentControlCollection : IEnumerable<ContentControl>
         ).Any();
 
     /// <summary>
-    /// 指定したContent Controlが、文字列用とは別のAPIで扱う日付選択かを取得します。
+    /// 指定したContent Controlが、指定した種類を表すプロパティを持つかを取得します。
     /// </summary>
+    /// <typeparam name="T">Content Controlの種類を表すOOXML要素の型。</typeparam>
     /// <param name="element">確認するContent ControlのOOXML要素。</param>
-    /// <returns>日付選択の場合は<c>true</c>。</returns>
-    static bool IsDatePicker(Wordprocessing.SdtElement element) =>
+    /// <returns>指定した種類を表すプロパティを持つ場合は<c>true</c>。</returns>
+    static bool HasContentControlProperty<T>(Wordprocessing.SdtElement element)
+        where T : OpenXmlElement =>
         (
             from properties in element.Elements<Wordprocessing.SdtProperties>()
-            from date in properties.Elements<Wordprocessing.SdtContentDate>()
-            select date
-        ).Any();
-
-    /// <summary>
-    /// 指定したContent Controlが、文字列用とは別のAPIで扱うチェックボックスかを取得します。
-    /// </summary>
-    /// <param name="element">確認するContent ControlのOOXML要素。</param>
-    /// <returns>チェックボックスの場合は<c>true</c>。</returns>
-    static bool IsCheckBox(Wordprocessing.SdtElement element) =>
-        (
-            from properties in element.Elements<Wordprocessing.SdtProperties>()
-            from checkBox in properties.Elements<Word2010.SdtContentCheckBox>()
-            select checkBox
+            from property in properties.Elements<T>()
+            select property
         ).Any();
 
     /// <summary>
