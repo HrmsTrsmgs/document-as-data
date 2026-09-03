@@ -23,6 +23,8 @@ public class ContentControlCollectionのテスト
         Path.Combine("TestData", "日付選択のContent Control.docx");
     static readonly string PictureContentControlPath =
         Path.Combine("TestData", "画像のContent Control.docx");
+    static readonly string DropDownListContentControlPath =
+        Path.Combine("TestData", "ドロップダウンリストのContent Control.docx");
 
     [Fact]
     public void ContentControlsは文書内のContentControlを列挙します()
@@ -213,6 +215,26 @@ public class ContentControlCollectionのテスト
             // Wordの画像Content Controlはw:sdtPr/w:pictureで種類を示し、
             // w:sdtContent内のw:drawingと関連する画像Partへ画像を保持します。
             // 文字列用のValueでは扱えないため、通常のContentControlsには含めません。
+            document.ContentControls.Should().BeEmpty();
+        }
+        finally
+        {
+            File.Delete(filePath);
+        }
+    }
+
+    [Fact]
+    public void ContentControlsはドロップダウンリストを列挙しません()
+    {
+        var filePath =
+            TestDocument.CreateTemporaryCopy(DropDownListContentControlPath);
+        try
+        {
+            using var document = Document.Open(filePath, true);
+
+            // Wordのドロップダウンリストは、w:sdtContent/w:tの表示文字列とは別に
+            // w:sdtPr/w:dropDownListへ選択肢と最後に選択された値を保持します。
+            // 文字列用のValueでは両者を同期できないため、通常のContentControlsには含めません。
             document.ContentControls.Should().BeEmpty();
         }
         finally

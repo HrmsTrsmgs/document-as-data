@@ -53,7 +53,8 @@ public class ContentControlCollection : IEnumerable<ContentControl>
             where HasTag(element) &&
                 !HasContentControlProperty<Word2010.SdtContentCheckBox>(element) &&
                 !HasContentControlProperty<Wordprocessing.SdtContentDate>(element) &&
-                !HasContentControlProperty<Wordprocessing.SdtContentPicture>(element)
+                !HasContentControlProperty<Wordprocessing.SdtContentPicture>(element) &&
+                !HasContentControlProperty<Wordprocessing.SdtContentDropDownList>(element)
             select GetOrCreateContentControl(element)
         ).GetEnumerator();
 
