@@ -49,7 +49,9 @@ public class ContentControlCollection : IEnumerable<ContentControl>
     public IEnumerator<ContentControl> GetEnumerator() =>
         (
             from element in document.Elements.OfType<Wordprocessing.SdtElement>()
-            where HasTag(element) && !IsCheckBox(element)
+            where HasTag(element) &&
+                !IsCheckBox(element) &&
+                !IsDatePicker(element)
             select GetOrCreateContentControl(element)
         ).GetEnumerator();
 
@@ -63,6 +65,18 @@ public class ContentControlCollection : IEnumerable<ContentControl>
             from properties in element.Elements<Wordprocessing.SdtProperties>()
             from tag in properties.Elements<Wordprocessing.Tag>()
             select tag
+        ).Any();
+
+    /// <summary>
+    /// 指定したContent Controlが、文字列用とは別のAPIで扱う日付選択かを取得します。
+    /// </summary>
+    /// <param name="element">確認するContent ControlのOOXML要素。</param>
+    /// <returns>日付選択の場合は<c>true</c>。</returns>
+    static bool IsDatePicker(Wordprocessing.SdtElement element) =>
+        (
+            from properties in element.Elements<Wordprocessing.SdtProperties>()
+            from date in properties.Elements<Wordprocessing.SdtContentDate>()
+            select date
         ).Any();
 
     /// <summary>

@@ -19,6 +19,8 @@ public class ContentControlCollectionのテスト
         Path.Combine("TestData", "同じTagのContent Control.docx");
     static readonly string CheckBoxContentControlPath =
         Path.Combine("TestData", "チェックボックスのContent Control.docx");
+    static readonly string DateContentControlPath =
+        Path.Combine("TestData", "日付選択のContent Control.docx");
 
     [Fact]
     public void ContentControlsは文書内のContentControlを列挙します()
@@ -168,6 +170,26 @@ public class ContentControlCollectionのテスト
 
             // Wordのチェックボックスは、表示記号のw:tとは別に
             // w:sdtPr/w14:checkbox/w14:checkedへチェック状態を保持します。
+            // 文字列用のValueでは両者を同期できないため、通常のContentControlsには含めません。
+            document.ContentControls.Should().BeEmpty();
+        }
+        finally
+        {
+            File.Delete(filePath);
+        }
+    }
+
+    [Fact]
+    public void ContentControlsは日付選択ContentControlを列挙しません()
+    {
+        var filePath =
+            TestDocument.CreateTemporaryCopy(DateContentControlPath);
+        try
+        {
+            using var document = Document.Open(filePath, true);
+
+            // Wordの日付選択は、w:sdtContent/w:tの表示文字列とは別に
+            // w:sdtPr/w:dateへ日付、表示形式、言語、暦を保持します。
             // 文字列用のValueでは両者を同期できないため、通常のContentControlsには含めません。
             document.ContentControls.Should().BeEmpty();
         }
