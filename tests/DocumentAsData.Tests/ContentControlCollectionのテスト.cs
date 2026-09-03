@@ -21,6 +21,8 @@ public class ContentControlCollectionのテスト
         Path.Combine("TestData", "チェックボックスのContent Control.docx");
     static readonly string DateContentControlPath =
         Path.Combine("TestData", "日付選択のContent Control.docx");
+    static readonly string PictureContentControlPath =
+        Path.Combine("TestData", "画像のContent Control.docx");
 
     [Fact]
     public void ContentControlsは文書内のContentControlを列挙します()
@@ -191,6 +193,26 @@ public class ContentControlCollectionのテスト
             // Wordの日付選択は、w:sdtContent/w:tの表示文字列とは別に
             // w:sdtPr/w:dateへ日付、表示形式、言語、暦を保持します。
             // 文字列用のValueでは両者を同期できないため、通常のContentControlsには含めません。
+            document.ContentControls.Should().BeEmpty();
+        }
+        finally
+        {
+            File.Delete(filePath);
+        }
+    }
+
+    [Fact]
+    public void ContentControlsは画像ContentControlを列挙しません()
+    {
+        var filePath =
+            TestDocument.CreateTemporaryCopy(PictureContentControlPath);
+        try
+        {
+            using var document = Document.Open(filePath, true);
+
+            // Wordの画像Content Controlはw:sdtPr/w:pictureで種類を示し、
+            // w:sdtContent内のw:drawingと関連する画像Partへ画像を保持します。
+            // 文字列用のValueでは扱えないため、通常のContentControlsには含めません。
             document.ContentControls.Should().BeEmpty();
         }
         finally
