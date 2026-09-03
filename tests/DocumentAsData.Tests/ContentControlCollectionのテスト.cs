@@ -17,6 +17,8 @@ public class ContentControlCollectionのテスト
         Path.Combine("TestData", "ネストしたContent Control.docx");
     static readonly string DuplicateContentControlsPath =
         Path.Combine("TestData", "同じTagのContent Control.docx");
+    static readonly string CheckBoxContentControlPath =
+        Path.Combine("TestData", "チェックボックスのContent Control.docx");
 
     [Fact]
     public void ContentControlsは文書内のContentControlを列挙します()
@@ -148,6 +150,26 @@ public class ContentControlCollectionのテスト
             document.ContentControls
                 .Select(it => it.Tag)
                 .Should().Equal("Outer", "Inner");
+        }
+        finally
+        {
+            File.Delete(filePath);
+        }
+    }
+
+    [Fact]
+    public void ContentControlsはチェックボックスを列挙しません()
+    {
+        var filePath =
+            TestDocument.CreateTemporaryCopy(CheckBoxContentControlPath);
+        try
+        {
+            using var document = Document.Open(filePath, true);
+
+            // Wordのチェックボックスは、表示記号のw:tとは別に
+            // w:sdtPr/w14:checkbox/w14:checkedへチェック状態を保持します。
+            // 文字列用のValueでは両者を同期できないため、通常のContentControlsには含めません。
+            document.ContentControls.Should().BeEmpty();
         }
         finally
         {
