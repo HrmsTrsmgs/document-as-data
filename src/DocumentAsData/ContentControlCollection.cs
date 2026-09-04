@@ -1,6 +1,7 @@
 using System.Collections;
 using DocumentFormat.OpenXml;
 using Word2010 = DocumentFormat.OpenXml.Office2010.Word;
+using Word2013 = DocumentFormat.OpenXml.Office2013.Word;
 using Wordprocessing = DocumentFormat.OpenXml.Wordprocessing;
 
 namespace Marimo.DocumentAsData;
@@ -55,7 +56,9 @@ public class ContentControlCollection : IEnumerable<ContentControl>
                 !HasContentControlProperty<Wordprocessing.SdtContentDate>(element) &&
                 !HasContentControlProperty<Wordprocessing.SdtContentPicture>(element) &&
                 !HasContentControlProperty<Wordprocessing.SdtContentDropDownList>(element) &&
-                !HasContentControlProperty<Wordprocessing.SdtContentComboBox>(element)
+                !HasContentControlProperty<Wordprocessing.SdtContentComboBox>(element) &&
+                !HasContentControlProperty<Word2013.SdtRepeatedSection>(element) &&
+                !HasContentControlProperty<Word2013.SdtRepeatedSectionItem>(element)
             select GetOrCreateContentControl(element)
         ).GetEnumerator();
 

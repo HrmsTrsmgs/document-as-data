@@ -27,6 +27,8 @@ public class ContentControlCollectionのテスト
         Path.Combine("TestData", "ドロップダウンリストのContent Control.docx");
     static readonly string ComboBoxContentControlPath =
         Path.Combine("TestData", "コンボボックスのContent Control.docx");
+    static readonly string RepeatingSectionContentControlPath =
+        Path.Combine("TestData", "繰り返しセクションのContent Control.docx");
 
     [Fact]
     public void ContentControlsは文書内のContentControlを列挙します()
@@ -258,6 +260,28 @@ public class ContentControlCollectionのテスト
             // w:sdtPr/w:comboBoxへ選択肢と最後に選択された値を保持します。
             // 文字列用のValueでは両者を同期できないため、通常のContentControlsには含めません。
             document.ContentControls.Should().BeEmpty();
+        }
+        finally
+        {
+            File.Delete(filePath);
+        }
+    }
+
+    [Fact]
+    public void ContentControlsは繰り返しセクションのコンテナを列挙しません()
+    {
+        var filePath =
+            TestDocument.CreateTemporaryCopy(RepeatingSectionContentControlPath);
+        try
+        {
+            using var document = Document.Open(filePath, true);
+
+            // w15:repeatingSectionは繰り返し全体、w15:repeatingSectionItemは
+            // 1件分の領域を束ねるContent Controlで、どちらも値ではありません。
+            // それらの内側にある通常の入力項目だけを列挙します。
+            document.ContentControls
+                .Select(it => it.Tag)
+                .Should().Equal("ItemName");
         }
         finally
         {
