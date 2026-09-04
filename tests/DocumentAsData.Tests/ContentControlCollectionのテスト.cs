@@ -29,6 +29,20 @@ public class ContentControlCollectionのテスト
         Path.Combine("TestData", "コンボボックスのContent Control.docx");
     static readonly string RepeatingSectionContentControlPath =
         Path.Combine("TestData", "繰り返しセクションのContent Control.docx");
+    static readonly string EquationContentControlPath =
+        Path.Combine("TestData", "数式のContent Control.docx");
+    static readonly string CitationContentControlPath =
+        Path.Combine("TestData", "引用のContent Control.docx");
+    static readonly string GroupContentControlPath =
+        Path.Combine("TestData", "グループのContent Control.docx");
+    static readonly string BibliographyContentControlPath =
+        Path.Combine("TestData", "文献目録のContent Control.docx");
+    static readonly string DocumentPartContentControlPath =
+        Path.Combine("TestData", "組み込み文書パーツのContent Control.docx");
+    static readonly string DocumentPartListContentControlPath =
+        Path.Combine("TestData", "文書パーツギャラリーのContent Control.docx");
+    static readonly string EntityPickerContentControlPath =
+        Path.Combine("TestData", "エンティティピッカーのContent Control.docx");
 
     [Fact]
     public void ContentControlsは文書内のContentControlを列挙します()
@@ -282,6 +296,138 @@ public class ContentControlCollectionのテスト
             document.ContentControls
                 .Select(it => it.Tag)
                 .Should().Equal("ItemName");
+        }
+        finally
+        {
+            File.Delete(filePath);
+        }
+    }
+
+    [Fact]
+    public void ContentControlsは数式を列挙しません()
+    {
+        var filePath = TestDocument.CreateTemporaryCopy(EquationContentControlPath);
+        try
+        {
+            using var document = Document.Open(filePath, true);
+
+            // w:sdtPr/w:equationは数式Content Controlを示し、内容は
+            // w:tではなくOffice Mathのm:oMath/m:r/m:tとして保持されます。
+            document.ContentControls.Should().BeEmpty();
+        }
+        finally
+        {
+            File.Delete(filePath);
+        }
+    }
+
+    [Fact]
+    public void ContentControlsは引用を列挙しません()
+    {
+        var filePath = TestDocument.CreateTemporaryCopy(CitationContentControlPath);
+        try
+        {
+            using var document = Document.Open(filePath, true);
+
+            // w:sdtPr/w:citationはWordが引用として管理するContent Controlを示します。
+            // 表示文字列のみを値とする通常項目には含めません。
+            document.ContentControls.Should().BeEmpty();
+        }
+        finally
+        {
+            File.Delete(filePath);
+        }
+    }
+
+    [Fact]
+    public void ContentControlsはグループのコンテナを列挙しません()
+    {
+        var filePath = TestDocument.CreateTemporaryCopy(GroupContentControlPath);
+        try
+        {
+            using var document = Document.Open(filePath, true);
+
+            // w:sdtPr/w:groupは複数の内容を束ねるコンテナで、値ではありません。
+            // 内側にある通常の入力項目だけを列挙します。
+            document.ContentControls
+                .Select(it => it.Tag)
+                .Should().Equal("CustomerName");
+        }
+        finally
+        {
+            File.Delete(filePath);
+        }
+    }
+
+    [Fact]
+    public void ContentControlsは文献目録を列挙しません()
+    {
+        var filePath =
+            TestDocument.CreateTemporaryCopy(BibliographyContentControlPath);
+        try
+        {
+            using var document = Document.Open(filePath, true);
+
+            // w:sdtPr/w:bibliographyはWordが文献目録として管理する領域を示します。
+            // 表示文字列のみを値とする通常項目には含めません。
+            document.ContentControls.Should().BeEmpty();
+        }
+        finally
+        {
+            File.Delete(filePath);
+        }
+    }
+
+    [Fact]
+    public void ContentControlsは組み込み文書パーツを列挙しません()
+    {
+        var filePath =
+            TestDocument.CreateTemporaryCopy(DocumentPartContentControlPath);
+        try
+        {
+            using var document = Document.Open(filePath, true);
+
+            // w:sdtPr/w:docPartObjは組み込み文書パーツを表し、
+            // w:docPartGalleryなどの文書パーツ用情報を保持します。
+            document.ContentControls.Should().BeEmpty();
+        }
+        finally
+        {
+            File.Delete(filePath);
+        }
+    }
+
+    [Fact]
+    public void ContentControlsは文書パーツギャラリーを列挙しません()
+    {
+        var filePath =
+            TestDocument.CreateTemporaryCopy(DocumentPartListContentControlPath);
+        try
+        {
+            using var document = Document.Open(filePath, true);
+
+            // w:sdtPr/w:docPartListは文書パーツの選択肢を表し、
+            // w:docPartGalleryなどの文書パーツ用情報を保持します。
+            document.ContentControls.Should().BeEmpty();
+        }
+        finally
+        {
+            File.Delete(filePath);
+        }
+    }
+
+    [Fact]
+    public void ContentControlsはエンティティピッカーを列挙しません()
+    {
+        var filePath =
+            TestDocument.CreateTemporaryCopy(EntityPickerContentControlPath);
+        try
+        {
+            using var document = Document.Open(filePath, true);
+
+            // w:sdtPr/w14:entityPickerはエンティティ選択用のContent Controlを示します。
+            // 選択状態を表示文字列だけで表せないため、通常項目には含めません。
+            document.ContentControls.Should().BeEmpty();
         }
         finally
         {
