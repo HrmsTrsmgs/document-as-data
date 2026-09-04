@@ -36,16 +36,26 @@ public class CheckBox
         ).Single() ?? throw new InvalidOperationException();
 
     /// <summary>
-    /// チェックボックスがチェックされているかを取得します。
+    /// チェックボックスがチェックされているかを取得または設定します。
     /// </summary>
-    public bool IsChecked =>
-        IsCheckedValue(
-            (
-                from properties in element.Elements<Wordprocessing.SdtProperties>()
-                from checkBox in properties.Elements<Word2010.SdtContentCheckBox>()
-                from checkedValue in checkBox.Elements<Word2010.Checked>()
-                select checkedValue.Val?.Value
-            ).Single());
+    public bool IsChecked
+    {
+        get => IsCheckedValue(CheckedValue.Val?.Value);
+        set => CheckedValue.Val = value ?
+            Word2010.OnOffValues.One :
+            Word2010.OnOffValues.Zero;
+    }
+
+    /// <summary>
+    /// このチェックボックスの状態を保持するOOXML要素を取得します。
+    /// </summary>
+    Word2010.Checked CheckedValue =>
+        (
+            from properties in element.Elements<Wordprocessing.SdtProperties>()
+            from checkBox in properties.Elements<Word2010.SdtContentCheckBox>()
+            from checkedValue in checkBox.Elements<Word2010.Checked>()
+            select checkedValue
+        ).Single();
 
     /// <summary>
     /// OOXMLのオン・オフ値がチェック済みを表すかを取得します。

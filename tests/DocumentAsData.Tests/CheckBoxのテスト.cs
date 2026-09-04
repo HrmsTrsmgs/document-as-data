@@ -48,4 +48,26 @@ public class CheckBoxのテスト
             File.Delete(checkedFilePath);
         }
     }
+
+    [Fact]
+    public void IsCheckedプロパティはチェック状態を設定します()
+    {
+        var filePath =
+            TestDocument.CreateTemporaryCopy(CheckBoxContentControlPath);
+        try
+        {
+            using var document = Document.Open(filePath, true);
+            var tested = document.CheckBoxes.Single();
+
+            tested.IsChecked = true;
+            tested.IsChecked.Should().BeTrue();
+
+            tested.IsChecked = false;
+            tested.IsChecked.Should().BeFalse();
+        }
+        finally
+        {
+            File.Delete(filePath);
+        }
+    }
 }
