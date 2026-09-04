@@ -24,4 +24,21 @@ public class CheckBoxCollectionのテスト
             File.Delete(filePath);
         }
     }
+
+    [Fact]
+    public void CheckBoxesはTagからチェックボックスを取得します()
+    {
+        var filePath =
+            TestDocument.CreateTemporaryCopy(CheckBoxContentControlPath);
+        try
+        {
+            using var document = Document.Open(filePath, true);
+
+            document.CheckBoxes["Agreement"].Tag.Should().Be("Agreement");
+        }
+        finally
+        {
+            File.Delete(filePath);
+        }
+    }
 }

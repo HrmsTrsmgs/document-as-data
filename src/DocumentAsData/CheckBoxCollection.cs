@@ -24,6 +24,20 @@ public class CheckBoxCollection : IEnumerable<CheckBox>
     }
 
     /// <summary>
+    /// 指定したTagのチェックボックスを取得します。
+    /// </summary>
+    /// <param name="tag">取得するチェックボックスのTag。</param>
+    /// <returns>指定したTagのチェックボックス。</returns>
+    /// <exception cref="KeyNotFoundException">指定したTagのチェックボックスが存在しない場合。</exception>
+    /// <exception cref="InvalidOperationException">指定したTagのチェックボックスが複数存在する場合。</exception>
+    public CheckBox this[string tag] =>
+        (
+            from checkBox in this
+            where checkBox.Tag == tag
+            select checkBox
+        ).SingleOrDefault() ?? throw new KeyNotFoundException();
+
+    /// <summary>
     /// チェックボックスを列挙する列挙子を返します。
     /// </summary>
     /// <returns>チェックボックスを列挙する列挙子。</returns>
