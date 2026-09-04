@@ -46,6 +46,7 @@ public class Document : IDisposable
         this.workingStream = workingStream;
         MergeFields = new(this);
         ContentControls = new(this);
+        CheckBoxes = new(this);
     }
 
     /// <summary>
@@ -162,6 +163,11 @@ public class Document : IDisposable
     /// 文書内のContent Controlを取得するコレクションを取得します。
     /// </summary>
     public ContentControlCollection ContentControls { get; }
+
+    /// <summary>
+    /// 文書内のチェックボックスを取得するコレクションを取得します。
+    /// </summary>
+    public CheckBoxCollection CheckBoxes { get; }
 
     /// <summary>
     /// 保存元を変更せず、文書を別のDOCXファイルとして保存します。
