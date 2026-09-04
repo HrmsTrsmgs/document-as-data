@@ -13,6 +13,23 @@ public class CheckBoxのテスト
         Path.Combine("TestData", "チェック済みのチェックボックス.docx");
 
     [Fact]
+    public void Documentプロパティはチェックボックスが属する文書を取得します()
+    {
+        var filePath =
+            TestDocument.CreateTemporaryCopy(CheckBoxContentControlPath);
+        try
+        {
+            using var document = Document.Open(filePath, true);
+
+            document.CheckBoxes.Single().Document.Should().BeSameAs(document);
+        }
+        finally
+        {
+            File.Delete(filePath);
+        }
+    }
+
+    [Fact]
     public void TagプロパティはチェックボックスのTagを取得します()
     {
         var filePath =

@@ -65,7 +65,7 @@ public class CheckBoxCollection : IEnumerable<CheckBox>
             return checkBox;
         }
 
-        checkBox = new(element);
+        checkBox = new(document, element);
         cache.Add(element, checkBox);
         return checkBox;
     }
