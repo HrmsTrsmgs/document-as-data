@@ -1,3 +1,4 @@
+using Word2010 = DocumentFormat.OpenXml.Office2010.Word;
 using Wordprocessing = DocumentFormat.OpenXml.Wordprocessing;
 
 namespace Marimo.DocumentAsData;
@@ -33,4 +34,25 @@ public class CheckBox
             from tag in properties.Elements<Wordprocessing.Tag>()
             select tag.Val?.Value
         ).Single() ?? throw new InvalidOperationException();
+
+    /// <summary>
+    /// チェックボックスがチェックされているかを取得します。
+    /// </summary>
+    public bool IsChecked =>
+        IsCheckedValue(
+            (
+                from properties in element.Elements<Wordprocessing.SdtProperties>()
+                from checkBox in properties.Elements<Word2010.SdtContentCheckBox>()
+                from checkedValue in checkBox.Elements<Word2010.Checked>()
+                select checkedValue.Val?.Value
+            ).Single());
+
+    /// <summary>
+    /// OOXMLのオン・オフ値がチェック済みを表すかを取得します。
+    /// </summary>
+    /// <param name="value">確認するOOXMLのオン・オフ値。</param>
+    /// <returns><c>true</c>または<c>1</c>を表す場合は<c>true</c>。</returns>
+    static bool IsCheckedValue(Word2010.OnOffValues? value) =>
+        value == Word2010.OnOffValues.True ||
+        value == Word2010.OnOffValues.One;
 }
