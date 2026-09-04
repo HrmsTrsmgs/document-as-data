@@ -5,6 +5,9 @@ namespace Marimo.DocumentAsData.Test;
 
 public class CheckBoxCollectionのテスト
 {
+    static readonly string EmptyDocumentPath =
+        Path.Combine("TestData", "空の文書.docx");
+
     static readonly string CheckBoxContentControlPath =
         Path.Combine("TestData", "チェックボックスのContent Control.docx");
 
@@ -56,6 +59,24 @@ public class CheckBoxCollectionのテスト
             var enumerated = document.CheckBoxes.Single();
 
             document.CheckBoxes["Agreement"].Should().BeSameAs(enumerated);
+        }
+        finally
+        {
+            File.Delete(filePath);
+        }
+    }
+
+    [Fact]
+    public void CheckBoxesは存在しないTagを指定した場合に失敗します()
+    {
+        var filePath = TestDocument.CreateTemporaryCopy(EmptyDocumentPath);
+        try
+        {
+            using var document = Document.Open(filePath, true);
+
+            var action = () => _ = document.CheckBoxes["not_found"];
+
+            action.Should().Throw<KeyNotFoundException>();
         }
         finally
         {
