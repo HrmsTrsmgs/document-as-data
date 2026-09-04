@@ -14,6 +14,9 @@ public class CheckBoxCollectionのテスト
     static readonly string CheckBoxesWithoutTagPath =
         Path.Combine("TestData", "Tagなしを含むチェックボックス.docx");
 
+    static readonly string DuplicateCheckBoxesPath =
+        Path.Combine("TestData", "同じTagのチェックボックス.docx");
+
     [Fact]
     public void CheckBoxesは文書内のチェックボックスを列挙します()
     {
@@ -77,6 +80,24 @@ public class CheckBoxCollectionのテスト
             var action = () => _ = document.CheckBoxes["not_found"];
 
             action.Should().Throw<KeyNotFoundException>();
+        }
+        finally
+        {
+            File.Delete(filePath);
+        }
+    }
+
+    [Fact]
+    public void CheckBoxesは同じTagのチェックボックスが複数存在する場合に失敗します()
+    {
+        var filePath = TestDocument.CreateTemporaryCopy(DuplicateCheckBoxesPath);
+        try
+        {
+            using var document = Document.Open(filePath, true);
+
+            var action = () => _ = document.CheckBoxes["Agreement"];
+
+            action.Should().Throw<InvalidOperationException>();
         }
         finally
         {
