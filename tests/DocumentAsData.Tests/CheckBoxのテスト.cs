@@ -1,5 +1,7 @@
+using DocumentFormat.OpenXml.Packaging;
 using FluentAssertions;
 using Marimo.DocumentAsData.Test.TestDocuments;
+using Wordprocessing = DocumentFormat.OpenXml.Wordprocessing;
 
 namespace Marimo.DocumentAsData.Test;
 
@@ -68,6 +70,35 @@ public class CheckBoxのテスト
         finally
         {
             File.Delete(filePath);
+        }
+    }
+
+    [Fact]
+    public void IsCheckedプロパティはチェック済みの表示文字を設定します()
+    {
+        var sourcePath =
+            TestDocument.CreateTemporaryCopy(CheckBoxContentControlPath);
+        var outputPath = TestDocument.CreateOutputPath();
+        try
+        {
+            using (var document = Document.Open(sourcePath, true))
+            {
+                document.CheckBoxes.Single().IsChecked = true;
+                document.SaveAs(outputPath);
+            }
+
+            using var saved = WordprocessingDocument.Open(outputPath, false);
+            // Wordのチェック状態はw14:checked、表示文字はw:tに別々に保持されます。
+            // この文書のw14:checkedStateに指定されたU+2612をw:tへ反映し、
+            // Wordで開いたときにもチェック済みとして表示されることを確認します。
+            saved.MainDocumentPart!.Document!
+                .Descendants<Wordprocessing.Text>()
+                .Single().Text.Should().Be("☒");
+        }
+        finally
+        {
+            File.Delete(sourcePath);
+            File.Delete(outputPath);
         }
     }
 }
