@@ -31,7 +31,7 @@ public class CheckBoxCollection : IEnumerable<CheckBox>
         (
             from element in document.Elements.OfType<Wordprocessing.SdtElement>()
             where IsCheckBox(element)
-            select new CheckBox()
+            select new CheckBox(element)
         ).GetEnumerator();
 
     /// <summary>
