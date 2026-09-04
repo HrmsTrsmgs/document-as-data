@@ -8,6 +8,9 @@ public class CheckBoxCollectionのテスト
     static readonly string CheckBoxContentControlPath =
         Path.Combine("TestData", "チェックボックスのContent Control.docx");
 
+    static readonly string CheckBoxesWithoutTagPath =
+        Path.Combine("TestData", "Tagなしを含むチェックボックス.docx");
+
     [Fact]
     public void CheckBoxesは文書内のチェックボックスを列挙します()
     {
@@ -53,6 +56,22 @@ public class CheckBoxCollectionのテスト
             var enumerated = document.CheckBoxes.Single();
 
             document.CheckBoxes["Agreement"].Should().BeSameAs(enumerated);
+        }
+        finally
+        {
+            File.Delete(filePath);
+        }
+    }
+
+    [Fact]
+    public void CheckBoxesはTagのないチェックボックスを列挙しません()
+    {
+        var filePath = TestDocument.CreateTemporaryCopy(CheckBoxesWithoutTagPath);
+        try
+        {
+            using var document = Document.Open(filePath, true);
+
+            document.CheckBoxes.Single().Tag.Should().Be("Agreement");
         }
         finally
         {

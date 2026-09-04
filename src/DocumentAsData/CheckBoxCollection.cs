@@ -49,9 +49,21 @@ public class CheckBoxCollection : IEnumerable<CheckBox>
     public IEnumerator<CheckBox> GetEnumerator() =>
         (
             from element in document.Elements.OfType<Wordprocessing.SdtElement>()
-            where IsCheckBox(element)
+            where HasTag(element) && IsCheckBox(element)
             select GetOrCreateCheckBox(element)
         ).GetEnumerator();
+
+    /// <summary>
+    /// 指定したチェックボックス自身にTagが設定されているかを取得します。
+    /// </summary>
+    /// <param name="element">確認するチェックボックスのOOXML要素。</param>
+    /// <returns>Tagが設定されている場合は<c>true</c>。</returns>
+    static bool HasTag(Wordprocessing.SdtElement element) =>
+        (
+            from properties in element.Elements<Wordprocessing.SdtProperties>()
+            from tag in properties.Elements<Wordprocessing.Tag>()
+            select tag
+        ).Any();
 
     /// <summary>
     /// 指定したOOXML要素に対応する既存または新しいチェックボックスを取得します。
