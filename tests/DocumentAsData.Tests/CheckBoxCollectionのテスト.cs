@@ -41,4 +41,22 @@ public class CheckBoxCollectionのテスト
             File.Delete(filePath);
         }
     }
+
+    [Fact]
+    public void CheckBoxesは列挙とTag検索で同じチェックボックスを返します()
+    {
+        var filePath =
+            TestDocument.CreateTemporaryCopy(CheckBoxContentControlPath);
+        try
+        {
+            using var document = Document.Open(filePath, true);
+            var enumerated = document.CheckBoxes.Single();
+
+            document.CheckBoxes["Agreement"].Should().BeSameAs(enumerated);
+        }
+        finally
+        {
+            File.Delete(filePath);
+        }
+    }
 }

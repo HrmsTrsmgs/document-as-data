@@ -15,6 +15,11 @@ public class CheckBoxCollection : IEnumerable<CheckBox>
     readonly Document document;
 
     /// <summary>
+    /// 同じOOXML要素から生成したチェックボックスをコレクションの生存期間中共有します。
+    /// </summary>
+    readonly Dictionary<Wordprocessing.SdtElement, CheckBox> cache = [];
+
+    /// <summary>
     /// 文書全体をチェックボックスの列挙対象にします。
     /// </summary>
     /// <param name="document">チェックボックスを取得する文書。</param>
@@ -45,8 +50,25 @@ public class CheckBoxCollection : IEnumerable<CheckBox>
         (
             from element in document.Elements.OfType<Wordprocessing.SdtElement>()
             where IsCheckBox(element)
-            select new CheckBox(element)
+            select GetOrCreateCheckBox(element)
         ).GetEnumerator();
+
+    /// <summary>
+    /// 指定したOOXML要素に対応する既存または新しいチェックボックスを取得します。
+    /// </summary>
+    /// <param name="element">チェックボックスを表すOOXML要素。</param>
+    /// <returns>指定した要素に対応するチェックボックス。</returns>
+    CheckBox GetOrCreateCheckBox(Wordprocessing.SdtElement element)
+    {
+        if (cache.TryGetValue(element, out var checkBox))
+        {
+            return checkBox;
+        }
+
+        checkBox = new(element);
+        cache.Add(element, checkBox);
+        return checkBox;
+    }
 
     /// <summary>
     /// 指定したContent Controlがチェックボックスかを取得します。
