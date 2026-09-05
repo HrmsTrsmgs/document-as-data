@@ -101,6 +101,15 @@ function ConvertTo-NormalizedText {
     return ($normalizedLines -join "`r`n") + "`r`n"
 }
 
+function Test-HasUtf8Bom {
+    param([byte[]]$Bytes)
+
+    return $Bytes.Length -ge 3 -and
+        $Bytes[0] -eq 0xEF -and
+        $Bytes[1] -eq 0xBB -and
+        $Bytes[2] -eq 0xBF
+}
+
 $changedPaths = Get-ChangedPath
 $failed = $false
 
@@ -119,10 +128,19 @@ foreach ($changedPath in $changedPaths) {
 
     $currentBytes = [IO.File]::ReadAllBytes($path)
     $utf8 = [Text.UTF8Encoding]::new($false, $true)
-    $text = $utf8.GetString($currentBytes)
+    $contentOffset = if (Test-HasUtf8Bom $currentBytes) { 3 } else { 0 }
+    $text = $utf8.GetString(
+        $currentBytes,
+        $contentOffset,
+        $currentBytes.Length - $contentOffset)
     $normalizedText = ConvertTo-NormalizedText $text
-    $encoding = [Text.UTF8Encoding]::new([bool]$policy.HasBom)
-    $normalizedBytes = $encoding.GetBytes($normalizedText)
+    $normalizedContentBytes = $utf8.GetBytes($normalizedText)
+    $normalizedBytes = $normalizedContentBytes
+
+    if ($policy.HasBom) {
+        $preamble = [Text.UTF8Encoding]::new($true).GetPreamble()
+        $normalizedBytes = [byte[]]($preamble + $normalizedContentBytes)
+    }
 
     if (-not [Linq.Enumerable]::SequenceEqual($currentBytes, $normalizedBytes)) {
         if ($Check) {
