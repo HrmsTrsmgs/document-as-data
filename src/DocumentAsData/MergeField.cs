@@ -199,10 +199,14 @@ public class MergeField
                 throw new InvalidOperationException();
             }
 
-            var oldResult = resultStart.ElementsAfter()
-                .TakeWhile(it => it != resultEnd)
-                .ToArray();
-            Array.ForEach(oldResult, it => it.Remove());
+            // OOXML要素を列挙しながら削除すると次の兄弟をたどれないため、削除対象を先に確定します。
+            foreach (var oldElement in
+                resultStart.ElementsAfter()
+                    .TakeWhile(it => it != resultEnd)
+                    .ToArray())
+            {
+                oldElement.Remove();
+            }
 
             var newValueElements = WordTextValue.CreateElements(value)
                 .DefaultIfEmpty(new Wordprocessing.Text())

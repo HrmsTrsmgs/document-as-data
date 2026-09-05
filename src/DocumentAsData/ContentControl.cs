@@ -59,21 +59,29 @@ public class ContentControl
             RemovePlaceholderState();
             RemoveControlCharacters();
             ReplaceFirstText(texts.First(), value);
-            Array.ForEach(texts[1..], it => it.Text = "");
+            foreach (var text in texts[1..])
+            {
+                text.Text = "";
+            }
         }
     }
 
     /// <summary>
     /// 前回の値を構成していたタブと改行が、再設定した値の前に残らないよう除去します。
     /// </summary>
-    void RemoveControlCharacters() =>
-        Array.ForEach(
+    void RemoveControlCharacters()
+    {
+        // OOXML要素を列挙しながら削除すると次の要素をたどれないため、削除対象を先に確定します。
+        foreach (var valueElement in
             (
                 from valueElement in element.Descendants()
                 where valueElement is Wordprocessing.TabChar or Wordprocessing.Break
                 select valueElement
-            ).ToArray(),
-            it => it.Remove());
+            ).ToArray())
+        {
+            valueElement.Remove();
+        }
+    }
 
     /// <summary>
     /// 最初の文字列要素を、Wordが表示できる文字列、タブ、改行要素へ置き換えます。
