@@ -188,19 +188,34 @@ public class Document : IDisposable
     /// <typeparam name="T">文書へ書き込むデータの型。</typeparam>
     /// <param name="data">文書へ書き込むデータ。</param>
     /// <exception cref="DocumentMappingException">
-    /// プロパティに対応する文書項目が存在しない場合。
+    /// プロパティに対応する文書項目が存在しないか、
+    /// 複数のプロパティが同じ文書項目に対応する場合。
     /// </exception>
     /// <exception cref="InvalidOperationException">
     /// 同じ名前のContent ControlとMERGEFIELDが両方に存在する場合。
     /// </exception>
     public void Replace<T>(T data)
     {
-        foreach (var property in typeof(T).GetProperties())
-        {
-            var name = property.GetCustomAttribute<DocumentItemAttribute>()?.Name
-                ?? property.Name;
+        var mappings = (
+            from property in typeof(T).GetProperties()
+            select new
+            {
+                Property = property,
+                ItemName = property.GetCustomAttribute<DocumentItemAttribute>()?.Name
+                    ?? property.Name
+            }
+        ).ToArray();
 
-            ReplaceValue(name, (string)property.GetValue(data)!);
+        if (mappings.Select(it => it.ItemName).Distinct().Count() != mappings.Length)
+        {
+            throw new DocumentMappingException();
+        }
+
+        foreach (var mapping in mappings)
+        {
+            ReplaceValue(
+                mapping.ItemName,
+                (string)mapping.Property.GetValue(data)!);
         }
     }
 

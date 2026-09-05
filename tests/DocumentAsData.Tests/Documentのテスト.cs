@@ -493,6 +493,30 @@ public class Documentのテスト
     }
 
     [Fact]
+    public void Replaceは複数プロパティが同じ文書項目を指定した場合に失敗します()
+    {
+        var filePath = TestDocument.CreateTemporaryCopy(ContentControlsPath);
+        try
+        {
+            using var document = Document.Open(filePath);
+
+            var action = () =>
+                document.Replace(
+                    new DuplicateDocumentItemData
+                    {
+                        FirstValue = "1",
+                        SecondValue = "2"
+                    });
+
+            action.Should().Throw<DocumentMappingException>();
+        }
+        finally
+        {
+            File.Delete(filePath);
+        }
+    }
+
+    [Fact]
     public void Replaceはプロパティ名と同じMERGEFIELDへオブジェクトを書き込みます()
     {
         var filePath = TestDocument.CreateTemporaryCopy(SimpleMergeFieldsPath);
@@ -825,6 +849,15 @@ public class Documentのテスト
     {
         [DocumentItem("Missing")]
         public string Value { get; set; } = "";
+    }
+
+    public sealed class DuplicateDocumentItemData
+    {
+        [DocumentItem("CustomerName")]
+        public string FirstValue { get; set; } = "";
+
+        [DocumentItem("CustomerName")]
+        public string SecondValue { get; set; } = "";
     }
 
 }
