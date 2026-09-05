@@ -354,6 +354,32 @@ public class Documentのテスト
     }
 
     [Fact]
+    public void Replaceはプロパティ名と同じTagのContentControlへオブジェクトを書き込みます()
+    {
+        var filePath = TestDocument.CreateTemporaryCopy(ContentControlsPath);
+        try
+        {
+            using var document = Document.Open(filePath);
+
+            document.Replace(
+                new DocumentData
+                {
+                    CustomerName = "変更後の氏名",
+                    Address = "変更後の住所"
+                });
+
+            document.ContentControls["CustomerName"].Value
+                .Should().Be("変更後の氏名");
+            document.ContentControls["Address"].Value
+                .Should().Be("変更後の住所");
+        }
+        finally
+        {
+            File.Delete(filePath);
+        }
+    }
+
+    [Fact]
     public void SaveAsは指定したパスへDOCXを作成します()
     {
         var sourcePath = TestDocument.CreateTemporaryCopy(EmptyDocumentPath);

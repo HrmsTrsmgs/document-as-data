@@ -171,6 +171,19 @@ public class Document : IDisposable
     }
 
     /// <summary>
+    /// 指定したオブジェクトのプロパティを、同じTagのContent Controlへ書き込みます。
+    /// </summary>
+    /// <typeparam name="T">文書へ書き込むデータの型。</typeparam>
+    /// <param name="data">文書へ書き込むデータ。</param>
+    public void Replace<T>(T data)
+    {
+        foreach (var property in typeof(T).GetProperties())
+        {
+            ContentControls[property.Name].Value = (string)property.GetValue(data)!;
+        }
+    }
+
+    /// <summary>
     /// 文書内のMERGEFIELDを取得するコレクションを取得します。
     /// </summary>
     public MergeFieldCollection MergeFields { get; }
