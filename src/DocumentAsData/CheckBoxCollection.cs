@@ -1,5 +1,4 @@
 ﻿using System.Collections;
-using Word2010 = DocumentFormat.OpenXml.Office2010.Word;
 using Wordprocessing = DocumentFormat.OpenXml.Wordprocessing;
 
 namespace Marimo.DocumentAsData;
@@ -49,7 +48,7 @@ public class CheckBoxCollection : IEnumerable<CheckBox>
     public IEnumerator<CheckBox> GetEnumerator() =>
         (
             from element in document.Elements.OfType<Wordprocessing.SdtElement>()
-            where element.HasTag() && IsCheckBox(element)
+            where element.HasTag() && element.IsCheckBox
             select GetOrCreateCheckBox(element)
         ).GetEnumerator();
 
@@ -60,14 +59,6 @@ public class CheckBoxCollection : IEnumerable<CheckBox>
     /// <returns>指定した要素に対応するチェックボックス。</returns>
     CheckBox GetOrCreateCheckBox(Wordprocessing.SdtElement element) =>
         cache.GetOrAdd(element, () => new(document, element));
-
-    /// <summary>
-    /// 指定したContent Controlがチェックボックスかを取得します。
-    /// </summary>
-    /// <param name="element">確認するContent ControlのOOXML要素。</param>
-    /// <returns>チェックボックスの場合は<c>true</c>。</returns>
-    static bool IsCheckBox(Wordprocessing.SdtElement element) =>
-        element.PropertyElements<Word2010.SdtContentCheckBox>().Any();
 
     /// <inheritdoc />
     IEnumerator IEnumerable.GetEnumerator() =>
