@@ -15,6 +15,8 @@ public class Documentのテスト
         Path.Combine("TestData", "単一のContent Control.docx");
     static readonly string ContentControlsPath =
         Path.Combine("TestData", "複数のContent Control.docx");
+    static readonly string AmbiguousCustomerNamePath =
+        Path.Combine("TestData", "同名のMERGEFIELDとContent Control.docx");
     static readonly string InvalidContentControlWithoutTagValuePath =
         Path.Combine("TestData", "Tagの値が欠落した不正なContent Control.docx");
 
@@ -367,6 +369,25 @@ public class Documentのテスト
                     {
                         CustomerName = "株式会社○○"
                     });
+        }
+        finally
+        {
+            File.Delete(filePath);
+        }
+    }
+
+    [Fact]
+    public void Readは同名のMERGEFIELDとContentControlがある場合に失敗します()
+    {
+        var filePath = TestDocument.CreateTemporaryCopy(AmbiguousCustomerNamePath);
+        try
+        {
+            using var document = Document.Open(filePath, true);
+
+            var action = () =>
+                document.Read<CustomerNameOnlyDocumentData>();
+
+            action.Should().Throw<InvalidOperationException>();
         }
         finally
         {

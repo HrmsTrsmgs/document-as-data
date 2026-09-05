@@ -176,9 +176,15 @@ public class Document : IDisposable
     /// <param name="name">読み込む名前。</param>
     /// <returns>文書から読み込んだ値。</returns>
     string ReadValue(string name) =>
-        ContentControls.Any(it => it.Tag == name)
-            ? ContentControls[name].Value
-            : MergeFields[name].Value;
+        (
+            from contentControl in ContentControls
+            where contentControl.Tag == name
+            select contentControl.Value
+        ).Concat(
+            from mergeField in MergeFields
+            where mergeField.Name == name
+            select mergeField.Value)
+            .Single();
 
     /// <summary>
     /// 指定したオブジェクトのプロパティを、同じ名前のContent ControlまたはMERGEFIELDへ書き込みます。
