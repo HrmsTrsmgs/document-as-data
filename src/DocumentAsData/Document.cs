@@ -194,7 +194,10 @@ public class Document : IDisposable
     {
         foreach (var property in typeof(T).GetProperties())
         {
-            ReplaceValue(property.Name, (string)property.GetValue(data)!);
+            var name = property.GetCustomAttribute<DocumentItemAttribute>()?.Name
+                ?? property.Name;
+
+            ReplaceValue(name, (string)property.GetValue(data)!);
         }
     }
 
