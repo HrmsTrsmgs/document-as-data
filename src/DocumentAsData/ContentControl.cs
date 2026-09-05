@@ -50,8 +50,9 @@ public class ContentControl
     /// </exception>
     public string Value
     {
-        get => IsShowingPlaceholder ? "" :
-            WordTextValue.Read(element.Descendants());
+        get => IsShowingPlaceholder
+            ? ""
+            : WordTextValue.Read(element.Descendants());
         set
         {
             var texts = element.Descendants<Wordprocessing.Text>().ToArray();

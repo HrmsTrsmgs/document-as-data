@@ -49,9 +49,9 @@ public class CheckBox
         get => IsCheckedValue(CheckedValue.Val?.Value);
         set
         {
-            CheckedValue.Val = value ?
-                Word2010.OnOffValues.One :
-                Word2010.OnOffValues.Zero;
+            CheckedValue.Val = value
+                ? Word2010.OnOffValues.One
+                : Word2010.OnOffValues.Zero;
             DisplayText.Text = DisplayCharacter(value);
         }
     }
@@ -81,9 +81,9 @@ public class CheckBox
     /// <returns>チェック状態に対応する表示文字。</returns>
     string DisplayCharacter(bool isChecked) =>
         CharacterFromHexadecimal(
-            isChecked ?
-                CheckBoxProperties.CheckedState?.Val?.Value :
-                CheckBoxProperties.UncheckedState?.Val?.Value);
+            isChecked
+                ? CheckBoxProperties.CheckedState?.Val?.Value
+                : CheckBoxProperties.UncheckedState?.Val?.Value);
 
     /// <summary>
     /// OOXMLに16進数で保存されたUnicodeコードポイントを文字列へ変換します。
