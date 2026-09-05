@@ -154,7 +154,7 @@ public class Document : IDisposable
     }
 
     /// <summary>
-    /// 文書内のContent Controlを、指定した型のプロパティへ対応付けて読み込みます。
+    /// 文書内のContent ControlまたはMERGEFIELDを、指定した型のプロパティへ対応付けて読み込みます。
     /// </summary>
     /// <typeparam name="T">文書のデータを読み込む型。</typeparam>
     /// <returns>文書内のデータを読み込んだオブジェクト。</returns>
@@ -164,11 +164,21 @@ public class Document : IDisposable
 
         foreach (var property in typeof(T).GetProperties())
         {
-            property.SetValue(data, ContentControls[property.Name].Value);
+            property.SetValue(data, ReadValue(property.Name));
         }
 
         return data;
     }
+
+    /// <summary>
+    /// 同じ名前のContent ControlまたはMERGEFIELDから値を読み込みます。
+    /// </summary>
+    /// <param name="name">読み込む名前。</param>
+    /// <returns>文書から読み込んだ値。</returns>
+    string ReadValue(string name) =>
+        ContentControls.Any(it => it.Tag == name)
+            ? ContentControls[name].Value
+            : MergeFields[name].Value;
 
     /// <summary>
     /// 指定したオブジェクトのプロパティを、同じTagのContent Controlへ書き込みます。

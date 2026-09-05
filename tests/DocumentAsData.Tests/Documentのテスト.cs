@@ -354,6 +354,27 @@ public class Documentのテスト
     }
 
     [Fact]
+    public void Readはプロパティ名と同じMERGEFIELDからオブジェクトを読み込みます()
+    {
+        var filePath = TestDocument.CreateTemporaryCopy(SimpleMergeFieldsPath);
+        try
+        {
+            using var document = Document.Open(filePath);
+
+            document.Read<CustomerNameOnlyDocumentData>()
+                .Should().BeEquivalentTo(
+                    new CustomerNameOnlyDocumentData
+                    {
+                        CustomerName = "株式会社○○"
+                    });
+        }
+        finally
+        {
+            File.Delete(filePath);
+        }
+    }
+
+    [Fact]
     public void Replaceはプロパティ名と同じTagのContentControlへオブジェクトを書き込みます()
     {
         var filePath = TestDocument.CreateTemporaryCopy(ContentControlsPath);
