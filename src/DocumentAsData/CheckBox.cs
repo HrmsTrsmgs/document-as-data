@@ -42,11 +42,7 @@ public class CheckBox
     /// Tagの値が欠落しているか、Tagが複数存在する場合。
     /// </exception>
     public string Tag =>
-        (
-            from properties in element.Elements<Wordprocessing.SdtProperties>()
-            from tag in properties.Elements<Wordprocessing.Tag>()
-            select tag.Val?.Value
-        ).Single() ?? throw new InvalidOperationException();
+        element.ReadTag();
 
     /// <summary>
     /// チェックボックスがチェックされているかを取得または設定します。
