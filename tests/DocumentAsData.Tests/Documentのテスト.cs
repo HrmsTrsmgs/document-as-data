@@ -13,6 +13,8 @@ public class Documentのテスト
         Path.Combine("TestData", "複合形式のMERGEFIELD.docx");
     static readonly string ContentControlPath =
         Path.Combine("TestData", "単一のContent Control.docx");
+    static readonly string ContentControlsPath =
+        Path.Combine("TestData", "複数のContent Control.docx");
     static readonly string InvalidContentControlWithoutTagValuePath =
         Path.Combine("TestData", "Tagの値が欠落した不正なContent Control.docx");
 
@@ -330,6 +332,28 @@ public class Documentのテスト
     }
 
     [Fact]
+    public void Readはプロパティ名と同じTagのContentControlからオブジェクトを読み込みます()
+    {
+        var filePath = TestDocument.CreateTemporaryCopy(ContentControlsPath);
+        try
+        {
+            using var document = Document.Open(filePath);
+
+            document.Read<DocumentData>()
+                .Should().BeEquivalentTo(
+                    new DocumentData
+                    {
+                        CustomerName = "山田太郎",
+                        Address = "東京都"
+                    });
+        }
+        finally
+        {
+            File.Delete(filePath);
+        }
+    }
+
+    [Fact]
     public void SaveAsは指定したパスへDOCXを作成します()
     {
         var sourcePath = TestDocument.CreateTemporaryCopy(EmptyDocumentPath);
@@ -564,6 +588,13 @@ public class Documentのテスト
             File.Delete(sourcePath);
             File.Delete(outputPath);
         }
+    }
+
+    public sealed class DocumentData
+    {
+        public string CustomerName { get; set; } = "";
+
+        public string Address { get; set; } = "";
     }
 
 }

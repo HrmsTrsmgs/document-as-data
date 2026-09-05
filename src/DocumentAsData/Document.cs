@@ -154,6 +154,23 @@ public class Document : IDisposable
     }
 
     /// <summary>
+    /// 文書内のContent Controlを、指定した型のプロパティへ対応付けて読み込みます。
+    /// </summary>
+    /// <typeparam name="T">文書のデータを読み込む型。</typeparam>
+    /// <returns>文書内のデータを読み込んだオブジェクト。</returns>
+    public T Read<T>()
+    {
+        var data = Activator.CreateInstance<T>();
+
+        foreach (var property in typeof(T).GetProperties())
+        {
+            property.SetValue(data, ContentControls[property.Name].Value);
+        }
+
+        return data;
+    }
+
+    /// <summary>
     /// 文書内のMERGEFIELDを取得するコレクションを取得します。
     /// </summary>
     public MergeFieldCollection MergeFields { get; }
