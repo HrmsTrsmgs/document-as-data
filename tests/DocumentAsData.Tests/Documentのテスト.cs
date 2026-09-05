@@ -560,6 +560,29 @@ public class Documentのテスト
     }
 
     [Fact]
+    public void Replaceは対応していないプロパティ型の場合に失敗します()
+    {
+        var filePath = TestDocument.CreateTemporaryCopy(ContentControlsPath);
+        try
+        {
+            using var document = Document.Open(filePath);
+
+            var action = () =>
+                document.Replace(
+                    new UnsupportedPropertyTypeData
+                    {
+                        Value = DateTime.Today
+                    });
+
+            action.Should().Throw<DocumentMappingException>();
+        }
+        finally
+        {
+            File.Delete(filePath);
+        }
+    }
+
+    [Fact]
     public void Replaceはプロパティ名と同じMERGEFIELDへオブジェクトを書き込みます()
     {
         var filePath = TestDocument.CreateTemporaryCopy(SimpleMergeFieldsPath);
@@ -920,6 +943,12 @@ public class Documentのテスト
         {
             set { }
         }
+    }
+
+    public sealed class UnsupportedPropertyTypeData
+    {
+        [DocumentItem("CustomerName")]
+        public DateTime Value { get; set; }
     }
 
 }

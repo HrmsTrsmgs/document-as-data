@@ -190,7 +190,8 @@ public class Document : IDisposable
     /// <exception cref="DocumentMappingException">
     /// プロパティに対応する文書項目が存在しないか、
     /// 複数のプロパティが同じ文書項目に対応するか、
-    /// DocumentItem属性を指定したプロパティにpublicなgetterがない場合。
+    /// DocumentItem属性を指定したプロパティにpublicなgetterがないか、
+    /// プロパティの型に対応していない場合。
     /// </exception>
     /// <exception cref="InvalidOperationException">
     /// 同じ名前のContent ControlとMERGEFIELDが両方に存在する場合。
@@ -212,6 +213,11 @@ public class Document : IDisposable
         if (mappings.Any(it =>
             it.IsExplicitlyMapped &&
             it.Property.GetMethod?.IsPublic != true))
+        {
+            throw new DocumentMappingException();
+        }
+
+        if (mappings.Any(it => it.Property.PropertyType != typeof(string)))
         {
             throw new DocumentMappingException();
         }
