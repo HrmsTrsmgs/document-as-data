@@ -517,6 +517,26 @@ public class Documentのテスト
     }
 
     [Fact]
+    public void ReplaceはDocumentItem属性を付けたプロパティにpublicなgetterがない場合に失敗します()
+    {
+        var filePath = TestDocument.CreateTemporaryCopy(ContentControlsPath);
+        try
+        {
+            using var document = Document.Open(filePath);
+
+            var action = () =>
+                document.Replace(
+                    new AttributedPropertyWithoutPublicGetterData());
+
+            action.Should().Throw<DocumentMappingException>();
+        }
+        finally
+        {
+            File.Delete(filePath);
+        }
+    }
+
+    [Fact]
     public void Replaceはプロパティ名と同じMERGEFIELDへオブジェクトを書き込みます()
     {
         var filePath = TestDocument.CreateTemporaryCopy(SimpleMergeFieldsPath);
@@ -858,6 +878,15 @@ public class Documentのテスト
 
         [DocumentItem("CustomerName")]
         public string SecondValue { get; set; } = "";
+    }
+
+    public sealed class AttributedPropertyWithoutPublicGetterData
+    {
+        [DocumentItem("CustomerName")]
+        public string Value
+        {
+            set { }
+        }
     }
 
 }

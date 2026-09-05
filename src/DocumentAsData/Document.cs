@@ -189,7 +189,8 @@ public class Document : IDisposable
     /// <param name="data">文書へ書き込むデータ。</param>
     /// <exception cref="DocumentMappingException">
     /// プロパティに対応する文書項目が存在しないか、
-    /// 複数のプロパティが同じ文書項目に対応する場合。
+    /// 複数のプロパティが同じ文書項目に対応するか、
+    /// DocumentItem属性を指定したプロパティにpublicなgetterがない場合。
     /// </exception>
     /// <exception cref="InvalidOperationException">
     /// 同じ名前のContent ControlとMERGEFIELDが両方に存在する場合。
@@ -198,13 +199,21 @@ public class Document : IDisposable
     {
         var mappings = (
             from property in typeof(T).GetProperties()
+            let attribute = property.GetCustomAttribute<DocumentItemAttribute>()
             select new
             {
                 Property = property,
-                ItemName = property.GetCustomAttribute<DocumentItemAttribute>()?.Name
-                    ?? property.Name
+                ItemName = attribute?.Name ?? property.Name,
+                IsExplicitlyMapped = attribute is not null
             }
         ).ToArray();
+
+        if (mappings.Any(it =>
+            it.IsExplicitlyMapped &&
+            it.Property.GetMethod?.IsPublic != true))
+        {
+            throw new DocumentMappingException();
+        }
 
         if (mappings.Select(it => it.ItemName).Distinct().Count() != mappings.Length)
         {
