@@ -181,7 +181,7 @@ public class Document : IDisposable
             : MergeFields[name].Value;
 
     /// <summary>
-    /// 指定したオブジェクトのプロパティを、同じTagのContent Controlへ書き込みます。
+    /// 指定したオブジェクトのプロパティを、同じ名前のContent ControlまたはMERGEFIELDへ書き込みます。
     /// </summary>
     /// <typeparam name="T">文書へ書き込むデータの型。</typeparam>
     /// <param name="data">文書へ書き込むデータ。</param>
@@ -189,8 +189,24 @@ public class Document : IDisposable
     {
         foreach (var property in typeof(T).GetProperties())
         {
-            ContentControls[property.Name].Value = (string)property.GetValue(data)!;
+            ReplaceValue(property.Name, (string)property.GetValue(data)!);
         }
+    }
+
+    /// <summary>
+    /// 同じ名前のContent ControlまたはMERGEFIELDへ値を書き込みます。
+    /// </summary>
+    /// <param name="name">書き込む名前。</param>
+    /// <param name="value">書き込む値。</param>
+    void ReplaceValue(string name, string value)
+    {
+        if (ContentControls.Any(it => it.Tag == name))
+        {
+            ContentControls[name].Value = value;
+            return;
+        }
+
+        MergeFields[name].Value = value;
     }
 
     /// <summary>

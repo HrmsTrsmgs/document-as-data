@@ -401,6 +401,29 @@ public class Documentのテスト
     }
 
     [Fact]
+    public void Replaceはプロパティ名と同じMERGEFIELDへオブジェクトを書き込みます()
+    {
+        var filePath = TestDocument.CreateTemporaryCopy(SimpleMergeFieldsPath);
+        try
+        {
+            using var document = Document.Open(filePath);
+
+            document.Replace(
+                new CustomerNameOnlyDocumentData
+                {
+                    CustomerName = "変更後の氏名"
+                });
+
+            document.MergeFields["CustomerName"].Value
+                .Should().Be("変更後の氏名");
+        }
+        finally
+        {
+            File.Delete(filePath);
+        }
+    }
+
+    [Fact]
     public void Replaceは書き込み元に対応プロパティがないContentControlを変更しません()
     {
         var filePath = TestDocument.CreateTemporaryCopy(ContentControlsPath);
