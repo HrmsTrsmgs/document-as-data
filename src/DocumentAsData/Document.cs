@@ -200,6 +200,7 @@ public class Document : IDisposable
         var mappings = (
             from property in typeof(T).GetProperties()
             let attribute = property.GetCustomAttribute<DocumentItemAttribute>()
+            where attribute is not null || property.GetMethod?.IsPublic == true
             select new
             {
                 Property = property,

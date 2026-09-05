@@ -537,6 +537,29 @@ public class Documentのテスト
     }
 
     [Fact]
+    public void ReplaceはDocumentItem属性のない書き込み専用プロパティを無視します()
+    {
+        var filePath = TestDocument.CreateTemporaryCopy(ContentControlsPath);
+        try
+        {
+            using var document = Document.Open(filePath);
+
+            document.Replace(
+                new DocumentDataWithWriteOnlyProperty
+                {
+                    CustomerName = "変更後の氏名"
+                });
+
+            document.ContentControls["CustomerName"].Value
+                .Should().Be("変更後の氏名");
+        }
+        finally
+        {
+            File.Delete(filePath);
+        }
+    }
+
+    [Fact]
     public void Replaceはプロパティ名と同じMERGEFIELDへオブジェクトを書き込みます()
     {
         var filePath = TestDocument.CreateTemporaryCopy(SimpleMergeFieldsPath);
@@ -884,6 +907,16 @@ public class Documentのテスト
     {
         [DocumentItem("CustomerName")]
         public string Value
+        {
+            set { }
+        }
+    }
+
+    public sealed class DocumentDataWithWriteOnlyProperty
+    {
+        public string CustomerName { get; set; } = "";
+
+        public string Ignored
         {
             set { }
         }
