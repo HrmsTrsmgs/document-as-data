@@ -445,6 +445,29 @@ public class Documentのテスト
     }
 
     [Fact]
+    public void Replaceは同名のMERGEFIELDとContentControlがある場合に失敗します()
+    {
+        var filePath = TestDocument.CreateTemporaryCopy(AmbiguousCustomerNamePath);
+        try
+        {
+            using var document = Document.Open(filePath, true);
+
+            var action = () =>
+                document.Replace(
+                    new CustomerNameOnlyDocumentData
+                    {
+                        CustomerName = "変更後"
+                    });
+
+            action.Should().Throw<InvalidOperationException>();
+        }
+        finally
+        {
+            File.Delete(filePath);
+        }
+    }
+
+    [Fact]
     public void Replaceは書き込み元に対応プロパティがないContentControlを変更しません()
     {
         var filePath = TestDocument.CreateTemporaryCopy(ContentControlsPath);

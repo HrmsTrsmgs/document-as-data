@@ -191,6 +191,9 @@ public class Document : IDisposable
     /// </summary>
     /// <typeparam name="T">文書へ書き込むデータの型。</typeparam>
     /// <param name="data">文書へ書き込むデータ。</param>
+    /// <exception cref="InvalidOperationException">
+    /// 同じ名前のContent ControlとMERGEFIELDが両方に存在する場合。
+    /// </exception>
     public void Replace<T>(T data)
     {
         foreach (var property in typeof(T).GetProperties())
@@ -206,7 +209,15 @@ public class Document : IDisposable
     /// <param name="value">書き込む値。</param>
     void ReplaceValue(string name, string value)
     {
-        if (ContentControls.Any(it => it.Tag == name))
+        var hasContentControl = ContentControls.Any(it => it.Tag == name);
+        var hasMergeField = MergeFields.Any(it => it.Name == name);
+
+        if (hasContentControl && hasMergeField)
+        {
+            throw new InvalidOperationException();
+        }
+
+        if (hasContentControl)
         {
             ContentControls[name].Value = value;
             return;
