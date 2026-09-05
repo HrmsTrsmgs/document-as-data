@@ -1,4 +1,4 @@
-using Word2010 = DocumentFormat.OpenXml.Office2010.Word;
+﻿using Word2010 = DocumentFormat.OpenXml.Office2010.Word;
 using Wordprocessing = DocumentFormat.OpenXml.Wordprocessing;
 
 namespace Marimo.DocumentAsData;

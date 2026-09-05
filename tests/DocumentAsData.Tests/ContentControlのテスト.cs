@@ -1,4 +1,4 @@
-using DocumentFormat.OpenXml.Packaging;
+﻿using DocumentFormat.OpenXml.Packaging;
 using FluentAssertions;
 using Marimo.DocumentAsData.Test.TestDocuments;
 using Wordprocessing = DocumentFormat.OpenXml.Wordprocessing;

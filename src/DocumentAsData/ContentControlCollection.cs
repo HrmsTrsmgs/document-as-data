@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using DocumentFormat.OpenXml;
 using Word2010 = DocumentFormat.OpenXml.Office2010.Word;
 using Word2013 = DocumentFormat.OpenXml.Office2013.Word;

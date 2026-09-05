@@ -1,4 +1,4 @@
-using Wordprocessing = DocumentFormat.OpenXml.Wordprocessing;
+﻿using Wordprocessing = DocumentFormat.OpenXml.Wordprocessing;
 
 namespace Marimo.DocumentAsData;
 

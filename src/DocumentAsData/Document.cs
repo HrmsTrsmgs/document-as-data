@@ -1,7 +1,6 @@
-﻿using Packaging = DocumentFormat.OpenXml.Packaging;
-
-using DocumentFormat.OpenXml;
+﻿using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Packaging;
+using Packaging = DocumentFormat.OpenXml.Packaging;
 using Validation = DocumentFormat.OpenXml.Validation;
 using Wordprocessing = DocumentFormat.OpenXml.Wordprocessing;
 

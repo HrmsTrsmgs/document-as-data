@@ -1,4 +1,4 @@
-namespace Marimo.DocumentAsData.Test.TestDocuments;
+﻿namespace Marimo.DocumentAsData.Test.TestDocuments;
 
 static class TestDocument
 {
