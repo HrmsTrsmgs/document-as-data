@@ -380,6 +380,31 @@ public class Documentのテスト
     }
 
     [Fact]
+    public void Replaceは書き込み元に対応プロパティがないContentControlを変更しません()
+    {
+        var filePath = TestDocument.CreateTemporaryCopy(ContentControlsPath);
+        try
+        {
+            using var document = Document.Open(filePath);
+
+            document.Replace(
+                new CustomerNameOnlyDocumentData
+                {
+                    CustomerName = "変更後の氏名"
+                });
+
+            document.ContentControls["CustomerName"].Value
+                .Should().Be("変更後の氏名");
+            document.ContentControls["Address"].Value
+                .Should().Be("東京都");
+        }
+        finally
+        {
+            File.Delete(filePath);
+        }
+    }
+
+    [Fact]
     public void SaveAsは指定したパスへDOCXを作成します()
     {
         var sourcePath = TestDocument.CreateTemporaryCopy(EmptyDocumentPath);
@@ -621,6 +646,11 @@ public class Documentのテスト
         public string CustomerName { get; set; } = "";
 
         public string Address { get; set; } = "";
+    }
+
+    public sealed class CustomerNameOnlyDocumentData
+    {
+        public string CustomerName { get; set; } = "";
     }
 
 }
