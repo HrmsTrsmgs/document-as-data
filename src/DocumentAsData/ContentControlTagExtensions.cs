@@ -37,7 +37,5 @@ static class ContentControlTagExtensions
     /// <returns>Content Control自身のプロパティに含まれるTag要素。</returns>
     static IEnumerable<Wordprocessing.Tag> TagsIn(
         Wordprocessing.SdtElement element) =>
-        from properties in element.Elements<Wordprocessing.SdtProperties>()
-        from tag in properties.Elements<Wordprocessing.Tag>()
-        select tag;
+        element.PropertyElements<Wordprocessing.Tag>();
 }

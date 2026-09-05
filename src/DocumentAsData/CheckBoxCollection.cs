@@ -67,11 +67,7 @@ public class CheckBoxCollection : IEnumerable<CheckBox>
     /// <param name="element">確認するContent ControlのOOXML要素。</param>
     /// <returns>チェックボックスの場合は<c>true</c>。</returns>
     static bool IsCheckBox(Wordprocessing.SdtElement element) =>
-        (
-            from properties in element.Elements<Wordprocessing.SdtProperties>()
-            from checkBox in properties.Elements<Word2010.SdtContentCheckBox>()
-            select checkBox
-        ).Any();
+        element.PropertyElements<Word2010.SdtContentCheckBox>().Any();
 
     /// <inheritdoc />
     IEnumerator IEnumerable.GetEnumerator() =>

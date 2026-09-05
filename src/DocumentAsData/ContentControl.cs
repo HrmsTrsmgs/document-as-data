@@ -105,19 +105,12 @@ public class ContentControl
     /// このContent Controlがプレースホルダー表示中かを取得します。
     /// </summary>
     bool IsShowingPlaceholder =>
-        (
-            from properties in element.Elements<Wordprocessing.SdtProperties>()
-            from placeholder in properties.Elements<Wordprocessing.ShowingPlaceholder>()
-            select placeholder
-        ).Any();
+        element.PropertyElements<Wordprocessing.ShowingPlaceholder>().Any();
 
     /// <summary>
     /// 値の書き込み後に表示文字列がプレースホルダーとして扱われないよう、表示状態を解除します。
     /// </summary>
     void RemovePlaceholderState() =>
-        (
-            from properties in element.Elements<Wordprocessing.SdtProperties>()
-            from placeholder in properties.Elements<Wordprocessing.ShowingPlaceholder>()
-            select placeholder
-        ).SingleOrDefault()?.Remove();
+        element.PropertyElements<Wordprocessing.ShowingPlaceholder>()
+            .SingleOrDefault()?.Remove();
 }

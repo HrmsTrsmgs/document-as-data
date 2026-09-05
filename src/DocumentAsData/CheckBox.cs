@@ -66,11 +66,7 @@ public class CheckBox
     /// このチェックボックスの種類と表示文字を保持するOOXML要素を取得します。
     /// </summary>
     Word2010.SdtContentCheckBox CheckBoxProperties =>
-        (
-            from properties in element.Elements<Wordprocessing.SdtProperties>()
-            from checkBox in properties.Elements<Word2010.SdtContentCheckBox>()
-            select checkBox
-        ).Single();
+        element.PropertyElements<Word2010.SdtContentCheckBox>().Single();
 
     /// <summary>
     /// このチェックボックスの状態を保持するOOXML要素を取得します。

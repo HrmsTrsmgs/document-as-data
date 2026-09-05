@@ -88,8 +88,7 @@ public class ContentControlCollection : IEnumerable<ContentControl>
         /// <returns>明示されている値の種類。型要素がない場合は空の列挙。</returns>
         static IEnumerable<ValueKind> ValueKinds(
             Wordprocessing.SdtElement element) =>
-            from properties in element.Elements<Wordprocessing.SdtProperties>()
-            from property in properties.ChildElements
+            from property in element.PropertyElements<OpenXmlElement>()
             let kind = ValueKindOf(property)
             where kind != ValueKind.Unspecified
             select kind;
