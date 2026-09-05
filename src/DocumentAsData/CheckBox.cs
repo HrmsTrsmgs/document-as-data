@@ -9,11 +9,6 @@ namespace Marimo.DocumentAsData;
 public class CheckBox
 {
     /// <summary>
-    /// このチェックボックスが属する文書です。
-    /// </summary>
-    readonly Document document;
-
-    /// <summary>
     /// このチェックボックスを構成するOOXML要素です。
     /// </summary>
     readonly Wordprocessing.SdtElement element;
@@ -25,15 +20,14 @@ public class CheckBox
     /// <param name="element">チェックボックスを構成するOOXML要素。</param>
     internal CheckBox(Document document, Wordprocessing.SdtElement element)
     {
-        this.document = document;
+        Document = document;
         this.element = element;
     }
 
     /// <summary>
     /// チェックボックスが属する文書を取得します。
     /// </summary>
-    public Document Document =>
-        document;
+    public Document Document { get; }
 
     /// <summary>
     /// チェックボックスのTagを取得します。

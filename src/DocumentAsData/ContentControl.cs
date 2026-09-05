@@ -9,11 +9,6 @@ namespace Marimo.DocumentAsData;
 public class ContentControl
 {
     /// <summary>
-    /// このContent Controlが属する文書です。
-    /// </summary>
-    readonly Document document;
-
-    /// <summary>
     /// このContent Controlを構成するOOXML要素です。
     /// </summary>
     readonly Wordprocessing.SdtElement element;
@@ -25,15 +20,14 @@ public class ContentControl
     /// <param name="element">Content Controlを構成するOOXML要素。</param>
     internal ContentControl(Document document, Wordprocessing.SdtElement element)
     {
-        this.document = document;
+        Document = document;
         this.element = element;
     }
 
     /// <summary>
     /// Content Controlが属する文書を取得します。
     /// </summary>
-    public Document Document =>
-        document;
+    public Document Document { get; }
 
     /// <summary>
     /// Content ControlのTagを取得します。

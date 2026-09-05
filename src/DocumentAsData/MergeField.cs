@@ -14,11 +14,6 @@ public class MergeField
     readonly MergeFieldContent content;
 
     /// <summary>
-    /// OOXMLのフィールド命令から解析した名前を、単純形式と複合形式で共通に公開するため保持します。
-    /// </summary>
-    readonly string name;
-
-    /// <summary>
     /// 単純フィールド要素自体を値の読み書き対象とするMERGEFIELDを作成します。
     /// </summary>
     /// <param name="document">MERGEFIELDが属する文書。</param>
@@ -31,7 +26,7 @@ public class MergeField
     {
         Document = document;
         content = new SimpleFieldContent(field);
-        this.name = name;
+        Name = name;
     }
 
     /// <summary>
@@ -57,7 +52,7 @@ public class MergeField
             resultSeparator,
             fieldEnd,
             valueElements);
-        this.name = name;
+        Name = name;
     }
 
     /// <summary>
@@ -68,7 +63,7 @@ public class MergeField
     /// <summary>
     /// MERGEFIELDの名前を取得します。
     /// </summary>
-    public string Name => name;
+    public string Name { get; }
 
     /// <summary>
     /// MERGEFIELDの値を取得または設定します。
