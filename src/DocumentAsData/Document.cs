@@ -176,15 +176,7 @@ public class Document : IDisposable
     /// <param name="name">読み込む名前。</param>
     /// <returns>文書から読み込んだ値。</returns>
     string ReadValue(string name) =>
-        (
-            from contentControl in ContentControls
-            where contentControl.Tag == name
-            select contentControl.Value
-        ).Concat(
-            from mergeField in MergeFields
-            where mergeField.Name == name
-            select mergeField.Value)
-            .Single();
+        (FindValueTarget(name) ?? throw new InvalidOperationException()).Value;
 
     /// <summary>
     /// 指定したオブジェクトのプロパティを、同じ名前のContent ControlまたはMERGEFIELDへ書き込みます。
@@ -209,22 +201,27 @@ public class Document : IDisposable
     /// <param name="value">書き込む値。</param>
     void ReplaceValue(string name, string value)
     {
-        var hasContentControl = ContentControls.Any(it => it.Tag == name);
-        var hasMergeField = MergeFields.Any(it => it.Name == name);
+        var target = FindValueTarget(name) ?? throw new KeyNotFoundException();
 
-        if (hasContentControl && hasMergeField)
-        {
-            throw new InvalidOperationException();
-        }
-
-        if (hasContentControl)
-        {
-            ContentControls[name].Value = value;
-            return;
-        }
-
-        MergeFields[name].Value = value;
+        target.Value = value;
     }
+
+    /// <summary>
+    /// 同じ名前のContent ControlとMERGEFIELDから、一件だけある読み書き対象を取得します。
+    /// </summary>
+    /// <param name="name">取得する名前。</param>
+    /// <returns>取得した文字列データ項目。存在しない場合はnull。</returns>
+    /// <exception cref="InvalidOperationException">同じ名前の対象が複数存在する場合。</exception>
+    DocumentTextItem? FindValueTarget(string name) =>
+        (
+            from contentControl in ContentControls
+            where contentControl.Tag == name
+            select (DocumentTextItem)contentControl
+        ).Concat(
+            from mergeField in MergeFields
+            where mergeField.Name == name
+            select mergeField)
+            .SingleOrDefault();
 
     /// <summary>
     /// 文書内のMERGEFIELDを取得するコレクションを取得します。

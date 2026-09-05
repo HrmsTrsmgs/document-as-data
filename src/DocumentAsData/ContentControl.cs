@@ -6,7 +6,7 @@ namespace Marimo.DocumentAsData;
 /// <summary>
 /// 文書内のContent Controlを表します。
 /// </summary>
-public class ContentControl
+public class ContentControl : DocumentTextItem
 {
     /// <summary>
     /// このContent Controlを構成するOOXML要素です。
@@ -19,15 +19,10 @@ public class ContentControl
     /// <param name="document">Content Controlが属する文書。</param>
     /// <param name="element">Content Controlを構成するOOXML要素。</param>
     internal ContentControl(Document document, Wordprocessing.SdtElement element)
+        : base(document)
     {
-        Document = document;
         this.element = element;
     }
-
-    /// <summary>
-    /// Content Controlが属する文書を取得します。
-    /// </summary>
-    public Document Document { get; }
 
     /// <summary>
     /// Content ControlのTagを取得します。
@@ -48,7 +43,7 @@ public class ContentControl
     /// <exception cref="InvalidOperationException">
     /// 値の設定時に文字列要素が存在しない場合。
     /// </exception>
-    public string Value
+    public override string Value
     {
         get => IsShowingPlaceholder
             ? ""

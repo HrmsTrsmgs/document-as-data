@@ -6,7 +6,7 @@ namespace Marimo.DocumentAsData;
 /// <summary>
 /// 文書内のMERGEFIELDを表します。
 /// </summary>
-public class MergeField
+public class MergeField : DocumentTextItem
 {
     /// <summary>
     /// 単純形式または複合形式のOOXML要素への値アクセスを保持します。
@@ -23,8 +23,8 @@ public class MergeField
         Document document,
         Wordprocessing.SimpleField field,
         string name)
+        : base(document)
     {
-        Document = document;
         content = new SimpleFieldContent(field);
         Name = name;
     }
@@ -45,8 +45,8 @@ public class MergeField
         Wordprocessing.FieldChar resultSeparator,
         Wordprocessing.FieldChar fieldEnd,
         IEnumerable<OpenXmlElement> valueElements)
+        : base(document)
     {
-        Document = document;
         content = new ComplexFieldContent(
             fieldStart,
             resultSeparator,
@@ -54,11 +54,6 @@ public class MergeField
             valueElements);
         Name = name;
     }
-
-    /// <summary>
-    /// MERGEFIELDが属する文書を取得します。
-    /// </summary>
-    public Document Document { get; }
 
     /// <summary>
     /// MERGEFIELDの名前を取得します。
@@ -71,7 +66,7 @@ public class MergeField
     /// <exception cref="InvalidOperationException">
     /// 値の設定時に表示結果が存在しないか、複合フィールドの結果領域を取得できない場合。
     /// </exception>
-    public string Value
+    public override string Value
     {
         get => content.Value;
         set => content.Value = value;
