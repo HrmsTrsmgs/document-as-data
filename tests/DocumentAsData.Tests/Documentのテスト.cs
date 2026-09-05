@@ -470,6 +470,29 @@ public class Documentのテスト
     }
 
     [Fact]
+    public void ReplaceはDocumentItem属性で指定した項目が存在しない場合に失敗します()
+    {
+        var filePath = TestDocument.CreateTemporaryCopy(ContentControlsPath);
+        try
+        {
+            using var document = Document.Open(filePath);
+
+            var action = () =>
+                document.Replace(
+                    new MissingDocumentItemData
+                    {
+                        Value = "変更後"
+                    });
+
+            action.Should().Throw<DocumentMappingException>();
+        }
+        finally
+        {
+            File.Delete(filePath);
+        }
+    }
+
+    [Fact]
     public void Replaceはプロパティ名と同じMERGEFIELDへオブジェクトを書き込みます()
     {
         var filePath = TestDocument.CreateTemporaryCopy(SimpleMergeFieldsPath);
@@ -796,6 +819,12 @@ public class Documentのテスト
 
         [DocumentItem("Address")]
         public string Location { get; set; } = "";
+    }
+
+    public sealed class MissingDocumentItemData
+    {
+        [DocumentItem("Missing")]
+        public string Value { get; set; } = "";
     }
 
 }

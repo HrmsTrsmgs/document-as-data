@@ -187,6 +187,9 @@ public class Document : IDisposable
     /// </summary>
     /// <typeparam name="T">文書へ書き込むデータの型。</typeparam>
     /// <param name="data">文書へ書き込むデータ。</param>
+    /// <exception cref="DocumentMappingException">
+    /// プロパティに対応する文書項目が存在しない場合。
+    /// </exception>
     /// <exception cref="InvalidOperationException">
     /// 同じ名前のContent ControlとMERGEFIELDが両方に存在する場合。
     /// </exception>
@@ -206,9 +209,10 @@ public class Document : IDisposable
     /// </summary>
     /// <param name="name">書き込む名前。</param>
     /// <param name="value">書き込む値。</param>
+    /// <exception cref="DocumentMappingException">対応する文書項目が存在しない場合。</exception>
     void ReplaceValue(string name, string value)
     {
-        var target = FindValueTarget(name) ?? throw new KeyNotFoundException();
+        var target = FindValueTarget(name) ?? throw new DocumentMappingException();
 
         target.Value = value;
     }
