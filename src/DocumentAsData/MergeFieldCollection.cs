@@ -62,7 +62,7 @@ public class MergeFieldCollection : IEnumerable<MergeField>
         /// <summary>
         /// 同じOOXML要素からは、列挙方法にかかわらず同じMERGEFIELDを返すために保持します。
         /// </summary>
-        readonly Dictionary<OpenXmlElement, MergeField> cache = [];
+        readonly OpenXmlElementCache<MergeField> cache = new();
 
         /// <summary>
         /// 指定した文書に対する読み取り処理を作成します。
@@ -189,17 +189,8 @@ public class MergeFieldCollection : IEnumerable<MergeField>
         /// <returns>既存または新しく生成したMERGEFIELD。</returns>
         MergeField GetOrCreateMergeField(
             OpenXmlElement field,
-            Func<MergeField> create)
-        {
-            if (cache.TryGetValue(field, out var mergeField))
-            {
-                return mergeField;
-            }
-
-            mergeField = create();
-            cache.Add(field, mergeField);
-            return mergeField;
-        }
+            Func<MergeField> create) =>
+            cache.GetOrAdd(field, create);
 
         /// <summary>
         /// フィールド命令がMERGEFIELDかを判定し、MERGEFIELD名を取り出します。

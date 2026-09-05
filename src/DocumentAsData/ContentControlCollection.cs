@@ -19,7 +19,7 @@ public class ContentControlCollection : IEnumerable<ContentControl>
     /// <summary>
     /// 同じOOXML要素から生成したContent Controlをコレクションの生存期間中共有します。
     /// </summary>
-    readonly Dictionary<Wordprocessing.SdtElement, ContentControl> cache = [];
+    readonly OpenXmlElementCache<ContentControl> cache = new();
 
     /// <summary>
     /// 文書全体を列挙対象とし、列挙とTag検索で生成したContent Controlを共有できるようにします。
@@ -60,17 +60,8 @@ public class ContentControlCollection : IEnumerable<ContentControl>
     /// </summary>
     /// <param name="element">Content Controlを表すOOXML要素。</param>
     /// <returns>指定した要素に対応するContent Control。</returns>
-    ContentControl GetOrCreateContentControl(Wordprocessing.SdtElement element)
-    {
-        if (cache.TryGetValue(element, out var contentControl))
-        {
-            return contentControl;
-        }
-
-        contentControl = new(document, element);
-        cache.Add(element, contentControl);
-        return contentControl;
-    }
+    ContentControl GetOrCreateContentControl(Wordprocessing.SdtElement element) =>
+        cache.GetOrAdd(element, () => new(document, element));
 
     /// <inheritdoc />
     IEnumerator IEnumerable.GetEnumerator() =>
