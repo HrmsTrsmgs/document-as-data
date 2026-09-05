@@ -377,6 +377,28 @@ public class Documentのテスト
     }
 
     [Fact]
+    public void ReadはDocumentItem属性で指定した名前からオブジェクトを読み込みます()
+    {
+        var filePath = TestDocument.CreateTemporaryCopy(ContentControlsPath);
+        try
+        {
+            using var document = Document.Open(filePath);
+
+            document.Read<AttributedDocumentData>()
+                .Should().BeEquivalentTo(
+                    new AttributedDocumentData
+                    {
+                        Name = "山田太郎",
+                        Location = "東京都"
+                    });
+        }
+        finally
+        {
+            File.Delete(filePath);
+        }
+    }
+
+    [Fact]
     public void Readは同名のMERGEFIELDとContentControlがある場合に失敗します()
     {
         var filePath = TestDocument.CreateTemporaryCopy(AmbiguousCustomerNamePath);
@@ -739,6 +761,15 @@ public class Documentのテスト
     public sealed class CustomerNameOnlyDocumentData
     {
         public string CustomerName { get; set; } = "";
+    }
+
+    public sealed class AttributedDocumentData
+    {
+        [DocumentItem("CustomerName")]
+        public string Name { get; set; } = "";
+
+        [DocumentItem("Address")]
+        public string Location { get; set; } = "";
     }
 
 }

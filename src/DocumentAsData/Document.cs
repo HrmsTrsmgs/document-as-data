@@ -1,4 +1,5 @@
-﻿using DocumentFormat.OpenXml;
+﻿using System.Reflection;
+using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Packaging;
 using Packaging = DocumentFormat.OpenXml.Packaging;
 using Validation = DocumentFormat.OpenXml.Validation;
@@ -164,7 +165,10 @@ public class Document : IDisposable
 
         foreach (var property in typeof(T).GetProperties())
         {
-            property.SetValue(data, ReadValue(property.Name));
+            var name = property.GetCustomAttribute<DocumentItemAttribute>()?.Name
+                ?? property.Name;
+
+            property.SetValue(data, ReadValue(name));
         }
 
         return data;
