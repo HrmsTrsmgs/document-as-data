@@ -140,7 +140,9 @@ public class MergeFieldCollection : IEnumerable<MergeField>
             Wordprocessing.SimpleField field,
             [NotNullWhen(true)] out MergeField? mergeField)
         {
-            if (TryParseMergeFieldName(field.Instruction?.Value, out var name))
+            if (MergeFieldInstruction.TryParseName(
+                field.Instruction?.Value,
+                out var name))
             {
                 mergeField =
                     GetOrCreateMergeField(
@@ -162,7 +164,9 @@ public class MergeFieldCollection : IEnumerable<MergeField>
             ComplexField field,
             [NotNullWhen(true)] out MergeField? mergeField)
         {
-            if (TryParseMergeFieldName(field.Instruction, out var name))
+            if (MergeFieldInstruction.TryParseName(
+                field.Instruction,
+                out var name))
             {
                 mergeField =
                     GetOrCreateMergeField(
@@ -193,49 +197,57 @@ public class MergeFieldCollection : IEnumerable<MergeField>
             cache.GetOrAdd(field, create);
 
         /// <summary>
-        /// フィールド命令がMERGEFIELDかを判定し、MERGEFIELD名を取り出します。
+        /// OOXMLのフィールド命令を解釈し、MERGEFIELDかどうかとその名前を読み取ります。
         /// </summary>
-        /// <param name="fieldInstruction">OOXMLに保存されたフィールド命令。</param>
-        /// <param name="name">MERGEFIELDだった場合の名前。それ以外の場合はnull。</param>
-        /// <returns>MERGEFIELD命令だった場合はtrue。</returns>
-        static bool TryParseMergeFieldName(
-            string? fieldInstruction,
-            [NotNullWhen(true)] out string? name)
+        static class MergeFieldInstruction
         {
-            const string fieldType = "MERGEFIELD";
-
-            var instruction = fieldInstruction?.Trim();
-            if (instruction is null ||
-                !instruction.StartsWith(fieldType, StringComparison.OrdinalIgnoreCase))
+            /// <summary>
+            /// フィールド命令がMERGEFIELDかを判定し、MERGEFIELD名を取り出します。
+            /// </summary>
+            /// <param name="fieldInstruction">OOXMLに保存されたフィールド命令。</param>
+            /// <param name="name">MERGEFIELDだった場合の名前。それ以外の場合はnull。</param>
+            /// <returns>MERGEFIELD命令だった場合はtrue。</returns>
+            internal static bool TryParseName(
+                string? fieldInstruction,
+                [NotNullWhen(true)] out string? name)
             {
-                name = null;
-                return false;
+                const string fieldType = "MERGEFIELD";
+
+                var instruction = fieldInstruction?.Trim();
+                if (instruction is null ||
+                    !instruction.StartsWith(
+                        fieldType,
+                        StringComparison.OrdinalIgnoreCase))
+                {
+                    name = null;
+                    return false;
+                }
+
+                name = ParseName(instruction[fieldType.Length..]);
+                return true;
             }
 
-            name = ParseMergeFieldName(instruction[fieldType.Length..]);
-            return true;
-        }
-
-        /// <summary>
-        /// MERGEFIELD命令の引数部分からMERGEFIELD名を取得します。
-        /// </summary>
-        /// <param name="fieldParameters">MERGEFIELDキーワードより後ろの命令。</param>
-        /// <returns>引用符で囲まれた名前、または引用符なしの先頭トークン。</returns>
-        static string ParseMergeFieldName(string fieldParameters)
-        {
-            var parameters = fieldParameters.Trim();
-            if (!parameters.StartsWith('"'))
+            /// <summary>
+            /// MERGEFIELD命令の引数部分からMERGEFIELD名を取得します。
+            /// </summary>
+            /// <param name="fieldParameters">MERGEFIELDキーワードより後ろの命令。</param>
+            /// <returns>引用符で囲まれた名前、または引用符なしの先頭トークン。</returns>
+            static string ParseName(string fieldParameters)
             {
-                var nameLength = parameters
-                    .TakeWhile(it => !char.IsWhiteSpace(it))
-                    .Count();
-                return parameters[..nameLength];
-            }
+                var parameters = fieldParameters.Trim();
+                if (!parameters.StartsWith('"'))
+                {
+                    var nameLength = parameters
+                        .TakeWhile(it => !char.IsWhiteSpace(it))
+                        .Count();
+                    return parameters[..nameLength];
+                }
 
-            var closingQuoteIndex = parameters.IndexOf('"', 1);
-            return closingQuoteIndex < 0
-                ? parameters.Trim('"')
-                : parameters[1..closingQuoteIndex];
+                var closingQuoteIndex = parameters.IndexOf('"', 1);
+                return closingQuoteIndex < 0
+                    ? parameters.Trim('"')
+                    : parameters[1..closingQuoteIndex];
+            }
         }
 
         /// <summary>
