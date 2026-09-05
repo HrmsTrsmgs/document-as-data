@@ -259,12 +259,12 @@ public class MergeFieldCollection : IEnumerable<MergeField>
             /// <summary>
             /// 現在読み取っている複合フィールドの開始要素です。読み取り中でない場合はnullです。
             /// </summary>
-            Wordprocessing.FieldChar? begin;
+            Wordprocessing.FieldChar? fieldStart;
 
             /// <summary>
             /// 開始要素から結果開始要素までに分割して保存された命令文字列を保持します。
             /// </summary>
-            string? instruction;
+            string? fieldInstruction;
 
             /// <summary>
             /// 命令部分と表示結果を区切る要素です。表示結果の開始前はnullです。
@@ -286,20 +286,20 @@ public class MergeFieldCollection : IEnumerable<MergeField>
                 OpenXmlElement element,
                 [NotNullWhen(true)] out ComplexField? field)
             {
-                if (element is Wordprocessing.FieldChar fieldChar)
+                if (element is Wordprocessing.FieldChar fieldCharacter)
                 {
-                    return TryRead(fieldChar, out field);
+                    return TryReadFieldCharacter(fieldCharacter, out field);
                 }
 
-                if (element is Wordprocessing.FieldCode fieldCode)
+                if (element is Wordprocessing.FieldCode instructionElement)
                 {
-                    Read(fieldCode);
+                    AppendInstruction(instructionElement);
                 }
                 else if (element is Wordprocessing.Text or
                     Wordprocessing.TabChar or
                     Wordprocessing.Break)
                 {
-                    ReadResultElement(element);
+                    AppendResultElement(element);
                 }
 
                 field = null;
@@ -309,26 +309,26 @@ public class MergeFieldCollection : IEnumerable<MergeField>
             /// <summary>
             /// 複合フィールドの開始、結果開始、終了を読み取り状態へ反映します。
             /// </summary>
-            /// <param name="fieldChar">状態を表すフィールド文字。</param>
+            /// <param name="fieldCharacter">状態を表すフィールド文字。</param>
             /// <param name="field">終了まで到達した場合の複合フィールド。それ以外はnull。</param>
             /// <returns>終了まで到達し、複合フィールドを構成できた場合はtrue。</returns>
-            bool TryRead(
-                Wordprocessing.FieldChar fieldChar,
+            bool TryReadFieldCharacter(
+                Wordprocessing.FieldChar fieldCharacter,
                 [NotNullWhen(true)] out ComplexField? field)
             {
-                var type = fieldChar.FieldCharType?.Value;
+                var fieldCharacterType = fieldCharacter.FieldCharType?.Value;
 
-                if (type == Wordprocessing.FieldCharValues.Begin)
+                if (fieldCharacterType == Wordprocessing.FieldCharValues.Begin)
                 {
-                    StartField(fieldChar);
+                    StartField(fieldCharacter);
                 }
-                else if (type == Wordprocessing.FieldCharValues.Separate)
+                else if (fieldCharacterType == Wordprocessing.FieldCharValues.Separate)
                 {
-                    StartResult(fieldChar);
+                    StartResult(fieldCharacter);
                 }
-                else if (type == Wordprocessing.FieldCharValues.End)
+                else if (fieldCharacterType == Wordprocessing.FieldCharValues.End)
                 {
-                    return TryCompleteField(fieldChar, out field);
+                    return TryCompleteField(fieldCharacter, out field);
                 }
 
                 field = null;
@@ -338,12 +338,12 @@ public class MergeFieldCollection : IEnumerable<MergeField>
             /// <summary>
             /// 複合フィールドの結果開始前に現れた命令文字列を順番に連結します。
             /// </summary>
-            /// <param name="fieldCode">命令文字列を保持するOOXML要素。</param>
-            void Read(Wordprocessing.FieldCode fieldCode)
+            /// <param name="instructionElement">命令文字列を保持するOOXML要素。</param>
+            void AppendInstruction(Wordprocessing.FieldCode instructionElement)
             {
-                if (begin is not null && resultElements is null)
+                if (fieldStart is not null && resultElements is null)
                 {
-                    instruction += fieldCode.Text;
+                    fieldInstruction += instructionElement.Text;
                 }
             }
 
@@ -351,17 +351,17 @@ public class MergeFieldCollection : IEnumerable<MergeField>
             /// 複合フィールドの結果開始後に現れた表示用要素を保持します。
             /// </summary>
             /// <param name="element">表示値を構成する文字列、タブ、改行要素。</param>
-            void ReadResultElement(OpenXmlElement element) =>
+            void AppendResultElement(OpenXmlElement element) =>
                 resultElements?.Add(element);
 
             /// <summary>
             /// それまでの未完了状態を破棄し、新しい複合フィールドの読み取りを開始します。
             /// </summary>
-            /// <param name="fieldChar">複合フィールドの開始要素。</param>
-            void StartField(Wordprocessing.FieldChar fieldChar)
+            /// <param name="startElement">複合フィールドの開始要素。</param>
+            void StartField(Wordprocessing.FieldChar startElement)
             {
-                begin = fieldChar;
-                instruction = null;
+                fieldStart = startElement;
+                fieldInstruction = null;
                 resultSeparator = null;
                 resultElements = null;
             }
@@ -369,12 +369,12 @@ public class MergeFieldCollection : IEnumerable<MergeField>
             /// <summary>
             /// 複合フィールドの命令部分を終了し、表示結果の収集を開始します。
             /// </summary>
-            /// <param name="fieldChar">命令部分と表示結果を区切る要素。</param>
-            void StartResult(Wordprocessing.FieldChar fieldChar)
+            /// <param name="separatorElement">命令部分と表示結果を区切る要素。</param>
+            void StartResult(Wordprocessing.FieldChar separatorElement)
             {
-                if (begin is not null)
+                if (fieldStart is not null)
                 {
-                    resultSeparator = fieldChar;
+                    resultSeparator = separatorElement;
                     resultElements = [];
                 }
             }
@@ -389,7 +389,7 @@ public class MergeFieldCollection : IEnumerable<MergeField>
                 Wordprocessing.FieldChar fieldEnd,
                 [NotNullWhen(true)] out ComplexField? field)
             {
-                if (begin is null || resultSeparator is null || resultElements is null)
+                if (fieldStart is null || resultSeparator is null || resultElements is null)
                 {
                     field = null;
                     Reset();
@@ -397,8 +397,8 @@ public class MergeFieldCollection : IEnumerable<MergeField>
                 }
 
                 field = new ComplexField(
-                    begin,
-                    instruction,
+                    fieldStart,
+                    fieldInstruction,
                     resultSeparator,
                     fieldEnd,
                     resultElements);
@@ -411,8 +411,8 @@ public class MergeFieldCollection : IEnumerable<MergeField>
             /// </summary>
             void Reset()
             {
-                begin = null;
-                instruction = null;
+                fieldStart = null;
+                fieldInstruction = null;
                 resultSeparator = null;
                 resultElements = null;
             }

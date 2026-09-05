@@ -185,33 +185,33 @@ public class MergeField
         /// </exception>
         void SetValue(string value)
         {
-            if (valueElements.Count == 0)
+            if (valueElements.IsEmpty())
             {
                 throw new InvalidOperationException();
             }
 
-            var resultStart = resultSeparator.Parent ??
+            var resultSeparatorRun = resultSeparator.Parent ??
                 throw new InvalidOperationException();
-            var resultEnd = fieldEnd.Parent ??
+            var fieldEndRun = fieldEnd.Parent ??
                 throw new InvalidOperationException();
-            if (resultStart.Parent != resultEnd.Parent)
+            if (resultSeparatorRun.Parent != fieldEndRun.Parent)
             {
                 throw new InvalidOperationException();
             }
 
             // OOXML要素を列挙しながら削除すると次の兄弟をたどれないため、削除対象を先に確定します。
-            foreach (var oldElement in
-                resultStart.ElementsAfter()
-                    .TakeWhile(it => it != resultEnd)
+            foreach (var oldResultElement in
+                resultSeparatorRun.ElementsAfter()
+                    .TakeWhile(it => it != fieldEndRun)
                     .ToArray())
             {
-                oldElement.Remove();
+                oldResultElement.Remove();
             }
 
             var newValueElements = WordTextValue.CreateElements(value)
                 .DefaultIfEmpty(new Wordprocessing.Text())
                 .ToArray();
-            resultEnd.InsertBeforeSelf(
+            fieldEndRun.InsertBeforeSelf(
                 new Wordprocessing.Run(newValueElements));
             valueElements.Clear();
             valueElements.AddRange(newValueElements);
