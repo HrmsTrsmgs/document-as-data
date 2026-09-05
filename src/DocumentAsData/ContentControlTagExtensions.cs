@@ -12,8 +12,7 @@ static class ContentControlTagExtensions
         /// <summary>
         /// このContent Control自身にTagが設定されているかを取得します。
         /// </summary>
-        /// <returns>Tagが設定されている場合は<c>true</c>。</returns>
-        internal bool HasTag() =>
+        internal bool HasTag =>
             TagsIn(self).Any();
 
         /// <summary>
@@ -23,7 +22,7 @@ static class ContentControlTagExtensions
         /// <exception cref="InvalidOperationException">
         /// Tagの値が欠落しているか、Tagが複数存在する場合。
         /// </exception>
-        internal string ReadTag() =>
+        internal string Tag =>
             (
                 from tag in TagsIn(self)
                 select tag.Val?.Value

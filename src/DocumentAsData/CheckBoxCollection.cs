@@ -48,7 +48,7 @@ public class CheckBoxCollection : IEnumerable<CheckBox>
     public IEnumerator<CheckBox> GetEnumerator() =>
         (
             from element in document.Elements.OfType<Wordprocessing.SdtElement>()
-            where element.HasTag() && element.IsCheckBox
+            where element.HasTag && element.IsCheckBox
             select GetOrCreateCheckBox(element)
         ).GetEnumerator();
 

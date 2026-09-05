@@ -42,7 +42,7 @@ public class CheckBox
     /// Tagの値が欠落しているか、Tagが複数存在する場合。
     /// </exception>
     public string Tag =>
-        element.ReadTag();
+        element.Tag;
 
     /// <summary>
     /// チェックボックスがチェックされているかを取得または設定します。

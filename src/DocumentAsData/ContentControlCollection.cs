@@ -48,7 +48,7 @@ public class ContentControlCollection : IEnumerable<ContentControl>
     public IEnumerator<ContentControl> GetEnumerator() =>
         (
             from element in document.Elements.OfType<Wordprocessing.SdtElement>()
-            where element.HasTag() && element.IsText
+            where element.HasTag && element.IsText
             select GetOrCreateContentControl(element)
         ).GetEnumerator();
 
