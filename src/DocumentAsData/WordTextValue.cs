@@ -35,7 +35,7 @@ static class WordTextValue
     /// <returns>文書順に並んだOOXML要素。</returns>
     internal static IEnumerable<OpenXmlElement> CreateElements(string value) =>
         from part in Regex.Split(value, "(\r\n|\n|\t)")
-        where part.Length > 0
+        where !part.IsEmpty()
         select CreateElement(part);
 
     /// <summary>

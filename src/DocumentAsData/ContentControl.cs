@@ -91,7 +91,7 @@ public class ContentControl
     /// <param name="value">設定する値。</param>
     static void ReplaceFirstText(Wordprocessing.Text text, string value)
     {
-        if (value.Length == 0)
+        if (value.IsEmpty())
         {
             text.Text = "";
             return;
