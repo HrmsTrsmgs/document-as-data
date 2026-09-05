@@ -9,35 +9,9 @@ namespace Marimo.DocumentAsData;
 public class MergeField
 {
     /// <summary>
-    /// 単純形式のMERGEFIELDを構成するOOXML要素です。
-    /// 複合形式の場合はnullです。
+    /// 単純形式または複合形式のOOXML要素への値アクセスを保持します。
     /// </summary>
-    readonly Wordprocessing.SimpleField? simpleField;
-
-    /// <summary>
-    /// 複合形式の開始要素です。
-    /// 値の書き込み後に、表示結果が古いことを示す状態を解除するため保持します。
-    /// 単純形式の場合はnullです。
-    /// </summary>
-    readonly Wordprocessing.FieldChar? complexFieldStart;
-
-    /// <summary>
-    /// 複合形式の命令部分と表示結果を区切る要素です。
-    /// 単純形式の場合はnullです。
-    /// </summary>
-    readonly Wordprocessing.FieldChar? complexResultSeparator;
-
-    /// <summary>
-    /// 複合形式の終了要素です。
-    /// 単純形式の場合はnullです。
-    /// </summary>
-    readonly Wordprocessing.FieldChar? complexFieldEnd;
-
-    /// <summary>
-    /// 複合形式の表示値を構成する文字列、タブ、改行要素を文書順に保持します。
-    /// 読み取り時はこれらを連結し、書き込み時は置換後の要素へ更新します。
-    /// </summary>
-    readonly List<OpenXmlElement> complexValueElements;
+    readonly MergeFieldContent content;
 
     /// <summary>
     /// OOXMLのフィールド命令から解析した名前を、単純形式と複合形式で共通に公開するため保持します。
@@ -56,11 +30,7 @@ public class MergeField
         string name)
     {
         Document = document;
-        simpleField = field;
-        complexFieldStart = null;
-        complexResultSeparator = null;
-        complexFieldEnd = null;
-        complexValueElements = [];
+        content = new SimpleFieldContent(field);
         this.name = name;
     }
 
@@ -82,10 +52,11 @@ public class MergeField
         IEnumerable<OpenXmlElement> valueElements)
     {
         Document = document;
-        complexFieldStart = fieldStart;
-        complexResultSeparator = resultSeparator;
-        complexFieldEnd = fieldEnd;
-        complexValueElements = valueElements.ToList();
+        content = new ComplexFieldContent(
+            fieldStart,
+            resultSeparator,
+            fieldEnd,
+            valueElements);
         this.name = name;
     }
 
@@ -107,62 +78,146 @@ public class MergeField
     /// </exception>
     public string Value
     {
-        get => WordTextValue.Read(
-            simpleField?.Descendants() ?? complexValueElements);
-        set
+        get => content.Value;
+        set => content.Value = value;
+    }
+
+    /// <summary>
+    /// MERGEFIELDのOOXML形式に依存した値の読み書きを表します。
+    /// </summary>
+    abstract class MergeFieldContent
+    {
+        /// <summary>
+        /// OOXMLの表示値を取得または設定します。
+        /// </summary>
+        internal abstract string Value { get; set; }
+    }
+
+    /// <summary>
+    /// 単純形式のMERGEFIELDの値を読み書きします。
+    /// </summary>
+    sealed class SimpleFieldContent : MergeFieldContent
+    {
+        /// <summary>
+        /// MERGEFIELDを構成する単純フィールド要素です。
+        /// </summary>
+        readonly Wordprocessing.SimpleField simpleField;
+
+        /// <summary>
+        /// 指定した単純フィールド要素の値を読み書きする内部表現を作成します。
+        /// </summary>
+        /// <param name="field">MERGEFIELDを構成する単純フィールド要素。</param>
+        internal SimpleFieldContent(Wordprocessing.SimpleField field)
         {
-            if (simpleField is not null)
+            simpleField = field;
+        }
+
+        /// <inheritdoc />
+        internal override string Value
+        {
+            get => WordTextValue.Read(simpleField.Descendants());
+            set
             {
                 simpleField.RemoveAllChildren();
                 simpleField.AppendChild(
                     new Wordprocessing.Run(WordTextValue.CreateElements(value)));
                 // 書き換えた表示結果をWordが古い結果として扱わないようにします。
                 simpleField.Dirty = null;
-                return;
             }
-
-            SetComplexValue(value);
         }
     }
 
     /// <summary>
-    /// 複合フィールドの古い表示結果を除去し、新しい値を持つ結果だけに置き換えます。
-    /// 空文字列でも、次回の書き込み位置として空の文字列要素を結果領域に残します。
+    /// 複合形式のMERGEFIELDの値を読み書きします。
     /// </summary>
-    /// <param name="value">設定する値。</param>
-    /// <exception cref="InvalidOperationException">
-    /// 表示結果が存在しないか、結果領域の境界を取得できない場合。
-    /// </exception>
-    void SetComplexValue(string value)
+    sealed class ComplexFieldContent : MergeFieldContent
     {
-        if (complexValueElements.Count == 0)
+        /// <summary>
+        /// 複合フィールドの開始要素です。
+        /// 値の書き込み後に、表示結果が古いことを示す状態を解除するため保持します。
+        /// </summary>
+        readonly Wordprocessing.FieldChar fieldStart;
+
+        /// <summary>
+        /// 複合フィールドの命令部分と表示結果を区切る要素です。
+        /// </summary>
+        readonly Wordprocessing.FieldChar resultSeparator;
+
+        /// <summary>
+        /// 複合フィールドの終了要素です。
+        /// </summary>
+        readonly Wordprocessing.FieldChar fieldEnd;
+
+        /// <summary>
+        /// 表示値を構成する文字列、タブ、改行要素を文書順に保持します。
+        /// 読み取り時はこれらを連結し、書き込み時は置換後の要素へ更新します。
+        /// </summary>
+        readonly List<OpenXmlElement> valueElements;
+
+        /// <summary>
+        /// 複合フィールドの各構成要素から、値を読み書きする内部表現を作成します。
+        /// </summary>
+        /// <param name="fieldStart">複合フィールドの開始要素。</param>
+        /// <param name="resultSeparator">命令部分と表示結果を区切る要素。</param>
+        /// <param name="fieldEnd">複合フィールドの終了要素。</param>
+        /// <param name="valueElements">表示値を構成する文字列、タブ、改行要素。</param>
+        internal ComplexFieldContent(
+            Wordprocessing.FieldChar fieldStart,
+            Wordprocessing.FieldChar resultSeparator,
+            Wordprocessing.FieldChar fieldEnd,
+            IEnumerable<OpenXmlElement> valueElements)
         {
-            throw new InvalidOperationException();
+            this.fieldStart = fieldStart;
+            this.resultSeparator = resultSeparator;
+            this.fieldEnd = fieldEnd;
+            this.valueElements = valueElements.ToList();
         }
 
-        var fieldStart = complexFieldStart ??
-            throw new InvalidOperationException();
-        var resultStart = complexResultSeparator?.Parent ??
-            throw new InvalidOperationException();
-        var resultEnd = complexFieldEnd?.Parent ??
-            throw new InvalidOperationException();
-        if (resultStart.Parent != resultEnd.Parent)
+        /// <inheritdoc />
+        internal override string Value
         {
-            throw new InvalidOperationException();
+            get => WordTextValue.Read(valueElements);
+            set => SetValue(value);
         }
 
-        var oldResult = resultStart.ElementsAfter()
-            .TakeWhile(it => it != resultEnd)
-            .ToArray();
-        Array.ForEach(oldResult, it => it.Remove());
+        /// <summary>
+        /// 複合フィールドの古い表示結果を除去し、新しい値を持つ結果だけに置き換えます。
+        /// 空文字列でも、次回の書き込み位置として空の文字列要素を結果領域に残します。
+        /// </summary>
+        /// <param name="value">設定する値。</param>
+        /// <exception cref="InvalidOperationException">
+        /// 表示結果が存在しないか、結果領域の境界を取得できない場合。
+        /// </exception>
+        void SetValue(string value)
+        {
+            if (valueElements.Count == 0)
+            {
+                throw new InvalidOperationException();
+            }
 
-        var valueElements = WordTextValue.CreateElements(value)
-            .DefaultIfEmpty(new Wordprocessing.Text())
-            .ToArray();
-        resultEnd.InsertBeforeSelf(new Wordprocessing.Run(valueElements));
-        complexValueElements.Clear();
-        complexValueElements.AddRange(valueElements);
-        // 書き換えた表示結果をWordが古い結果として扱わないようにします。
-        fieldStart.Dirty = null;
+            var resultStart = resultSeparator.Parent ??
+                throw new InvalidOperationException();
+            var resultEnd = fieldEnd.Parent ??
+                throw new InvalidOperationException();
+            if (resultStart.Parent != resultEnd.Parent)
+            {
+                throw new InvalidOperationException();
+            }
+
+            var oldResult = resultStart.ElementsAfter()
+                .TakeWhile(it => it != resultEnd)
+                .ToArray();
+            Array.ForEach(oldResult, it => it.Remove());
+
+            var newValueElements = WordTextValue.CreateElements(value)
+                .DefaultIfEmpty(new Wordprocessing.Text())
+                .ToArray();
+            resultEnd.InsertBeforeSelf(
+                new Wordprocessing.Run(newValueElements));
+            valueElements.Clear();
+            valueElements.AddRange(newValueElements);
+            // 書き換えた表示結果をWordが古い結果として扱わないようにします。
+            fieldStart.Dirty = null;
+        }
     }
 }
