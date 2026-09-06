@@ -19,6 +19,10 @@ public static class DocumentWrapperGenerator
         configure?.Invoke(options);
 
         var typeName = $"{Path.GetFileNameWithoutExtension(filePath)}Document";
+        using var document = Document.Open(filePath);
+        var mergeFieldProperties = string.Concat(
+            from mergeField in document.MergeFields
+            select MergeFieldPropertyDeclaration(mergeField));
 
         return
         [
@@ -36,10 +40,23 @@ public static class DocumentWrapperGenerator
 
                 public static new {{typeName}} Open(string filePath) =>
                     new(filePath);
+            {{mergeFieldProperties}}
             }
             """
         ];
     }
+
+    /// <summary>
+    /// 生成Document型から指定したMERGEFIELDを取得するプロパティ宣言を生成します。
+    /// </summary>
+    /// <param name="mergeField">プロパティとして公開するMERGEFIELD。</param>
+    /// <returns>MERGEFIELDプロパティのC#コード。</returns>
+    static string MergeFieldPropertyDeclaration(MergeField mergeField) =>
+        $$"""
+
+            public MergeField {{mergeField.Name}} =>
+                MergeFields["{{mergeField.Name}}"];
+        """;
 
     /// <summary>
     /// 指定したWord文書を解析し、コード生成前に検出できる問題を診断します。
