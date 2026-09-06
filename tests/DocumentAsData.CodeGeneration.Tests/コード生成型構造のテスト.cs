@@ -49,4 +49,26 @@ public sealed class コード生成型構造のテスト
         tested.ReturnType.Should().Be(
             tested.DeclaringType);
     }
+
+    [Fact]
+    public void 生成されたDocument型は別ファイルのpartial定義と共にコンパイルできます()
+    {
+        GeneratedSourceCompiler
+            .Compile(
+                [
+                    .. GeneratedCodeInspection.GenerateSources(
+                        BasicStructureDocumentFilePath),
+                    """
+                    namespace Generated;
+
+                    public partial class BasicStructureDocument
+                    {
+                        public bool AddedByUser => true;
+                    }
+                    """
+                ])
+            .GeneratedType("BasicStructureDocument")
+            .GetProperty("AddedByUser")
+            .Should().NotBeNull();
+    }
 }

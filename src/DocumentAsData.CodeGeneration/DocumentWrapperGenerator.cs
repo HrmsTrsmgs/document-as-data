@@ -21,7 +21,7 @@ public static class DocumentWrapperGenerator
 
             namespace Generated;
 
-            public class {{typeName}} : Document
+            public partial class {{typeName}} : Document
             {
                 {{typeName}}(string filePath)
                     : base(filePath)
