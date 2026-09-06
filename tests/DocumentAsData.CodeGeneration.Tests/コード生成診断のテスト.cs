@@ -30,4 +30,15 @@ public sealed class コード生成診断のテスト
                     "CustomerId2",
                     StringComparison.Ordinal));
     }
+
+    [Fact]
+    public void NameMappingsで生成名を変更するとMERGEFIELDプロパティ名の衝突を解消できます()
+    {
+        GeneratedCodeInspection
+            .GenerateDiagnostics(
+                MergeFieldNameCollisionDocumentFilePath,
+                options =>
+                    options.NameMappings["customer-id"] = "CustomerIdDash")
+            .Should().BeEmpty();
+    }
 }

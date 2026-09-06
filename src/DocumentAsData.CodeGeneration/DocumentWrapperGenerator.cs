@@ -36,6 +36,7 @@ public static class DocumentWrapperGenerator
         Action<CodeGenerationOptions>? configure = null)
     {
         var options = new CodeGenerationOptions();
+        configure?.Invoke(options);
 
         using var document = Document.Open(filePath);
         return
