@@ -23,6 +23,9 @@ public static class DocumentWrapperGenerator
         var mergeFieldProperties = string.Concat(
             from mergeField in document.MergeFields
             select MergeFieldPropertyDeclaration(mergeField));
+        var textContentControlProperties = string.Concat(
+            from contentControl in document.ContentControls
+            select TextContentControlPropertyDeclaration(contentControl));
 
         return
         [
@@ -41,6 +44,7 @@ public static class DocumentWrapperGenerator
                 public static new {{typeName}} Open(string filePath) =>
                     new(filePath);
             {{mergeFieldProperties}}
+            {{textContentControlProperties}}
             }
             """
         ];
@@ -59,6 +63,19 @@ public static class DocumentWrapperGenerator
                 get => MergeFields["{{mergeField.Name}}"].Text;
                 set => MergeFields["{{mergeField.Name}}"].Text = value;
             }
+        """;
+
+    /// <summary>
+    /// 生成Document型から指定した文字列Content Controlを取得するプロパティ宣言を生成します。
+    /// </summary>
+    /// <param name="contentControl">プロパティとして公開する文字列Content Control。</param>
+    /// <returns>文字列Content ControlプロパティのC#コード。</returns>
+    static string TextContentControlPropertyDeclaration(
+        TextContentControl contentControl) =>
+        $$"""
+
+            public string {{contentControl.Tag}} =>
+                ContentControls["{{contentControl.Tag}}"].Text;
         """;
 
     /// <summary>

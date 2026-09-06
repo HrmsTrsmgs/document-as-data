@@ -7,6 +7,8 @@ public sealed class コード生成名前付き項目のテスト : IDisposable
 {
     const string MergeFieldsDocumentFilePath =
         @"TestData\コード生成\MERGEFIELD.docx";
+    const string TextContentControlDocumentFilePath =
+        @"TestData\コード生成\文字列ContentControl.docx";
 
     readonly TemporaryDocumentFiles temporaryFiles = new();
 
@@ -57,5 +59,23 @@ public sealed class コード生成名前付き項目のテスト : IDisposable
         using var tested = Document.Open(savedPath);
 
         tested.MergeFields["CustomerName"].Text.Should().Be("生成後");
+    }
+
+    [Fact]
+    public void 生成されたDocument型の文字列ContentControlプロパティから文字列を直接読み取れます()
+    {
+        using var document = GeneratedCodeInspection
+            .AssemblyFrom(
+                GeneratedCodeInspection.GenerateSources(
+                    TextContentControlDocumentFilePath))
+            .GeneratedType("文字列ContentControlDocument")
+            .InvokeStaticMethod<Document>(
+                "Open",
+                TextContentControlDocumentFilePath);
+
+        dynamic documentAccessor = document;
+        string tested = documentAccessor.CustomerName;
+
+        tested.Should().Be("山田太郎");
     }
 }
