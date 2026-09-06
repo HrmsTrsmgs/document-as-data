@@ -17,6 +17,8 @@ public sealed class コード生成名前付き項目のテスト : IDisposable
         @"TestData\コード生成\引用符とバックスラッシュを含むTagのCheckBox.docx";
     const string DatePickerDocumentFilePath =
         @"TestData\コード生成\日付選択ContentControl.docx";
+    const string SpecialCharacterDatePickerTagDocumentFilePath =
+        @"TestData\コード生成\引用符とバックスラッシュを含むTagのDatePicker.docx";
 
     readonly TemporaryDocumentFiles temporaryFiles = new();
 
@@ -211,6 +213,35 @@ public sealed class コード生成名前付き項目のテスト : IDisposable
 
         dynamic documentAccessor = document;
         DateTimeOffset tested = documentAccessor.DeliveryDate;
+
+        tested.Should().Be(
+            new DateTimeOffset(
+                2026,
+                9,
+                4,
+                0,
+                0,
+                0,
+                TimeSpan.Zero));
+    }
+
+    [Fact]
+    public void 特殊文字を含むTagから生成したDatePickerプロパティで日時を読み取れます()
+    {
+        using var document = GeneratedCodeInspection
+            .AssemblyFrom(
+                GeneratedCodeInspection.GenerateSources(
+                    SpecialCharacterDatePickerTagDocumentFilePath,
+                    options =>
+                        options.NameMappings[
+                            @"C:\temp\""delivery"] = "SpecialDeliveryDate"))
+            .GeneratedType("引用符とバックスラッシュを含むTagのDatePickerDocument")
+            .InvokeStaticMethod<Document>(
+                "Open",
+                SpecialCharacterDatePickerTagDocumentFilePath);
+
+        dynamic documentAccessor = document;
+        DateTimeOffset tested = documentAccessor.SpecialDeliveryDate;
 
         tested.Should().Be(
             new DateTimeOffset(

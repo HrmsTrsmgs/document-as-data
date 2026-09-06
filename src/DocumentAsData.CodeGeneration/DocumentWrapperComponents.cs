@@ -105,8 +105,8 @@ static class DocumentWrapperComponents
             /// </summary>
             public System.DateTimeOffset {{options.GeneratedName(datePicker.Tag)}}
             {
-                get => DatePickers["{{datePicker.Tag}}"].SelectedDateTime;
-                set => DatePickers["{{datePicker.Tag}}"].SelectedDateTime = value;
+                get => DatePickers[{{StringLiteral(datePicker.Tag)}}].SelectedDateTime;
+                set => DatePickers[{{StringLiteral(datePicker.Tag)}}].SelectedDateTime = value;
             }
         """;
 
