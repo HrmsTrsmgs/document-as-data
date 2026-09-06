@@ -8,6 +8,16 @@ public sealed class コード生成統合のテスト
     const string IntegratedDocumentFilePath = @"TestData\コード生成\統合.docx";
 
     [Fact]
+    public void 基本的なWord文書からコンパイルできるソースを生成します()
+    {
+        GeneratedCodeInspection
+            .AssemblyFrom(
+                GeneratedCodeInspection.GenerateSources(
+                    IntegratedDocumentFilePath))
+            .Should().NotBeNull();
+    }
+
+    [Fact]
     public void 指定した名前空間へすべての型を生成します()
     {
         var generatedTypes = GeneratedCodeInspection
