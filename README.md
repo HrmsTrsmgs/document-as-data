@@ -12,8 +12,8 @@ Tagを名前として、Wordの日付選択Content Controlに記録された日�
 ```csharp
 using var document = Document.Open("template.docx");
 
-var deliveryDate = document.DatePickers["DeliveryDate"].Value;
-document.DatePickers["DeliveryDate"].Value = new DateTimeOffset(
+var deliveryDate = document.DatePickers["DeliveryDate"].SelectedDateTime;
+document.DatePickers["DeliveryDate"].SelectedDateTime = new DateTimeOffset(
     2027,
     1,
     2,

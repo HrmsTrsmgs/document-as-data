@@ -28,7 +28,7 @@ public class DatePicker : ContentControl
     /// 日付選択のプロパティ、日時、表示形式、表示言語、表示文字列の
     /// いずれかが欠落しているか、必要な要素が複数存在する場合。
     /// </exception>
-    public DateTimeOffset Value
+    public DateTimeOffset SelectedDateTime
     {
         get => XmlConvert.ToDateTimeOffset(
             DateProperties.FullDate?.InnerText

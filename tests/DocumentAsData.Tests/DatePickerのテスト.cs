@@ -48,7 +48,7 @@ public class DatePickerのテスト
     }
 
     [Fact]
-    public void Valueプロパティは日付選択ContentControlの日時を取得します()
+    public void SelectedDateTimeプロパティは日付選択ContentControlの日時を取得します()
     {
         var filePath =
             TestDocument.CreateTemporaryCopy(DatePickerContentControlPath);
@@ -56,7 +56,7 @@ public class DatePickerのテスト
         {
             using var document = Document.Open(filePath, true);
 
-            document.DatePickers.Single().Value
+            document.DatePickers.Single().SelectedDateTime
                 .Should().Be(
                     new DateTimeOffset(
                         2026,
@@ -74,7 +74,7 @@ public class DatePickerのテスト
     }
 
     [Fact]
-    public void ValueプロパティはfullDateの時差を保持します()
+    public void SelectedDateTimeプロパティはfullDateの時差を保持します()
     {
         var filePath =
             TestDocument.CreateTemporaryCopy(OffsetDatePickerContentControlPath);
@@ -92,7 +92,7 @@ public class DatePickerのテスト
 
             // OOXMLではfullDateに完全なXML Schema DateTimeを保持します。
             // 2026-09-04T00:00:00+09:00の日時と時差をそのまま読み取ります。
-            var actual = document.DatePickers.Single().Value;
+            var actual = document.DatePickers.Single().SelectedDateTime;
 
             actual.Should().Be(expected);
             actual.Offset.Should().Be(expected.Offset);
@@ -104,7 +104,7 @@ public class DatePickerのテスト
     }
 
     [Fact]
-    public void Valueプロパティは日付選択ContentControlの日時を設定します()
+    public void SelectedDateTimeプロパティは日付選択ContentControlの日時を設定します()
     {
         var filePath =
             TestDocument.CreateTemporaryCopy(DatePickerContentControlPath);
@@ -121,10 +121,10 @@ public class DatePickerのテスト
                 0,
                 TimeSpan.FromHours(9));
 
-            tested.Value = value;
+            tested.SelectedDateTime = value;
 
-            tested.Value.Should().Be(value);
-            tested.Value.Offset.Should().Be(value.Offset);
+            tested.SelectedDateTime.Should().Be(value);
+            tested.SelectedDateTime.Offset.Should().Be(value.Offset);
         }
         finally
         {
@@ -133,7 +133,7 @@ public class DatePickerのテスト
     }
 
     [Fact]
-    public void Valueプロパティは表示形式に従った日付文字列を設定します()
+    public void SelectedDateTimeプロパティは表示形式に従った日付文字列を設定します()
     {
         var sourcePath =
             TestDocument.CreateTemporaryCopy(DatePickerContentControlPath);
@@ -142,7 +142,7 @@ public class DatePickerのテスト
         {
             using (var document = Document.Open(sourcePath, true))
             {
-                document.DatePickers.Single().Value =
+                document.DatePickers.Single().SelectedDateTime =
                     new DateTimeOffset(
                         2026,
                         12,

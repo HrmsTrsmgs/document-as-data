@@ -186,7 +186,7 @@ public class Document : IDisposable
     /// <returns>文書から読み込んだ値。</returns>
     object ReadValue(string name, Type propertyType) =>
         propertyType == typeof(DateTimeOffset)
-            ? (FindDatePicker(name) ?? throw new DocumentMappingException()).Value
+            ? (FindDatePicker(name) ?? throw new DocumentMappingException()).SelectedDateTime
             : (FindValueTarget(name) ?? throw new InvalidOperationException()).Value;
 
     /// <summary>
@@ -263,7 +263,7 @@ public class Document : IDisposable
         {
             var datePicker = FindDatePicker(name) ?? throw new DocumentMappingException();
 
-            datePicker.Value = dateTime;
+            datePicker.SelectedDateTime = dateTime;
             return;
         }
 

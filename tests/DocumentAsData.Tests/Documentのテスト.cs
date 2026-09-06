@@ -479,9 +479,9 @@ public class Documentのテスト
                     Address = "変更後の住所"
                 });
 
-            document.ContentControls["CustomerName"].Value
+            document.ContentControls["CustomerName"].Text
                 .Should().Be("変更後の氏名");
-            document.ContentControls["Address"].Value
+            document.ContentControls["Address"].Text
                 .Should().Be("変更後の住所");
         }
         finally
@@ -505,9 +505,9 @@ public class Documentのテスト
                     Location = "変更後の住所"
                 });
 
-            document.ContentControls["CustomerName"].Value
+            document.ContentControls["CustomerName"].Text
                 .Should().Be("変更後の氏名");
-            document.ContentControls["Address"].Value
+            document.ContentControls["Address"].Text
                 .Should().Be("変更後の住所");
         }
         finally
@@ -597,7 +597,7 @@ public class Documentのテスト
                     CustomerName = "変更後の氏名"
                 });
 
-            document.ContentControls["CustomerName"].Value
+            document.ContentControls["CustomerName"].Text
                 .Should().Be("変更後の氏名");
         }
         finally
@@ -651,7 +651,7 @@ public class Documentのテスト
                         TimeSpan.FromHours(9))
                 });
 
-            document.DatePickers["DeliveryDate"].Value
+            document.DatePickers["DeliveryDate"].SelectedDateTime
                 .Should().Be(
                     new DateTimeOffset(
                         2027,
@@ -759,9 +759,9 @@ public class Documentのテスト
                     CustomerName = "変更後の氏名"
                 });
 
-            document.ContentControls["CustomerName"].Value
+            document.ContentControls["CustomerName"].Text
                 .Should().Be("変更後の氏名");
-            document.ContentControls["Address"].Value
+            document.ContentControls["Address"].Text
                 .Should().Be("東京都");
         }
         finally
@@ -912,12 +912,12 @@ public class Documentのテスト
         {
             using (var document = Document.Open(sourcePath))
             {
-                document.ContentControls["CustomerName"].Value = "変更後";
+                document.ContentControls["CustomerName"].Text = "変更後";
                 document.SaveAs(outputPath);
             }
 
             using var saved = Document.Open(outputPath);
-            saved.ContentControls["CustomerName"].Value.Should().Be("変更後");
+            saved.ContentControls["CustomerName"].Text.Should().Be("変更後");
         }
         finally
         {
@@ -989,7 +989,7 @@ public class Documentのテスト
         {
             using (var document = Document.Open(sourcePath))
             {
-                document.ContentControls["CustomerName"].Value = "変更後";
+                document.ContentControls["CustomerName"].Text = "変更後";
                 document.SaveAs(outputPath);
             }
 
@@ -1025,12 +1025,12 @@ public class Documentのテスト
         {
             using (var document = Document.Open(sourcePath, true))
             {
-                document.DatePickers["DeliveryDate"].Value = value;
+                document.DatePickers["DeliveryDate"].SelectedDateTime = value;
                 document.SaveAs(outputPath);
             }
 
             using var saved = Document.Open(outputPath, true);
-            var actual = saved.DatePickers["DeliveryDate"].Value;
+            var actual = saved.DatePickers["DeliveryDate"].SelectedDateTime;
 
             actual.Should().Be(value);
             actual.Offset.Should().Be(value.Offset);

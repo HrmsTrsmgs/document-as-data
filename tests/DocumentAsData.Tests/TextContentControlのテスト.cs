@@ -70,14 +70,14 @@ public class TextContentControlのテスト
     }
 
     [Fact]
-    public void ValueプロパティはContentControlの値を取得します()
+    public void TextプロパティはContentControlの値を取得します()
     {
         var filePath = TestDocument.CreateTemporaryCopy(ContentControlPath);
         try
         {
             using var document = Document.Open(filePath);
 
-            document.ContentControls["CustomerName"].Value.Should().Be("山田太郎");
+            document.ContentControls["CustomerName"].Text.Should().Be("山田太郎");
         }
         finally
         {
@@ -86,7 +86,7 @@ public class TextContentControlのテスト
     }
 
     [Fact]
-    public void Valueプロパティは複数の文字列要素からContentControlの値を取得します()
+    public void Textプロパティは複数の文字列要素からContentControlの値を取得します()
     {
         var filePath =
             TestDocument.CreateTemporaryCopy(SplitContentControlTextPath);
@@ -94,7 +94,7 @@ public class TextContentControlのテスト
         {
             using var document = Document.Open(filePath);
 
-            document.ContentControls["CustomerName"].Value
+            document.ContentControls["CustomerName"].Text
                 .Should().Be("山田太郎");
         }
         finally
@@ -104,16 +104,16 @@ public class TextContentControlのテスト
     }
 
     [Fact]
-    public void ValueプロパティはContentControlの値を設定します()
+    public void TextプロパティはContentControlの値を設定します()
     {
         var filePath = TestDocument.CreateTemporaryCopy(ContentControlPath);
         try
         {
             using var document = Document.Open(filePath);
 
-            document.ContentControls["CustomerName"].Value = "変更後";
+            document.ContentControls["CustomerName"].Text = "変更後";
 
-            document.ContentControls["CustomerName"].Value.Should().Be("変更後");
+            document.ContentControls["CustomerName"].Text.Should().Be("変更後");
         }
         finally
         {
@@ -122,7 +122,7 @@ public class TextContentControlのテスト
     }
 
     [Fact]
-    public void Valueプロパティはプレースホルダー表示中なら空文字列を取得します()
+    public void Textプロパティはプレースホルダー表示中なら空文字列を取得します()
     {
         var filePath =
             TestDocument.CreateTemporaryCopy(PlaceholderContentControlPath);
@@ -130,7 +130,7 @@ public class TextContentControlのテスト
         {
             using var document = Document.Open(filePath);
 
-            document.ContentControls["CustomerName"].Value.Should().BeEmpty();
+            document.ContentControls["CustomerName"].Text.Should().BeEmpty();
         }
         finally
         {
@@ -139,7 +139,7 @@ public class TextContentControlのテスト
     }
 
     [Fact]
-    public void Valueプロパティはプレースホルダー表示中のContentControlへ値を設定します()
+    public void Textプロパティはプレースホルダー表示中のContentControlへ値を設定します()
     {
         var filePath =
             TestDocument.CreateTemporaryCopy(PlaceholderContentControlPath);
@@ -147,9 +147,9 @@ public class TextContentControlのテスト
         {
             using var document = Document.Open(filePath);
 
-            document.ContentControls["CustomerName"].Value = "変更後";
+            document.ContentControls["CustomerName"].Text = "変更後";
 
-            document.ContentControls["CustomerName"].Value.Should().Be("変更後");
+            document.ContentControls["CustomerName"].Text.Should().Be("変更後");
         }
         finally
         {
@@ -166,12 +166,12 @@ public class TextContentControlのテスト
         {
             using (var document = Document.Open(sourcePath))
             {
-                document.ContentControls["CustomerName"].Value = "";
+                document.ContentControls["CustomerName"].Text = "";
                 document.SaveAs(outputPath);
             }
 
             using var saved = Document.Open(outputPath);
-            saved.ContentControls["CustomerName"].Value.Should().BeEmpty();
+            saved.ContentControls["CustomerName"].Text.Should().BeEmpty();
         }
         finally
         {
@@ -190,12 +190,12 @@ public class TextContentControlのテスト
         {
             using (var document = Document.Open(sourcePath))
             {
-                document.ContentControls["CustomerName"].Value = value;
+                document.ContentControls["CustomerName"].Text = value;
                 document.SaveAs(outputPath);
             }
 
             using var saved = Document.Open(outputPath);
-            saved.ContentControls["CustomerName"].Value.Should().Be(value);
+            saved.ContentControls["CustomerName"].Text.Should().Be(value);
         }
         finally
         {
@@ -215,12 +215,12 @@ public class TextContentControlのテスト
         {
             using (var document = Document.Open(sourcePath))
             {
-                document.ContentControls["CustomerName"].Value = value;
+                document.ContentControls["CustomerName"].Text = value;
                 document.SaveAs(outputPath);
             }
 
             using var saved = Document.Open(outputPath);
-            saved.ContentControls["CustomerName"].Value.Should().Be(value);
+            saved.ContentControls["CustomerName"].Text.Should().Be(value);
         }
         finally
         {
@@ -230,18 +230,18 @@ public class TextContentControlのテスト
     }
 
     [Fact]
-    public void Valueプロパティは改行とタブを含むContentControlへ再設定したとき最後の値だけを取得します()
+    public void Textプロパティは改行とタブを含むContentControlへ再設定したとき最後の値だけを取得します()
     {
         var filePath = TestDocument.CreateTemporaryCopy(ContentControlPath);
         try
         {
             using var document = Document.Open(filePath);
             var tested = document.ContentControls["CustomerName"];
-            tested.Value = "一行目\t二列目\r\n二行目";
+            tested.Text = "一行目\t二列目\r\n二行目";
 
-            tested.Value = "再設定";
+            tested.Text = "再設定";
 
-            tested.Value.Should().Be("再設定");
+            tested.Text.Should().Be("再設定");
         }
         finally
         {
@@ -250,18 +250,18 @@ public class TextContentControlのテスト
     }
 
     [Fact]
-    public void Valueプロパティは空文字列を設定したContentControlへ値を再設定します()
+    public void Textプロパティは空文字列を設定したContentControlへ値を再設定します()
     {
         var filePath = TestDocument.CreateTemporaryCopy(ContentControlPath);
         try
         {
             using var document = Document.Open(filePath);
             var tested = document.ContentControls["CustomerName"];
-            tested.Value = "";
+            tested.Text = "";
 
-            tested.Value = "再設定";
+            tested.Text = "再設定";
 
-            tested.Value.Should().Be("再設定");
+            tested.Text.Should().Be("再設定");
         }
         finally
         {
@@ -279,12 +279,12 @@ public class TextContentControlのテスト
         {
             using (var document = Document.Open(sourcePath))
             {
-                document.ContentControls["CustomerName"].Value = "変更後";
+                document.ContentControls["CustomerName"].Text = "変更後";
                 document.SaveAs(outputPath);
             }
 
             using var saved = Document.Open(outputPath);
-            saved.ContentControls["CustomerName"].Value.Should().Be("変更後");
+            saved.ContentControls["CustomerName"].Text.Should().Be("変更後");
         }
         finally
         {
@@ -294,7 +294,7 @@ public class TextContentControlのテスト
     }
 
     [Fact]
-    public void ValueプロパティはContentControlの空白を保持する属性を設定します()
+    public void TextプロパティはContentControlの空白を保持する属性を設定します()
     {
         var sourcePath = TestDocument.CreateTemporaryCopy(ContentControlPath);
         var outputPath = TestDocument.CreateOutputPath();
@@ -303,7 +303,7 @@ public class TextContentControlのテスト
         {
             using (var document = Document.Open(sourcePath))
             {
-                document.ContentControls["CustomerName"].Value = value;
+                document.ContentControls["CustomerName"].Text = value;
                 document.SaveAs(outputPath);
             }
 
@@ -325,7 +325,7 @@ public class TextContentControlのテスト
     }
 
     [Fact]
-    public void ValueプロパティはContentControlの改行とタブを専用要素で保存します()
+    public void TextプロパティはContentControlの改行とタブを専用要素で保存します()
     {
         var sourcePath =
             TestDocument.CreateTemporaryCopy(MultilineContentControlPath);
@@ -334,7 +334,7 @@ public class TextContentControlのテスト
         {
             using (var document = Document.Open(sourcePath))
             {
-                document.ContentControls["CustomerName"].Value =
+                document.ContentControls["CustomerName"].Text =
                     "一行目\t二列目\r\n二行目";
                 document.SaveAs(outputPath);
             }
@@ -359,7 +359,7 @@ public class TextContentControlのテスト
     }
 
     [Fact]
-    public void ValueプロパティはLF改行をContentControlの改行要素で保存します()
+    public void TextプロパティはLF改行をContentControlの改行要素で保存します()
     {
         var sourcePath = TestDocument.CreateTemporaryCopy(ContentControlPath);
         var outputPath = TestDocument.CreateOutputPath();
@@ -367,7 +367,7 @@ public class TextContentControlのテスト
         {
             using (var document = Document.Open(sourcePath))
             {
-                document.ContentControls["CustomerName"].Value =
+                document.ContentControls["CustomerName"].Text =
                     "一行目\n二行目";
                 document.SaveAs(outputPath);
             }
@@ -392,7 +392,7 @@ public class TextContentControlのテスト
     }
 
     [Fact]
-    public void Valueプロパティは複数の文字列要素の先頭へ値を設定して残りを空にします()
+    public void Textプロパティは複数の文字列要素の先頭へ値を設定して残りを空にします()
     {
         var sourcePath =
             TestDocument.CreateTemporaryCopy(SplitContentControlTextPath);
@@ -401,7 +401,7 @@ public class TextContentControlのテスト
         {
             using (var document = Document.Open(sourcePath))
             {
-                document.ContentControls["CustomerName"].Value = "変更後";
+                document.ContentControls["CustomerName"].Text = "変更後";
                 document.SaveAs(outputPath);
             }
 
@@ -423,7 +423,7 @@ public class TextContentControlのテスト
     }
 
     [Fact]
-    public void Valueプロパティはプレースホルダー表示状態を解除します()
+    public void Textプロパティはプレースホルダー表示状態を解除します()
     {
         var sourcePath =
             TestDocument.CreateTemporaryCopy(PlaceholderContentControlPath);
@@ -432,7 +432,7 @@ public class TextContentControlのテスト
         {
             using (var document = Document.Open(sourcePath))
             {
-                document.ContentControls["CustomerName"].Value = "変更後";
+                document.ContentControls["CustomerName"].Text = "変更後";
                 document.SaveAs(outputPath);
             }
 

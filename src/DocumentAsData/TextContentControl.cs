@@ -8,7 +8,7 @@ namespace Marimo.DocumentAsData;
 public class TextContentControl : ContentControl, DocumentTextItem
 {
     /// <summary>
-    /// 文書内のOOXML要素への参照を保持し、Valueの読み書きを同じ要素へ反映できるようにします。
+    /// 文書内のOOXML要素への参照を保持し、Textの読み書きを同じ要素へ反映できるようにします。
     /// </summary>
     /// <param name="document">Content Controlが属する文書。</param>
     /// <param name="element">Content Controlを構成するOOXML要素。</param>
@@ -20,7 +20,7 @@ public class TextContentControl : ContentControl, DocumentTextItem
     }
 
     /// <summary>
-    /// Content Controlの値を取得または設定します。
+    /// Content Controlの文字列を取得または設定します。
     /// </summary>
     /// <remarks>
     /// プレースホルダー表示中は、表示用文字列ではなく空文字列を返します。
@@ -29,7 +29,7 @@ public class TextContentControl : ContentControl, DocumentTextItem
     /// <exception cref="InvalidOperationException">
     /// 値の設定時に文字列要素が存在しない場合。
     /// </exception>
-    public string Value
+    public string Text
     {
         get => IsShowingPlaceholder
             ? ""
@@ -46,6 +46,15 @@ public class TextContentControl : ContentControl, DocumentTextItem
                 text.Text = "";
             }
         }
+    }
+
+    /// <summary>
+    /// 文字列の文書項目として、オブジェクトマッピングからTextを読み書きします。
+    /// </summary>
+    string DocumentTextItem.Value
+    {
+        get => Text;
+        set => Text = value;
     }
 
     /// <summary>

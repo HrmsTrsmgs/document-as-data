@@ -192,7 +192,7 @@ public class ContentControlCollectionのテスト
 
             // Wordのチェックボックスは、表示記号のw:tとは別に
             // w:sdtPr/w14:checkbox/w14:checkedへチェック状態を保持します。
-            // 文字列用のValueでは両者を同期できないため、通常のContentControlsには含めません。
+            // 文字列用のTextプロパティでは両者を同期できないため、通常のContentControlsには含めません。
             document.ContentControls.Should().BeEmpty();
         }
         finally
@@ -212,7 +212,7 @@ public class ContentControlCollectionのテスト
 
             // Wordの日付選択は、w:sdtContent/w:tの表示文字列とは別に
             // w:sdtPr/w:dateへ日付、表示形式、言語、暦を保持します。
-            // 文字列用のValueでは両者を同期できないため、通常のContentControlsには含めません。
+            // 文字列用のTextプロパティでは両者を同期できないため、通常のContentControlsには含めません。
             document.ContentControls.Should().BeEmpty();
         }
         finally
@@ -232,7 +232,7 @@ public class ContentControlCollectionのテスト
 
             // Wordの画像Content Controlはw:sdtPr/w:pictureで種類を示し、
             // w:sdtContent内のw:drawingと関連する画像Partへ画像を保持します。
-            // 文字列用のValueでは扱えないため、通常のContentControlsには含めません。
+            // 文字列用のTextプロパティでは扱えないため、通常のContentControlsには含めません。
             document.ContentControls.Should().BeEmpty();
         }
         finally
@@ -252,7 +252,7 @@ public class ContentControlCollectionのテスト
 
             // Wordのドロップダウンリストは、w:sdtContent/w:tの表示文字列とは別に
             // w:sdtPr/w:dropDownListへ選択肢と最後に選択された値を保持します。
-            // 文字列用のValueでは両者を同期できないため、通常のContentControlsには含めません。
+            // 文字列用のTextプロパティでは両者を同期できないため、通常のContentControlsには含めません。
             document.ContentControls.Should().BeEmpty();
         }
         finally
@@ -272,7 +272,7 @@ public class ContentControlCollectionのテスト
 
             // Wordのコンボボックスは、w:sdtContent/w:tの表示文字列とは別に
             // w:sdtPr/w:comboBoxへ選択肢と最後に選択された値を保持します。
-            // 文字列用のValueでは両者を同期できないため、通常のContentControlsには含めません。
+            // 文字列用のTextプロパティでは両者を同期できないため、通常のContentControlsには含めません。
             document.ContentControls.Should().BeEmpty();
         }
         finally
