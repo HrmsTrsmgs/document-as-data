@@ -10,6 +10,8 @@ public sealed class CSharp識別子生成のテスト
         @"TestData\コード生成\salesReport.docx";
     const string キャメルケースMergeFieldDocumentFilePath =
         @"TestData\コード生成\customerData.docx";
+    const string キャメルケースTextContentControlDocumentFilePath =
+        @"TestData\コード生成\customerForm.docx";
 
     [Theory]
     [InlineData("salesReport", "SalesReport")]
@@ -45,6 +47,18 @@ public sealed class CSharp識別子生成のテスト
                 GeneratedCodeInspection.GenerateSources(
                     キャメルケースMergeFieldDocumentFilePath))
             .GeneratedType("CustomerDataDocument")
+            .GetProperty("CustomerName")
+            .Should().NotBeNull();
+    }
+
+    [Fact]
+    public void キャメルケース文字列ContentControlのTagはPascalCaseのプロパティ名へ変換します()
+    {
+        GeneratedCodeInspection
+            .AssemblyFrom(
+                GeneratedCodeInspection.GenerateSources(
+                    キャメルケースTextContentControlDocumentFilePath))
+            .GeneratedType("CustomerFormDocument")
             .GetProperty("CustomerName")
             .Should().NotBeNull();
     }

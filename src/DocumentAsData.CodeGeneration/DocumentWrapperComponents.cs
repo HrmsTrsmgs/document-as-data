@@ -107,7 +107,7 @@ static class DocumentWrapperComponents
         TextContentControl contentControl) =>
         $$"""
 
-            public string {{contentControl.Tag}}
+            public string {{contentControl.Tag.ToCSharpIdentifier()}}
             {
                 get => ContentControls["{{contentControl.Tag}}"].Text;
                 set => ContentControls["{{contentControl.Tag}}"].Text = value;
