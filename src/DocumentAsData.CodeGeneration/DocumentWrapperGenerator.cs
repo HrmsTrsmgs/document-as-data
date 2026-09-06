@@ -33,6 +33,21 @@ public static class DocumentWrapperGenerator
     /// <returns>検出された診断情報。</returns>
     public static CodeGenerationDiagnostic[] GenerateDiagnostics(
         string filePath,
-        Action<CodeGenerationOptions>? configure = null) =>
-        [];
+        Action<CodeGenerationOptions>? configure = null)
+    {
+        var options = new CodeGenerationOptions();
+
+        using var document = Document.Open(filePath);
+        return
+        [
+            .. from mergeField in document.MergeFields
+               group mergeField.Name by options.GeneratedName(mergeField.Name)
+               into sourceNames
+               where sourceNames.Count() > 1
+               select new CodeGenerationDiagnostic(
+                   true,
+                   sourceNames.Key,
+                   [.. sourceNames])
+        ];
+    }
 }
