@@ -79,11 +79,9 @@ public sealed class GenerateDocumentAsData : Microsoft.Build.Utilities.Task
     /// <returns>文書内の名前から生成後のC#名への対応表。</returns>
     Dictionary<string, string> LoadNameMappings(string documentFilePath)
     {
-        var dictionaryFilePath = Path.Combine(
-            ProjectDirectory,
-            $"{Path.GetFileNameWithoutExtension(documentFilePath)}.documentasdata.json");
+        var dictionaryFilePath = DictionaryFilePath(documentFilePath);
 
-        if (!File.Exists(dictionaryFilePath))
+        if (dictionaryFilePath is null)
         {
             return [];
         }
@@ -91,5 +89,32 @@ public sealed class GenerateDocumentAsData : Microsoft.Build.Utilities.Task
         return JsonSerializer.Deserialize<Dictionary<string, string>>(
             File.ReadAllText(dictionaryFilePath))
             ?? [];
+    }
+
+    /// <summary>
+    /// 文書隣を優先して、指定したWord文書用の識別子名変換辞書を探します。
+    /// </summary>
+    /// <param name="documentFilePath">コード生成対象のWord文書。</param>
+    /// <returns>見つかった辞書ファイルのパス。存在しない場合は <see langword="null"/>。</returns>
+    string? DictionaryFilePath(string documentFilePath)
+    {
+        var dictionaryFileName =
+            $"{Path.GetFileNameWithoutExtension(documentFilePath)}.documentasdata.json";
+        var sameDirectoryDictionaryPath = Path.Combine(
+            Path.GetDirectoryName(documentFilePath)!,
+            dictionaryFileName);
+
+        if (File.Exists(sameDirectoryDictionaryPath))
+        {
+            return sameDirectoryDictionaryPath;
+        }
+
+        var projectDirectoryDictionaryPath = Path.Combine(
+            ProjectDirectory,
+            dictionaryFileName);
+
+        return File.Exists(projectDirectoryDictionaryPath)
+            ? projectDirectoryDictionaryPath
+            : null;
     }
 }

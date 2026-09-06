@@ -81,6 +81,22 @@ sealed class MSBuild連携テストプロジェクト : IDisposable
             json);
 
     /// <summary>
+    /// Word文書と同じディレクトリへ、識別子名変換辞書を置きます。
+    /// </summary>
+    /// <param name="documentRelativePath">対応するWord文書の一時プロジェクト内相対パス。</param>
+    /// <param name="json">辞書JSON。</param>
+    /// <returns>作成した辞書ファイルの絶対パス。</returns>
+    internal string AddDocumentDictionaryFor(
+        string documentRelativePath,
+        string json) =>
+        WriteDictionary(
+            Path.Combine(
+                DirectoryPath,
+                Path.GetDirectoryName(documentRelativePath) ?? "",
+                DictionaryFileName(documentRelativePath)),
+            json);
+
+    /// <summary>
     /// MSBuildタスクを直接実行します。
     /// </summary>
     /// <param name="documentFilePaths">生成対象Word文書の絶対パス。</param>

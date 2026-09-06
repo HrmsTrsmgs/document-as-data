@@ -61,4 +61,32 @@ public sealed class MSBuild連携タスクのテスト
         tested.SingleGeneratedSource
             .Should().Contain("public string ClientName");
     }
+
+    [Fact]
+    public void Word文書と同じディレクトリの辞書をプロジェクト直下の辞書より優先します()
+    {
+        using var project = MSBuild連携テストプロジェクト.Create();
+        var documentFilePath =
+            project.AddCustomerDataDocument(@"Schemas\customerData.docx");
+        project.AddProjectDictionaryFor(
+            "customerData.docx",
+            """
+            {
+              "customerName": "ProjectRootClientName"
+            }
+            """);
+        project.AddDocumentDictionaryFor(
+            @"Schemas\customerData.docx",
+            """
+            {
+              "customerName": "SameDirectoryClientName"
+            }
+            """);
+
+        var tested = project.Generate(documentFilePath);
+
+        tested.Succeeded.Should().BeTrue();
+        tested.SingleGeneratedSource
+            .Should().Contain("public string SameDirectoryClientName");
+    }
 }
