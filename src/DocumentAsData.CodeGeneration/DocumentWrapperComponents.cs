@@ -14,7 +14,7 @@ static class DocumentWrapperComponents
         Document document)
     {
         var documentName = Path.GetFileNameWithoutExtension(filePath);
-        var typeName = $"{documentName.ToCSharpIdentifier()}Document";
+        var typeName = $"{options.GeneratedName(documentName)}Document";
 
         return
             $$"""
