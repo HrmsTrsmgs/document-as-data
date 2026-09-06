@@ -123,4 +123,29 @@ public sealed class コード生成名前付き項目のテスト : IDisposable
 
         tested.Should().BeTrue();
     }
+
+    [Fact]
+    public void 生成されたDocument型のCheckBoxプロパティへチェック状態を直接書き込めます()
+    {
+        var savedPath = temporaryFiles.NewFilePath();
+
+        using (var document = GeneratedCodeInspection
+                   .AssemblyFrom(
+                       GeneratedCodeInspection.GenerateSources(
+                           CheckBoxDocumentFilePath))
+                   .GeneratedType("チェック済みCheckBoxDocument")
+                   .InvokeStaticMethod<Document>(
+                       "Open",
+                       CheckBoxDocumentFilePath))
+        {
+            dynamic documentAccessor = document;
+
+            documentAccessor.Agreement = false;
+            document.SaveAs(savedPath);
+        }
+
+        using var tested = Document.Open(savedPath);
+
+        tested.CheckBoxes["Agreement"].IsChecked.Should().BeFalse();
+    }
 }
