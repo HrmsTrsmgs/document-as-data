@@ -316,16 +316,20 @@ public class Document : IDisposable
     /// <param name="name">取得する名前。</param>
     /// <returns>取得した文字列データ項目。存在しない場合はnull。</returns>
     /// <exception cref="InvalidOperationException">同じ名前の対象が複数存在する場合。</exception>
-    DocumentTextItem? FindValueTarget(string name) =>
-        (
-            from contentControl in ContentControls
-            where contentControl.Tag == name
-            select (DocumentTextItem)contentControl
-        ).Concat(
-            from mergeField in MergeFields
-            where mergeField.Name == name
-            select mergeField)
-            .SingleOrDefault();
+    DocumentTextItem? FindValueTarget(string name)
+    {
+        IEnumerable<DocumentTextItem> targets =
+        [
+            .. from contentControl in ContentControls
+               where contentControl.Tag == name
+               select contentControl,
+            .. from mergeField in MergeFields
+               where mergeField.Name == name
+               select mergeField
+        ];
+
+        return targets.SingleOrDefault();
+    }
 
     /// <summary>
     /// 同じTagの日付選択Content Controlから、一件だけある対象を取得します。
