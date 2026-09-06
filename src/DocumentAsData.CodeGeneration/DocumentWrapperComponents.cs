@@ -91,7 +91,7 @@ static class DocumentWrapperComponents
     internal static string CheckBoxPropertyDeclaration(CheckBox checkBox) =>
         $$"""
 
-            public bool {{checkBox.Tag}}
+            public bool {{checkBox.Tag.ToCSharpIdentifier()}}
             {
                 get => CheckBoxes["{{checkBox.Tag}}"].IsChecked;
                 set => CheckBoxes["{{checkBox.Tag}}"].IsChecked = value;

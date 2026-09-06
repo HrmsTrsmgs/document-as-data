@@ -12,6 +12,8 @@ public sealed class CSharp識別子生成のテスト
         @"TestData\コード生成\customerData.docx";
     const string キャメルケースTextContentControlDocumentFilePath =
         @"TestData\コード生成\customerForm.docx";
+    const string キャメルケースCheckBoxDocumentFilePath =
+        @"TestData\コード生成\acceptanceForm.docx";
 
     [Theory]
     [InlineData("salesReport", "SalesReport")]
@@ -60,6 +62,18 @@ public sealed class CSharp識別子生成のテスト
                     キャメルケースTextContentControlDocumentFilePath))
             .GeneratedType("CustomerFormDocument")
             .GetProperty("CustomerName")
+            .Should().NotBeNull();
+    }
+
+    [Fact]
+    public void キャメルケースCheckBoxのTagはPascalCaseのプロパティ名へ変換します()
+    {
+        GeneratedCodeInspection
+            .AssemblyFrom(
+                GeneratedCodeInspection.GenerateSources(
+                    キャメルケースCheckBoxDocumentFilePath))
+            .GeneratedType("AcceptanceFormDocument")
+            .GetProperty("TermsAccepted")
             .Should().NotBeNull();
     }
 
