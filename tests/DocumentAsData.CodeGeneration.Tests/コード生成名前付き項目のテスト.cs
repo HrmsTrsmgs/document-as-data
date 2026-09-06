@@ -176,4 +176,39 @@ public sealed class コード生成名前付き項目のテスト : IDisposable
                 0,
                 TimeSpan.Zero));
     }
+
+    [Fact]
+    public void 生成されたDocument型のDatePickerプロパティへ日時を直接書き込めます()
+    {
+        var savedPath = temporaryFiles.NewFilePath();
+        var value = new DateTimeOffset(
+            2026,
+            12,
+            31,
+            0,
+            0,
+            0,
+            TimeSpan.FromHours(9));
+
+        using (var document = GeneratedCodeInspection
+                   .AssemblyFrom(
+                       GeneratedCodeInspection.GenerateSources(
+                           DatePickerDocumentFilePath))
+                   .GeneratedType("日付選択ContentControlDocument")
+                   .InvokeStaticMethod<Document>(
+                       "Open",
+                       DatePickerDocumentFilePath))
+        {
+            dynamic documentAccessor = document;
+
+            documentAccessor.DeliveryDate = value;
+            document.SaveAs(savedPath);
+        }
+
+        using var tested = Document.Open(savedPath);
+        var actual = tested.DatePickers["DeliveryDate"].SelectedDateTime;
+
+        actual.Should().Be(value);
+        actual.Offset.Should().Be(value.Offset);
+    }
 }
