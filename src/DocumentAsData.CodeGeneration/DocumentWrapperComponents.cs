@@ -30,6 +30,14 @@ static class DocumentWrapperComponents
 
                 public static new {{typeName}} Open(string filePath) =>
                     new(filePath);
+
+                {{typeName}}(System.IO.Stream stream)
+                    : base(stream)
+                {
+                }
+
+                public static new {{typeName}} Open(System.IO.Stream stream) =>
+                    new(stream);
             {{ForEach([
                 .. from mergeField in document.MergeFields
                    select MergeFieldPropertyDeclaration(mergeField),

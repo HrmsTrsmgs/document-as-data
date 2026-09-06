@@ -39,6 +39,18 @@ public class Document : IDisposable
     }
 
     /// <summary>
+    /// 派生した型付き文書から、指定したストリーム上のDOCX文書を開きます。
+    /// </summary>
+    /// <param name="stream">DOCX文書を格納したストリーム。</param>
+    /// <remarks>
+    /// 文書への変更はストリームへ書き戻しますが、ストリーム自体は閉じません。
+    /// </remarks>
+    protected Document(Stream stream)
+        : this(Packaging.WordprocessingDocument.Open(stream, true))
+    {
+    }
+
+    /// <summary>
     /// ファイルパス版で開いた文書と、その保存元および作業コピーを所有します。
     /// </summary>
     /// <param name="workingCopy">開いた文書と、その生存期間中に保持するストリーム。</param>

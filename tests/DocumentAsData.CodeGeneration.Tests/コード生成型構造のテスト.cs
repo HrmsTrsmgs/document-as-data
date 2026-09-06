@@ -51,6 +51,24 @@ public sealed class コード生成型構造のテスト
     }
 
     [Fact]
+    public void 生成されたDocument型はStreamから開けます()
+    {
+        using var stream = new MemoryStream();
+        stream.Write(File.ReadAllBytes(BasicStructureDocumentFilePath));
+        stream.Position = 0;
+        var generatedType = GeneratedCodeInspection
+            .AssemblyFrom(
+                GeneratedCodeInspection.GenerateSources(
+                    BasicStructureDocumentFilePath))
+            .GeneratedType("BasicStructureDocument");
+
+        using var tested =
+            generatedType.InvokeStaticMethod<Document>("Open", stream);
+
+        tested.GetType().Should().Be(generatedType);
+    }
+
+    [Fact]
     public void 生成されたDocument型は別ファイルのpartial定義と共にコンパイルできます()
     {
         GeneratedSourceCompiler
