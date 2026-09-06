@@ -18,84 +18,12 @@ public static class DocumentWrapperGenerator
         var options = new CodeGenerationOptions();
         configure?.Invoke(options);
 
-        var typeName = $"{Path.GetFileNameWithoutExtension(filePath)}Document";
         using var document = Document.Open(filePath);
-        var mergeFieldProperties = string.Concat(
-            from mergeField in document.MergeFields
-            select MergeFieldPropertyDeclaration(mergeField));
-        var textContentControlProperties = string.Concat(
-            from contentControl in document.ContentControls
-            select TextContentControlPropertyDeclaration(contentControl));
-        var checkBoxProperties = string.Concat(
-            from checkBox in document.CheckBoxes
-            select CheckBoxPropertyDeclaration(checkBox));
-
         return
         [
-            $$"""
-            using Marimo.DocumentAsData;
-
-            namespace {{options.Namespace}};
-
-            public partial class {{typeName}} : Document
-            {
-                {{typeName}}(string filePath)
-                    : base(filePath)
-                {
-                }
-
-                public static new {{typeName}} Open(string filePath) =>
-                    new(filePath);
-            {{mergeFieldProperties}}
-            {{textContentControlProperties}}
-            {{checkBoxProperties}}
-            }
-            """
+            DocumentWrapperComponents.SourceFile(filePath, options, document)
         ];
     }
-
-    /// <summary>
-    /// 生成Document型から指定したMERGEFIELDを取得するプロパティ宣言を生成します。
-    /// </summary>
-    /// <param name="mergeField">プロパティとして公開するMERGEFIELD。</param>
-    /// <returns>MERGEFIELDプロパティのC#コード。</returns>
-    static string MergeFieldPropertyDeclaration(MergeField mergeField) =>
-        $$"""
-
-            public string {{mergeField.Name}}
-            {
-                get => MergeFields["{{mergeField.Name}}"].Text;
-                set => MergeFields["{{mergeField.Name}}"].Text = value;
-            }
-        """;
-
-    /// <summary>
-    /// 生成Document型から指定したCheckBoxを取得するプロパティ宣言を生成します。
-    /// </summary>
-    /// <param name="checkBox">プロパティとして公開するCheckBox。</param>
-    /// <returns>CheckBoxプロパティのC#コード。</returns>
-    static string CheckBoxPropertyDeclaration(CheckBox checkBox) =>
-        $$"""
-
-            public bool {{checkBox.Tag}} =>
-                CheckBoxes["{{checkBox.Tag}}"].IsChecked;
-        """;
-
-    /// <summary>
-    /// 生成Document型から指定した文字列Content Controlを取得するプロパティ宣言を生成します。
-    /// </summary>
-    /// <param name="contentControl">プロパティとして公開する文字列Content Control。</param>
-    /// <returns>文字列Content ControlプロパティのC#コード。</returns>
-    static string TextContentControlPropertyDeclaration(
-        TextContentControl contentControl) =>
-        $$"""
-
-            public string {{contentControl.Tag}}
-            {
-                get => ContentControls["{{contentControl.Tag}}"].Text;
-                set => ContentControls["{{contentControl.Tag}}"].Text = value;
-            }
-        """;
 
     /// <summary>
     /// 指定したWord文書を解析し、コード生成前に検出できる問題を診断します。
