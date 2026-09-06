@@ -1,5 +1,6 @@
 <Solution>
   <Folder Name="/src/">
+    <Project Path="src/DocumentAsData.Build/DocumentAsData.Build.csproj" />
     <Project Path="src/DocumentAsData.CodeGeneration/DocumentAsData.CodeGeneration.csproj" />
     <Project Path="src/DocumentAsData/DocumentAsData.csproj" />
   </Folder>

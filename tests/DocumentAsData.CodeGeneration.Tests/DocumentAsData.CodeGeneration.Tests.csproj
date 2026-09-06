@@ -27,7 +27,17 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\DocumentAsData\DocumentAsData.csproj" />
+    <ProjectReference Include="..\..\src\DocumentAsData.Build\DocumentAsData.Build.csproj" />
     <ProjectReference Include="..\..\src\DocumentAsData.CodeGeneration\DocumentAsData.CodeGeneration.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.Build.Framework">
+      <HintPath>$(MSBuildToolsPath)\Microsoft.Build.Framework.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Build.Utilities.Core">
+      <HintPath>$(MSBuildToolsPath)\Microsoft.Build.Utilities.Core.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
   <ItemGroup>
