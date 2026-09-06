@@ -89,4 +89,24 @@ public sealed class MSBuild連携タスクのテスト
         tested.SingleGeneratedSource
             .Should().Contain("public string SameDirectoryClientName");
     }
+
+    [Fact]
+    public void 異なるディレクトリにある同名Word文書の生成ファイルは衝突しません()
+    {
+        using var project = MSBuild連携テストプロジェクト.Create();
+        var orderFilePath =
+            project.AddBasicStructureDocument(@"Orders\Master.docx");
+        var archiveFilePath =
+            project.AddBasicStructureDocument(@"Archive\Master.docx");
+
+        var tested = project.Generate(orderFilePath, archiveFilePath);
+
+        tested.Succeeded.Should().BeTrue();
+        tested.GeneratedFilePaths
+            .Should().BeEquivalentTo(
+                [
+                    project.GeneratedFilePathFor(@"Orders\Master.docx"),
+                    project.GeneratedFilePathFor(@"Archive\Master.docx")
+                ]);
+    }
 }
