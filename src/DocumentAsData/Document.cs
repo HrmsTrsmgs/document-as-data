@@ -225,7 +225,7 @@ public class Document : IDisposable
     object ReadValue(string name, Type propertyType) =>
         propertyType == typeof(DateTimeOffset)
             ? (FindDatePicker(name) ?? throw new DocumentMappingException()).SelectedDateTime
-            : (FindValueTarget(name) ?? throw new InvalidOperationException()).Value;
+            : (FindValueTarget(name) ?? throw new InvalidOperationException()).Text;
 
     /// <summary>
     /// 指定したオブジェクトのプロパティを、同じ名前のContent ControlまたはMERGEFIELDへ書き込みます。
@@ -307,7 +307,7 @@ public class Document : IDisposable
 
         var target = FindValueTarget(name) ?? throw new DocumentMappingException();
 
-        target.Value = (string)value;
+        target.Text = (string)value;
     }
 
     /// <summary>

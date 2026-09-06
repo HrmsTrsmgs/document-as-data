@@ -55,14 +55,14 @@ public class MergeFieldのテスト
     }
 
     [Fact]
-    public void ValueプロパティはMERGEFIELD値を取得します()
+    public void TextプロパティはMERGEFIELD文字列を取得します()
     {
         var filePath = TestDocument.CreateTemporaryCopy(TestFilePath);
         try
         {
             using var document = Document.Open(filePath);
 
-            document.MergeFields["CustomerName"].Value.Should().Be("株式会社○○");
+            document.MergeFields["CustomerName"].Text.Should().Be("株式会社○○");
         }
         finally
         {
@@ -80,7 +80,7 @@ public class MergeFieldのテスト
             var tested = document.MergeFields.Single();
 
             tested.Name.Should().Be("CustomerName");
-            tested.Value.Should().Be("株式会社○○");
+            tested.Text.Should().Be("株式会社○○");
         }
         finally
         {
@@ -98,7 +98,7 @@ public class MergeFieldのテスト
             var tested = document.MergeFields.Single();
 
             tested.Name.Should().Be("CustomerName");
-            tested.Value.Should().Be("株式会社○○");
+            tested.Text.Should().Be("株式会社○○");
         }
         finally
         {
@@ -114,9 +114,9 @@ public class MergeFieldのテスト
         {
             using var document = Document.Open(filePath);
 
-            document.MergeFields["CustomerName"].Value = "変更後";
+            document.MergeFields["CustomerName"].Text = "変更後";
 
-            document.MergeFields["CustomerName"].Value.Should().Be("変更後");
+            document.MergeFields["CustomerName"].Text.Should().Be("変更後");
         }
         finally
         {
@@ -134,7 +134,7 @@ public class MergeFieldのテスト
         {
             using (var document = Document.Open(sourcePath))
             {
-                document.MergeFields["CustomerName"].Value = "変更後";
+                document.MergeFields["CustomerName"].Text = "変更後";
                 document.SaveAs(outputPath);
             }
 
@@ -164,9 +164,9 @@ public class MergeFieldのテスト
         {
             using var document = Document.Open(filePath);
 
-            document.MergeFields["CustomerName"].Value = "変更後";
+            document.MergeFields["CustomerName"].Text = "変更後";
 
-            document.MergeFields["CustomerName"].Value.Should().Be("変更後");
+            document.MergeFields["CustomerName"].Text.Should().Be("変更後");
         }
         finally
         {
@@ -184,7 +184,7 @@ public class MergeFieldのテスト
         {
             using (var document = Document.Open(sourcePath))
             {
-                document.MergeFields["CustomerName"].Value = "変更後";
+                document.MergeFields["CustomerName"].Text = "変更後";
                 document.SaveAs(outputPath);
             }
 
@@ -215,11 +215,11 @@ public class MergeFieldのテスト
         {
             using var document = Document.Open(filePath);
             var tested = document.MergeFields["CustomerName"];
-            tested.Value = "";
+            tested.Text = "";
 
-            tested.Value = "再設定";
+            tested.Text = "再設定";
 
-            tested.Value.Should().Be("再設定");
+            tested.Text.Should().Be("再設定");
         }
         finally
         {
@@ -237,7 +237,7 @@ public class MergeFieldのテスト
         {
             using (var document = Document.Open(sourcePath))
             {
-                document.MergeFields["CustomerName"].Value = "変更後";
+                document.MergeFields["CustomerName"].Text = "変更後";
                 document.SaveAs(outputPath);
             }
 
@@ -245,7 +245,7 @@ public class MergeFieldのテスト
             // 固定データでは、単純MERGEFIELDの表示結果「株式会社○○」が
             // 二つのw:rとw:tへ分割されています。値の設定後に古い二つ目の
             // 文字列「○○」が残らないことを、保存して開き直して確認します。
-            saved.MergeFields["CustomerName"].Value.Should().Be("変更後");
+            saved.MergeFields["CustomerName"].Text.Should().Be("変更後");
         }
         finally
         {
@@ -264,12 +264,12 @@ public class MergeFieldのテスト
         {
             using (var document = Document.Open(sourcePath))
             {
-                document.MergeFields["CustomerName"].Value = value;
+                document.MergeFields["CustomerName"].Text = value;
                 document.SaveAs(outputPath);
             }
 
             using var saved = Document.Open(outputPath);
-            saved.MergeFields["CustomerName"].Value.Should().Be(value);
+            saved.MergeFields["CustomerName"].Text.Should().Be(value);
         }
         finally
         {
@@ -289,12 +289,12 @@ public class MergeFieldのテスト
         {
             using (var document = Document.Open(sourcePath))
             {
-                document.MergeFields["CustomerName"].Value = value;
+                document.MergeFields["CustomerName"].Text = value;
                 document.SaveAs(outputPath);
             }
 
             using var saved = Document.Open(outputPath);
-            saved.MergeFields["CustomerName"].Value.Should().Be(value);
+            saved.MergeFields["CustomerName"].Text.Should().Be(value);
         }
         finally
         {
@@ -313,12 +313,12 @@ public class MergeFieldのテスト
         {
             using (var document = Document.Open(sourcePath))
             {
-                document.MergeFields["CustomerName"].Value = value;
+                document.MergeFields["CustomerName"].Text = value;
                 document.SaveAs(outputPath);
             }
 
             using var saved = Document.Open(outputPath);
-            saved.MergeFields["CustomerName"].Value.Should().Be(value);
+            saved.MergeFields["CustomerName"].Text.Should().Be(value);
         }
         finally
         {
@@ -338,12 +338,12 @@ public class MergeFieldのテスト
         {
             using (var document = Document.Open(sourcePath))
             {
-                document.MergeFields["CustomerName"].Value = value;
+                document.MergeFields["CustomerName"].Text = value;
                 document.SaveAs(outputPath);
             }
 
             using var saved = Document.Open(outputPath);
-            saved.MergeFields["CustomerName"].Value.Should().Be(value);
+            saved.MergeFields["CustomerName"].Text.Should().Be(value);
         }
         finally
         {
@@ -362,7 +362,7 @@ public class MergeFieldのテスト
         {
             using (var document = Document.Open(sourcePath))
             {
-                document.MergeFields["CustomerName"].Value = value;
+                document.MergeFields["CustomerName"].Text = value;
                 document.SaveAs(outputPath);
             }
 
@@ -394,7 +394,7 @@ public class MergeFieldのテスト
         {
             using (var document = Document.Open(sourcePath))
             {
-                document.MergeFields["CustomerName"].Value = value;
+                document.MergeFields["CustomerName"].Text = value;
                 document.SaveAs(outputPath);
             }
 
@@ -423,7 +423,7 @@ public class MergeFieldのテスト
         {
             using (var document = Document.Open(sourcePath))
             {
-                document.MergeFields["CustomerName"].Value =
+                document.MergeFields["CustomerName"].Text =
                     "一行目\t二列目\r\n二行目";
                 document.SaveAs(outputPath);
             }
@@ -457,7 +457,7 @@ public class MergeFieldのテスト
         {
             using (var document = Document.Open(sourcePath))
             {
-                document.MergeFields["CustomerName"].Value =
+                document.MergeFields["CustomerName"].Text =
                     "一行目\n二行目";
                 document.SaveAs(outputPath);
             }
@@ -492,7 +492,7 @@ public class MergeFieldのテスト
         {
             using (var document = Document.Open(sourcePath))
             {
-                document.MergeFields["CustomerName"].Value =
+                document.MergeFields["CustomerName"].Text =
                     "一行目\t二列目\r\n二行目";
                 document.SaveAs(outputPath);
             }
@@ -524,7 +524,7 @@ public class MergeFieldのテスト
         {
             using (var document = Document.Open(sourcePath))
             {
-                document.MergeFields["CustomerName"].Value = "変更後";
+                document.MergeFields["CustomerName"].Text = "変更後";
                 document.SaveAs(outputPath);
             }
 
@@ -556,7 +556,7 @@ public class MergeFieldのテスト
         {
             using (var document = Document.Open(sourcePath))
             {
-                document.MergeFields["CustomerName"].Value = "変更後";
+                document.MergeFields["CustomerName"].Text = "変更後";
                 document.SaveAs(outputPath);
             }
 

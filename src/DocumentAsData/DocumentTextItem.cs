@@ -6,7 +6,7 @@
 interface DocumentTextItem
 {
     /// <summary>
-    /// データ項目の文字列値を取得または設定します。
+    /// データ項目の文字列を取得または設定します。
     /// </summary>
-    string Value { get; set; }
+    string Text { get; set; }
 }

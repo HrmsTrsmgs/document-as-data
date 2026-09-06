@@ -61,12 +61,12 @@ public class MergeField : DocumentItem, DocumentTextItem
     public string Name { get; }
 
     /// <summary>
-    /// MERGEFIELDの値を取得または設定します。
+    /// MERGEFIELDの表示文字列を取得または設定します。
     /// </summary>
     /// <exception cref="InvalidOperationException">
-    /// 値の設定時に表示結果が存在しないか、複合フィールドの結果領域を取得できない場合。
+    /// 文字列の設定時に表示結果が存在しないか、複合フィールドの結果領域を取得できない場合。
     /// </exception>
-    public string Value
+    public string Text
     {
         get => content.Value;
         set => content.Value = value;

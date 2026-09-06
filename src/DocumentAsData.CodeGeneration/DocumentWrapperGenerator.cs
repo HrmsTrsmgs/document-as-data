@@ -54,8 +54,8 @@ public static class DocumentWrapperGenerator
     static string MergeFieldPropertyDeclaration(MergeField mergeField) =>
         $$"""
 
-            public MergeField {{mergeField.Name}} =>
-                MergeFields["{{mergeField.Name}}"];
+            public string {{mergeField.Name}} =>
+                MergeFields["{{mergeField.Name}}"].Text;
         """;
 
     /// <summary>

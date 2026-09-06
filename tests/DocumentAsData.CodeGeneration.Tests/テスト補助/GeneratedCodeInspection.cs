@@ -54,4 +54,28 @@ static class GeneratedCodeInspection
             self.GetType($"{NamespaceName}.{typeName}")
                 ?? throw new InvalidOperationException(typeName);
     }
+
+    extension(Type self)
+    {
+        /// <summary>
+        /// 生成型のpublicなstaticメソッドを呼び出し、指定した型として結果を取得します。
+        /// </summary>
+        /// <typeparam name="T">呼び出し結果を扱う型。</typeparam>
+        /// <param name="methodName">呼び出すメソッド名。</param>
+        /// <param name="arguments">メソッドへ渡す引数。</param>
+        /// <returns>指定した型として扱う呼び出し結果。</returns>
+        internal T InvokeStaticMethod<T>(
+            string methodName,
+            params object?[] arguments) =>
+            self.InvokeMember(
+                methodName,
+                BindingFlags.Public |
+                    BindingFlags.Static |
+                    BindingFlags.InvokeMethod,
+                binder: null,
+                target: null,
+                arguments) is T result
+                    ? result
+                    : throw new InvalidOperationException(methodName);
+    }
 }

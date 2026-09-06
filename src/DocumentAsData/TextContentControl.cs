@@ -49,15 +49,6 @@ public class TextContentControl : ContentControl, DocumentTextItem
     }
 
     /// <summary>
-    /// 文字列の文書項目として、オブジェクトマッピングからTextを読み書きします。
-    /// </summary>
-    string DocumentTextItem.Value
-    {
-        get => Text;
-        set => Text = value;
-    }
-
-    /// <summary>
     /// 前回の値を構成していたタブと改行が、再設定した値の前に残らないよう除去します。
     /// </summary>
     void RemoveControlCharacters()

@@ -9,16 +9,20 @@ public sealed class コード生成名前付き項目のテスト
         @"TestData\コード生成\MERGEFIELD.docx";
 
     [Fact]
-    public void MERGEFIELDをDocumentのMergeFieldプロパティとして生成します()
+    public void 生成されたDocument型のMERGEFIELDプロパティから文字列を直接読み取れます()
     {
-        var tested = GeneratedCodeInspection
+        using var document = GeneratedCodeInspection
             .AssemblyFrom(
                 GeneratedCodeInspection.GenerateSources(
                     MergeFieldsDocumentFilePath))
             .GeneratedType("MERGEFIELDDocument")
-            .GetProperty("CustomerName");
+            .InvokeStaticMethod<Document>(
+                "Open",
+                MergeFieldsDocumentFilePath);
 
-        tested.Should().NotBeNull();
-        tested.PropertyType.Should().Be(typeof(MergeField));
+        dynamic documentAccessor = document;
+        string tested = documentAccessor.CustomerName;
+
+        tested.Should().Be("株式会社○○");
     }
 }
