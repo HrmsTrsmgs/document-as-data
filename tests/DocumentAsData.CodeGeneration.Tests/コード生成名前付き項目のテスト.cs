@@ -11,6 +11,8 @@ public sealed class コード生成名前付き項目のテスト : IDisposable
         @"TestData\コード生成\文字列ContentControl.docx";
     const string CheckBoxDocumentFilePath =
         @"TestData\コード生成\チェック済みCheckBox.docx";
+    const string DatePickerDocumentFilePath =
+        @"TestData\コード生成\日付選択ContentControl.docx";
 
     readonly TemporaryDocumentFiles temporaryFiles = new();
 
@@ -147,5 +149,31 @@ public sealed class コード生成名前付き項目のテスト : IDisposable
         using var tested = Document.Open(savedPath);
 
         tested.CheckBoxes["Agreement"].IsChecked.Should().BeFalse();
+    }
+
+    [Fact]
+    public void 生成されたDocument型のDatePickerプロパティから日時を直接読み取れます()
+    {
+        using var document = GeneratedCodeInspection
+            .AssemblyFrom(
+                GeneratedCodeInspection.GenerateSources(
+                    DatePickerDocumentFilePath))
+            .GeneratedType("日付選択ContentControlDocument")
+            .InvokeStaticMethod<Document>(
+                "Open",
+                DatePickerDocumentFilePath);
+
+        dynamic documentAccessor = document;
+        DateTimeOffset tested = documentAccessor.DeliveryDate;
+
+        tested.Should().Be(
+            new DateTimeOffset(
+                2026,
+                9,
+                4,
+                0,
+                0,
+                0,
+                TimeSpan.Zero));
     }
 }

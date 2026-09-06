@@ -23,6 +23,9 @@ static class DocumentWrapperComponents
         var checkBoxProperties = string.Concat(
             from checkBox in document.CheckBoxes
             select CheckBoxPropertyDeclaration(checkBox));
+        var datePickerProperties = string.Concat(
+            from datePicker in document.DatePickers
+            select DatePickerPropertyDeclaration(datePicker));
 
         return
             $$"""
@@ -42,6 +45,7 @@ static class DocumentWrapperComponents
             {{mergeFieldProperties}}
             {{textContentControlProperties}}
             {{checkBoxProperties}}
+            {{datePickerProperties}}
             }
             """;
     }
@@ -59,6 +63,18 @@ static class DocumentWrapperComponents
                 get => MergeFields["{{mergeField.Name}}"].Text;
                 set => MergeFields["{{mergeField.Name}}"].Text = value;
             }
+        """;
+
+    /// <summary>
+    /// 生成Document型から指定したDatePickerを取得するプロパティ宣言を生成します。
+    /// </summary>
+    /// <param name="datePicker">プロパティとして公開するDatePicker。</param>
+    /// <returns>DatePickerプロパティのC#コード。</returns>
+    internal static string DatePickerPropertyDeclaration(DatePicker datePicker) =>
+        $$"""
+
+            public System.DateTimeOffset {{datePicker.Tag}} =>
+                DatePickers["{{datePicker.Tag}}"].SelectedDateTime;
         """;
 
     /// <summary>
