@@ -7,6 +7,8 @@ public sealed class コード生成診断のテスト
 {
     const string MergeFieldNameCollisionDocumentFilePath =
         @"TestData\コード生成\MERGEFIELD名衝突.docx";
+    const string DifferentItemTypeNameCollisionDocumentFilePath =
+        @"TestData\コード生成\異種項目名衝突.docx";
 
     [Fact]
     public void 自動変換後に同じMERGEFIELDプロパティ名となる場合にエラーを診断します()
@@ -40,5 +42,16 @@ public sealed class コード生成診断のテスト
                 options =>
                     options.NameMappings["customer-id"] = "CustomerIdDash")
             .Should().BeEmpty();
+    }
+
+    [Fact]
+    public void 同じ生成Document型内の異なる種類のプロパティ名が衝突した場合にも診断します()
+    {
+        GeneratedCodeInspection
+            .GenerateDiagnostics(DifferentItemTypeNameCollisionDocumentFilePath)
+            .Should().Contain(it => it.IsError
+                && it.GeneratedName == "CustomerId"
+                && it.SourceNames.Contains("customer_id")
+                && it.SourceNames.Contains("customer-id"));
     }
 }

@@ -39,10 +39,18 @@ public static class DocumentWrapperGenerator
         configure?.Invoke(options);
 
         using var document = Document.Open(filePath);
-        return
+        string[] propertySourceNames =
         [
             .. from mergeField in document.MergeFields
-               group mergeField.Name by options.GeneratedName(mergeField.Name)
+               select mergeField.Name,
+            .. from contentControl in document.ContentControls
+               select contentControl.Tag
+        ];
+
+        return
+        [
+            .. from sourceName in propertySourceNames
+               group sourceName by options.GeneratedName(sourceName)
                into sourceNames
                where sourceNames.Count() > 1
                select new CodeGenerationDiagnostic(
