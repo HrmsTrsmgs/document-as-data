@@ -126,8 +126,8 @@ static class DocumentWrapperComponents
             /// </summary>
             public bool {{options.GeneratedName(checkBox.Tag)}}
             {
-                get => CheckBoxes["{{checkBox.Tag}}"].IsChecked;
-                set => CheckBoxes["{{checkBox.Tag}}"].IsChecked = value;
+                get => CheckBoxes[{{StringLiteral(checkBox.Tag)}}].IsChecked;
+                set => CheckBoxes[{{StringLiteral(checkBox.Tag)}}].IsChecked = value;
             }
         """;
 

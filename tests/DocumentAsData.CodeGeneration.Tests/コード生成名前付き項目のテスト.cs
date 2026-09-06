@@ -13,6 +13,8 @@ public sealed class コード生成名前付き項目のテスト : IDisposable
         @"TestData\コード生成\引用符とバックスラッシュを含むTag.docx";
     const string CheckBoxDocumentFilePath =
         @"TestData\コード生成\チェック済みCheckBox.docx";
+    const string SpecialCharacterCheckBoxTagDocumentFilePath =
+        @"TestData\コード生成\引用符とバックスラッシュを含むTagのCheckBox.docx";
     const string DatePickerDocumentFilePath =
         @"TestData\コード生成\日付選択ContentControl.docx";
 
@@ -145,6 +147,27 @@ public sealed class コード生成名前付き項目のテスト : IDisposable
 
         dynamic documentAccessor = document;
         bool tested = documentAccessor.Agreement;
+
+        tested.Should().BeTrue();
+    }
+
+    [Fact]
+    public void 特殊文字を含むTagから生成したCheckBoxプロパティでチェック状態を読み取れます()
+    {
+        using var document = GeneratedCodeInspection
+            .AssemblyFrom(
+                GeneratedCodeInspection.GenerateSources(
+                    SpecialCharacterCheckBoxTagDocumentFilePath,
+                    options =>
+                        options.NameMappings[
+                            @"C:\temp\""agreement"] = "SpecialAgreement"))
+            .GeneratedType("引用符とバックスラッシュを含むTagのCheckBoxDocument")
+            .InvokeStaticMethod<Document>(
+                "Open",
+                SpecialCharacterCheckBoxTagDocumentFilePath);
+
+        dynamic documentAccessor = document;
+        bool tested = documentAccessor.SpecialAgreement;
 
         tested.Should().BeTrue();
     }
