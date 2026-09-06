@@ -1,9 +1,14 @@
 ﻿using FluentAssertions;
 
+using Marimo.DocumentAsData.CodeGeneration.Test.テスト補助;
+
 namespace Marimo.DocumentAsData.CodeGeneration.Test;
 
 public sealed class CSharp識別子生成のテスト
 {
+    const string キャメルケースIdentifierDocumentFilePath =
+        @"TestData\コード生成\salesReport.docx";
+
     [Theory]
     [InlineData("salesReport", "SalesReport")]
     [InlineData("salesData", "SalesData")]
@@ -16,6 +21,18 @@ public sealed class CSharp識別子生成のテスト
         CSharpIdentifier
             .Identifier(sourceName)
             .Should().Be(identifierBody);
+    }
+
+    [Fact]
+    public void キャメルケース文書ファイル名はPascalCaseのDocument型名へ変換します()
+    {
+        GeneratedCodeInspection
+            .AssemblyFrom(
+                GeneratedCodeInspection.GenerateSources(
+                    キャメルケースIdentifierDocumentFilePath))
+            .DefinedTypes
+            .Select(it => it.Name)
+            .Should().Contain("SalesReportDocument");
     }
 
     [Theory]

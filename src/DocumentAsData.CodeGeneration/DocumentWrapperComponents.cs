@@ -13,7 +13,8 @@ static class DocumentWrapperComponents
         CodeGenerationOptions options,
         Document document)
     {
-        var typeName = $"{Path.GetFileNameWithoutExtension(filePath)}Document";
+        var documentName = Path.GetFileNameWithoutExtension(filePath);
+        var typeName = $"{CSharpIdentifier.Identifier(documentName)}Document";
 
         return
             $$"""

@@ -29,7 +29,7 @@ public sealed class コード生成名前付き項目のテスト : IDisposable
             .AssemblyFrom(
                 GeneratedCodeInspection.GenerateSources(
                     MergeFieldsDocumentFilePath))
-            .GeneratedType("MERGEFIELDDocument")
+            .GeneratedType("MergefieldDocument")
             .InvokeStaticMethod<Document>(
                 "Open",
                 MergeFieldsDocumentFilePath);
@@ -49,7 +49,7 @@ public sealed class コード生成名前付き項目のテスト : IDisposable
                    .AssemblyFrom(
                        GeneratedCodeInspection.GenerateSources(
                            MergeFieldsDocumentFilePath))
-                   .GeneratedType("MERGEFIELDDocument")
+                   .GeneratedType("MergefieldDocument")
                    .InvokeStaticMethod<Document>(
                        "Open",
                        MergeFieldsDocumentFilePath))
