@@ -69,4 +69,38 @@ static class GeneratedSourceAssertions
                     select text);
         }
     }
+
+    extension(TypeDeclarationSyntax self)
+    {
+        /// <summary>
+        /// 指定した型宣言から指定した名前のプロパティ宣言を取得します。
+        /// </summary>
+        /// <param name="propertyName">取得するプロパティ名。</param>
+        /// <returns>指定したプロパティ宣言。</returns>
+        internal PropertyDeclarationSyntax PropertyDeclaration(
+            string propertyName) =>
+            (
+                from property in self.Members.OfType<PropertyDeclarationSyntax>()
+                where property.Identifier.ValueText == propertyName
+                select property
+            ).Single();
+
+        /// <summary>
+        /// 指定した型宣言から、名前と引数型が一致するメソッド宣言を取得します。
+        /// </summary>
+        /// <param name="methodName">取得するメソッド名。</param>
+        /// <param name="parameterTypeName">唯一の引数に指定された型名。</param>
+        /// <returns>指定したメソッド宣言。</returns>
+        internal MethodDeclarationSyntax MethodDeclaration(
+            string methodName,
+            string parameterTypeName) =>
+            (
+                from method in self.Members.OfType<MethodDeclarationSyntax>()
+                where method.Identifier.ValueText == methodName
+                where method.ParameterList.Parameters.Count == 1
+                where method.ParameterList.Parameters[0].Type?.ToString()
+                    == parameterTypeName
+                select method
+            ).Single();
+    }
 }

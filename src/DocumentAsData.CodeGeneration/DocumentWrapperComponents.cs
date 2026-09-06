@@ -32,6 +32,11 @@ static class DocumentWrapperComponents
                 {
                 }
 
+                /// <summary>
+                /// 指定したファイルパスのWord文書を型付きで開きます。
+                /// </summary>
+                /// <param name="filePath">開くWord文書のファイルパス。</param>
+                /// <returns>開いた型付きWord文書。</returns>
                 public static new {{typeName}} Open(string filePath) =>
                     new(filePath);
 
@@ -40,6 +45,11 @@ static class DocumentWrapperComponents
                 {
                 }
 
+                /// <summary>
+                /// 指定したStream上のWord文書を型付きで開きます。
+                /// </summary>
+                /// <param name="stream">Word文書を保持するStream。</param>
+                /// <returns>開いた型付きWord文書。</returns>
                 public static new {{typeName}} Open(System.IO.Stream stream) =>
                     new(stream);
             {{ForEach([
@@ -67,6 +77,9 @@ static class DocumentWrapperComponents
         CodeGenerationOptions options) =>
         $$"""
 
+            /// <summary>
+            /// MERGEFIELD「{{mergeField.Name}}」の文字列を取得または設定します。
+            /// </summary>
             public string {{options.GeneratedName(mergeField.Name)}}
             {
                 get => MergeFields["{{mergeField.Name}}"].Text;
@@ -82,6 +95,9 @@ static class DocumentWrapperComponents
     internal static string DatePickerPropertyDeclaration(DatePicker datePicker) =>
         $$"""
 
+            /// <summary>
+            /// DatePicker「{{datePicker.Tag}}」の日時を取得または設定します。
+            /// </summary>
             public System.DateTimeOffset {{datePicker.Tag.ToCSharpIdentifier()}}
             {
                 get => DatePickers["{{datePicker.Tag}}"].SelectedDateTime;
@@ -97,6 +113,9 @@ static class DocumentWrapperComponents
     internal static string CheckBoxPropertyDeclaration(CheckBox checkBox) =>
         $$"""
 
+            /// <summary>
+            /// CheckBox「{{checkBox.Tag}}」のチェック状態を取得または設定します。
+            /// </summary>
             public bool {{checkBox.Tag.ToCSharpIdentifier()}}
             {
                 get => CheckBoxes["{{checkBox.Tag}}"].IsChecked;
@@ -113,6 +132,9 @@ static class DocumentWrapperComponents
         TextContentControl contentControl) =>
         $$"""
 
+            /// <summary>
+            /// 文字列Content Control「{{contentControl.Tag}}」の文字列を取得または設定します。
+            /// </summary>
             public string {{contentControl.Tag.ToCSharpIdentifier()}}
             {
                 get => ContentControls["{{contentControl.Tag}}"].Text;
