@@ -84,8 +84,8 @@ static class DocumentWrapperComponents
             /// </summary>
             public string {{options.GeneratedName(mergeField.Name)}}
             {
-                get => MergeFields["{{mergeField.Name}}"].Text;
-                set => MergeFields["{{mergeField.Name}}"].Text = value;
+                get => MergeFields[{{StringLiteral(mergeField.Name)}}].Text;
+                set => MergeFields[{{StringLiteral(mergeField.Name)}}].Text = value;
             }
         """;
 

@@ -7,6 +7,8 @@ public sealed class コード生成名前付き項目のテスト : IDisposable
 {
     const string MergeFieldsDocumentFilePath =
         @"TestData\コード生成\MERGEFIELD.docx";
+    const string BackslashMergeFieldNameDocumentFilePath =
+        @"TestData\コード生成\バックスラッシュを含むMERGEFIELD名.docx";
     const string TextContentControlDocumentFilePath =
         @"TestData\コード生成\文字列ContentControl.docx";
     const string SpecialCharacterTagDocumentFilePath =
@@ -42,6 +44,27 @@ public sealed class コード生成名前付き項目のテスト : IDisposable
 
         dynamic documentAccessor = document;
         string tested = documentAccessor.CustomerName;
+
+        tested.Should().Be("株式会社○○");
+    }
+
+    [Fact]
+    public void バックスラッシュを含む名前から生成したMERGEFIELDプロパティで文字列を読み取れます()
+    {
+        using var document = GeneratedCodeInspection
+            .AssemblyFrom(
+                GeneratedCodeInspection.GenerateSources(
+                    BackslashMergeFieldNameDocumentFilePath,
+                    options =>
+                        options.NameMappings[
+                            @"C:\temp customer"] = "SpecialValue"))
+            .GeneratedType("バックスラッシュを含むMERGEFIELD名Document")
+            .InvokeStaticMethod<Document>(
+                "Open",
+                BackslashMergeFieldNameDocumentFilePath);
+
+        dynamic documentAccessor = document;
+        string tested = documentAccessor.SpecialValue;
 
         tested.Should().Be("株式会社○○");
     }
