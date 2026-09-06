@@ -14,18 +14,6 @@ static class DocumentWrapperComponents
         Document document)
     {
         var typeName = $"{Path.GetFileNameWithoutExtension(filePath)}Document";
-        var mergeFieldProperties = string.Concat(
-            from mergeField in document.MergeFields
-            select MergeFieldPropertyDeclaration(mergeField));
-        var textContentControlProperties = string.Concat(
-            from contentControl in document.ContentControls
-            select TextContentControlPropertyDeclaration(contentControl));
-        var checkBoxProperties = string.Concat(
-            from checkBox in document.CheckBoxes
-            select CheckBoxPropertyDeclaration(checkBox));
-        var datePickerProperties = string.Concat(
-            from datePicker in document.DatePickers
-            select DatePickerPropertyDeclaration(datePicker));
 
         return
             $$"""
@@ -42,10 +30,16 @@ static class DocumentWrapperComponents
 
                 public static new {{typeName}} Open(string filePath) =>
                     new(filePath);
-            {{mergeFieldProperties}}
-            {{textContentControlProperties}}
-            {{checkBoxProperties}}
-            {{datePickerProperties}}
+            {{ForEach([
+                .. from mergeField in document.MergeFields
+                   select MergeFieldPropertyDeclaration(mergeField),
+                .. from contentControl in document.ContentControls
+                   select TextContentControlPropertyDeclaration(contentControl),
+                .. from checkBox in document.CheckBoxes
+                   select CheckBoxPropertyDeclaration(checkBox),
+                .. from datePicker in document.DatePickers
+                   select DatePickerPropertyDeclaration(datePicker)
+            ])}}
             }
             """;
     }
@@ -110,4 +104,10 @@ static class DocumentWrapperComponents
                 set => ContentControls["{{contentControl.Tag}}"].Text = value;
             }
         """;
+
+    /// <summary>
+    /// 複数のテンプレート部品を、生成ソース上の行単位で連結します。
+    /// </summary>
+    internal static string ForEach(IEnumerable<string> generatedBlocks) =>
+        string.Join(Environment.NewLine, generatedBlocks);
 }
