@@ -22,6 +22,9 @@ static class DocumentWrapperComponents
 
             namespace {{options.Namespace}};
 
+            /// <summary>
+            /// Word文書「{{documentName}}」を型付きで表します。
+            /// </summary>
             public partial class {{typeName}} : Document
             {
                 {{typeName}}(string filePath)
