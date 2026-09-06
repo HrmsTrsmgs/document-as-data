@@ -14,7 +14,7 @@ static class DocumentWrapperComponents
         Document document)
     {
         var documentName = Path.GetFileNameWithoutExtension(filePath);
-        var typeName = $"{CSharpIdentifier.Identifier(documentName)}Document";
+        var typeName = $"{documentName.ToCSharpIdentifier()}Document";
 
         return
             $$"""
@@ -61,7 +61,7 @@ static class DocumentWrapperComponents
     internal static string MergeFieldPropertyDeclaration(MergeField mergeField) =>
         $$"""
 
-            public string {{mergeField.Name}}
+            public string {{mergeField.Name.ToCSharpIdentifier()}}
             {
                 get => MergeFields["{{mergeField.Name}}"].Text;
                 set => MergeFields["{{mergeField.Name}}"].Text = value;

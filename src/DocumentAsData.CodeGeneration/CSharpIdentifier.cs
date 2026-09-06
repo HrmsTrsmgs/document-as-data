@@ -12,7 +12,7 @@ static class CSharpIdentifier
     /// </summary>
     /// <param name="sourceName">文書内で使用されている名前。</param>
     /// <returns>C#識別子として使用できる名前。</returns>
-    internal static string Identifier(string sourceName) =>
+    internal static string ToCSharpIdentifier(this string sourceName) =>
         EnsureValidIdentifierStart(
             ContainsNonAscii(sourceName)
                 ? CapitalizeFirstLetter(
