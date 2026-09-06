@@ -24,4 +24,20 @@ public sealed class MSBuild連携タスクのテスト
             .Should().Contain(
                 "public partial class BasicStructureDocument : Document");
     }
+
+    [Fact]
+    public void 生成コードは元Word文書へ紐づくメタデータを返します()
+    {
+        using var project = MSBuild連携テストプロジェクト.Create();
+        var documentFilePath =
+            project.AddBasicStructureDocument(@"Schemas\BasicStructure.docx");
+
+        var tested = project.Generate(documentFilePath);
+
+        tested.Succeeded.Should().BeTrue();
+        tested.SingleGeneratedFile.GetMetadata("DependentUpon")
+            .Should().Be("BasicStructure.docx");
+        tested.SingleGeneratedFile.GetMetadata("DesignTimeSharedInput")
+            .Should().Be("true");
+    }
 }

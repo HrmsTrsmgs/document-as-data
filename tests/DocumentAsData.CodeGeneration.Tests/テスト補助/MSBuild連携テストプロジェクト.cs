@@ -114,6 +114,12 @@ sealed record MSBuild連携タスク実行結果(
         [.. GeneratedFiles.Select(it => it.ItemSpec)];
 
     /// <summary>
+    /// 生成ファイルが一つであるテストで、そのMSBuild項目を取得します。
+    /// </summary>
+    internal ITaskItem SingleGeneratedFile =>
+        GeneratedFiles.Single();
+
+    /// <summary>
     /// 生成ファイルが一つであるテストで、そのファイルパスを取得します。
     /// </summary>
     internal string SingleGeneratedFilePath =>

@@ -52,6 +52,11 @@ public sealed class GenerateDocumentAsData : Microsoft.Build.Utilities.Task
             generatedFilePath,
             DocumentWrapperGenerator.GenerateSources(documentFilePath).Single());
 
-        return new TaskItem(generatedFilePath);
+        var generatedFile = new TaskItem(generatedFilePath);
+        generatedFile.SetMetadata(
+            "DependentUpon",
+            Path.GetFileName(documentFilePath));
+        generatedFile.SetMetadata("DesignTimeSharedInput", "true");
+        return generatedFile;
     }
 }
