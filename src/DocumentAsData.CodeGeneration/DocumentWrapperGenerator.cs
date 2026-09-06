@@ -49,6 +49,7 @@ public static class DocumentWrapperGenerator
 
         return
         [
+            .. InvalidDocumentNameDiagnostics(filePath, options),
             .. from sourceName in propertySourceNames
                group sourceName by options.GeneratedName(sourceName)
                into sourceNames
@@ -58,5 +59,30 @@ public static class DocumentWrapperGenerator
                    sourceNames.Key,
                    [.. sourceNames])
         ];
+    }
+
+    /// <summary>
+    /// 生成Document型の名前を作れない文書ファイル名を診断します。
+    /// </summary>
+    /// <param name="filePath">診断対象のWord文書のパス。</param>
+    /// <param name="options">コード生成時に適用する設定。</param>
+    /// <returns>文書名が無効な場合は、その名前を示す診断。</returns>
+    static IEnumerable<CodeGenerationDiagnostic> InvalidDocumentNameDiagnostics(
+        string filePath,
+        CodeGenerationOptions options)
+    {
+        var sourceName = Path.GetFileNameWithoutExtension(filePath);
+        var generatedName = options.GeneratedName(sourceName);
+
+        if (!generatedName.IsEmpty())
+        {
+            yield break;
+        }
+
+        yield return new CodeGenerationDiagnostic(
+            true,
+            generatedName,
+            [sourceName],
+            sourceName);
     }
 }

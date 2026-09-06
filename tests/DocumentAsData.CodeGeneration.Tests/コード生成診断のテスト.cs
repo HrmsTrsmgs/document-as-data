@@ -9,6 +9,8 @@ public sealed class コード生成診断のテスト
         @"TestData\コード生成\MERGEFIELD名衝突.docx";
     const string DifferentItemTypeNameCollisionDocumentFilePath =
         @"TestData\コード生成\異種項目名衝突.docx";
+    const string InvalidDocumentNameFilePath =
+        @"TestData\コード生成\---.docx";
 
     [Fact]
     public void 自動変換後に同じMERGEFIELDプロパティ名となる場合にエラーを診断します()
@@ -53,5 +55,18 @@ public sealed class コード生成診断のテスト
                 && it.GeneratedName == "CustomerId"
                 && it.SourceNames.Contains("customer_id")
                 && it.SourceNames.Contains("customer-id"));
+    }
+
+    [Fact]
+    public void 区切り文字だけの文書名はCSharp識別子を生成できないため診断します()
+    {
+        GeneratedCodeInspection
+            .GenerateDiagnostics(InvalidDocumentNameFilePath)
+            .Should().ContainEquivalentOf(
+                new CodeGenerationDiagnostic(
+                    true,
+                    "",
+                    ["---"],
+                    "---"));
     }
 }
