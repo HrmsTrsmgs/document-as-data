@@ -26,6 +26,9 @@ public static class DocumentWrapperGenerator
         var textContentControlProperties = string.Concat(
             from contentControl in document.ContentControls
             select TextContentControlPropertyDeclaration(contentControl));
+        var checkBoxProperties = string.Concat(
+            from checkBox in document.CheckBoxes
+            select CheckBoxPropertyDeclaration(checkBox));
 
         return
         [
@@ -45,6 +48,7 @@ public static class DocumentWrapperGenerator
                     new(filePath);
             {{mergeFieldProperties}}
             {{textContentControlProperties}}
+            {{checkBoxProperties}}
             }
             """
         ];
@@ -63,6 +67,18 @@ public static class DocumentWrapperGenerator
                 get => MergeFields["{{mergeField.Name}}"].Text;
                 set => MergeFields["{{mergeField.Name}}"].Text = value;
             }
+        """;
+
+    /// <summary>
+    /// 生成Document型から指定したCheckBoxを取得するプロパティ宣言を生成します。
+    /// </summary>
+    /// <param name="checkBox">プロパティとして公開するCheckBox。</param>
+    /// <returns>CheckBoxプロパティのC#コード。</returns>
+    static string CheckBoxPropertyDeclaration(CheckBox checkBox) =>
+        $$"""
+
+            public bool {{checkBox.Tag}} =>
+                CheckBoxes["{{checkBox.Tag}}"].IsChecked;
         """;
 
     /// <summary>

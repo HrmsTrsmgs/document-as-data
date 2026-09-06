@@ -9,6 +9,8 @@ public sealed class コード生成名前付き項目のテスト : IDisposable
         @"TestData\コード生成\MERGEFIELD.docx";
     const string TextContentControlDocumentFilePath =
         @"TestData\コード生成\文字列ContentControl.docx";
+    const string CheckBoxDocumentFilePath =
+        @"TestData\コード生成\チェック済みCheckBox.docx";
 
     readonly TemporaryDocumentFiles temporaryFiles = new();
 
@@ -102,5 +104,23 @@ public sealed class コード生成名前付き項目のテスト : IDisposable
         using var tested = Document.Open(savedPath);
 
         tested.ContentControls["CustomerName"].Text.Should().Be("生成後");
+    }
+
+    [Fact]
+    public void 生成されたDocument型のCheckBoxプロパティからチェック状態を直接読み取れます()
+    {
+        using var document = GeneratedCodeInspection
+            .AssemblyFrom(
+                GeneratedCodeInspection.GenerateSources(
+                    CheckBoxDocumentFilePath))
+            .GeneratedType("チェック済みCheckBoxDocument")
+            .InvokeStaticMethod<Document>(
+                "Open",
+                CheckBoxDocumentFilePath);
+
+        dynamic documentAccessor = document;
+        bool tested = documentAccessor.Agreement;
+
+        tested.Should().BeTrue();
     }
 }
