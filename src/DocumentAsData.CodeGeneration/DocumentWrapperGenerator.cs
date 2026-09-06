@@ -27,6 +27,9 @@ public static class DocumentWrapperGenerator
                     : base(filePath)
                 {
                 }
+
+                public static new {{typeName}} Open(string filePath) =>
+                    new(filePath);
             }
             """
         ];

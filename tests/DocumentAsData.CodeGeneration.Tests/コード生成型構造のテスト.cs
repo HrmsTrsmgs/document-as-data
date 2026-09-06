@@ -33,4 +33,20 @@ public sealed class コード生成型構造のテスト
             .GeneratedType("BasicStructureDocument")
             .Should().BeAssignableTo<Document>();
     }
+
+    [Fact]
+    public void 生成されたDocument型は指定ファイルを開く静的Openメソッドを公開します()
+    {
+        var tested = GeneratedCodeInspection
+            .AssemblyFrom(
+                GeneratedCodeInspection.GenerateSources(
+                    BasicStructureDocumentFilePath))
+            .GeneratedType("BasicStructureDocument")
+            .GetMethod("Open", [typeof(string)]);
+
+        tested.Should().NotBeNull();
+        tested.IsStatic.Should().BeTrue();
+        tested.ReturnType.Should().Be(
+            tested.DeclaringType);
+    }
 }
