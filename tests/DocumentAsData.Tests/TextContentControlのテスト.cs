@@ -5,7 +5,7 @@ using Wordprocessing = DocumentFormat.OpenXml.Wordprocessing;
 
 namespace Marimo.DocumentAsData.Test;
 
-public class ContentControlのテスト
+public class TextContentControlのテスト
 {
     static readonly string ContentControlPath =
         Path.Combine("TestData", "単一のContent Control.docx");

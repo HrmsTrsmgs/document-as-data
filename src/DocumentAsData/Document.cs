@@ -308,7 +308,7 @@ public class Document : IDisposable
     public MergeFieldCollection MergeFields { get; }
 
     /// <summary>
-    /// 文書内のContent Controlを取得するコレクションを取得します。
+    /// 文書内の文字列Content Controlを取得するコレクションを取得します。
     /// </summary>
     public ContentControlCollection ContentControls { get; }
 

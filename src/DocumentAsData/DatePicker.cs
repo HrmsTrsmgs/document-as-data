@@ -7,13 +7,8 @@ namespace Marimo.DocumentAsData;
 /// <summary>
 /// 文書内の日付選択Content Controlを表します。
 /// </summary>
-public class DatePicker
+public class DatePicker : ContentControl
 {
-    /// <summary>
-    /// この日付選択Content Controlを構成するOOXML要素です。
-    /// </summary>
-    readonly Wordprocessing.SdtElement element;
-
     /// <summary>
     /// 日付選択Content Controlを初期化します。
     /// </summary>
@@ -22,24 +17,9 @@ public class DatePicker
     internal DatePicker(
         Document document,
         Wordprocessing.SdtElement element)
+        : base(document, element)
     {
-        Document = document;
-        this.element = element;
     }
-
-    /// <summary>
-    /// 日付選択Content Controlが属する文書を取得します。
-    /// </summary>
-    public Document Document { get; }
-
-    /// <summary>
-    /// 日付選択Content ControlのTagを取得します。
-    /// </summary>
-    /// <exception cref="InvalidOperationException">
-    /// Tagの値が欠落しているか、Tagが複数存在する場合。
-    /// </exception>
-    public string Tag =>
-        element.Tag;
 
     /// <summary>
     /// 日付選択Content Controlの日時を取得または設定します。
@@ -74,12 +54,12 @@ public class DatePicker
     /// 日時と表示設定を保持するOOXML要素を取得します。
     /// </summary>
     Wordprocessing.SdtContentDate DateProperties =>
-        element.PropertyElements<Wordprocessing.SdtContentDate>()
+        Element.PropertyElements<Wordprocessing.SdtContentDate>()
             .Single();
 
     /// <summary>
     /// Word上で日付を表示する文字列要素を取得します。
     /// </summary>
     Wordprocessing.Text DisplayText =>
-        element.Descendants<Wordprocessing.Text>().Single();
+        Element.Descendants<Wordprocessing.Text>().Single();
 }

@@ -6,37 +6,19 @@ namespace Marimo.DocumentAsData;
 /// <summary>
 /// 文書内のチェックボックスを表します。
 /// </summary>
-public class CheckBox
+public class CheckBox : ContentControl
 {
-    /// <summary>
-    /// このチェックボックスを構成するOOXML要素です。
-    /// </summary>
-    readonly Wordprocessing.SdtElement element;
-
     /// <summary>
     /// 文書内のOOXML要素への参照を保持し、チェックボックスの情報を同じ要素から取得できるようにします。
     /// </summary>
     /// <param name="document">チェックボックスが属する文書。</param>
     /// <param name="element">チェックボックスを構成するOOXML要素。</param>
-    internal CheckBox(Document document, Wordprocessing.SdtElement element)
+    internal CheckBox(
+        Document document,
+        Wordprocessing.SdtElement element)
+        : base(document, element)
     {
-        Document = document;
-        this.element = element;
     }
-
-    /// <summary>
-    /// チェックボックスが属する文書を取得します。
-    /// </summary>
-    public Document Document { get; }
-
-    /// <summary>
-    /// チェックボックスのTagを取得します。
-    /// </summary>
-    /// <exception cref="InvalidOperationException">
-    /// Tagの値が欠落しているか、Tagが複数存在する場合。
-    /// </exception>
-    public string Tag =>
-        element.Tag;
 
     /// <summary>
     /// チェックボックスがチェックされているかを取得または設定します。
@@ -60,7 +42,7 @@ public class CheckBox
     /// このチェックボックスの種類と表示文字を保持するOOXML要素を取得します。
     /// </summary>
     Word2010.SdtContentCheckBox CheckBoxProperties =>
-        element.PropertyElements<Word2010.SdtContentCheckBox>().Single();
+        Element.PropertyElements<Word2010.SdtContentCheckBox>().Single();
 
     /// <summary>
     /// このチェックボックスの状態を保持するOOXML要素を取得します。
@@ -72,7 +54,7 @@ public class CheckBox
     /// Word上でチェックボックスを表示する文字列要素を取得します。
     /// </summary>
     Wordprocessing.Text DisplayText =>
-        element.Descendants<Wordprocessing.Text>().Single();
+        Element.Descendants<Wordprocessing.Text>().Single();
 
     /// <summary>
     /// 指定したチェック状態に対して文書に設定された表示文字を取得します。

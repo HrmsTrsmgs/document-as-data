@@ -6,7 +6,7 @@ namespace Marimo.DocumentAsData;
 /// <summary>
 /// 文書内のMERGEFIELDを表します。
 /// </summary>
-public class MergeField : DocumentTextItem
+public class MergeField : DocumentItem, DocumentTextItem
 {
     /// <summary>
     /// 単純形式または複合形式のOOXML要素への値アクセスを保持します。
@@ -66,7 +66,7 @@ public class MergeField : DocumentTextItem
     /// <exception cref="InvalidOperationException">
     /// 値の設定時に表示結果が存在しないか、複合フィールドの結果領域を取得できない場合。
     /// </exception>
-    public override string Value
+    public string Value
     {
         get => content.Value;
         set => content.Value = value;
