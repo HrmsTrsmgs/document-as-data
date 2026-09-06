@@ -11,6 +11,8 @@ public sealed class コード生成診断のテスト
         @"TestData\コード生成\異種項目名衝突.docx";
     const string InvalidDocumentNameFilePath =
         @"TestData\コード生成\---.docx";
+    const string CheckBoxAndDatePickerNameCollisionDocumentFilePath =
+        @"TestData\コード生成\CheckBoxとDatePickerの名前衝突.docx";
 
     [Fact]
     public void 自動変換後に同じMERGEFIELDプロパティ名となる場合にエラーを診断します()
@@ -68,5 +70,18 @@ public sealed class コード生成診断のテスト
                     "",
                     ["---"],
                     "---"));
+    }
+
+    [Fact]
+    public void CheckBoxとDatePickerの生成プロパティ名が衝突した場合にも診断します()
+    {
+        GeneratedCodeInspection
+            .GenerateDiagnostics(
+                CheckBoxAndDatePickerNameCollisionDocumentFilePath)
+            .Should().ContainEquivalentOf(
+                new CodeGenerationDiagnostic(
+                    true,
+                    "DataItem",
+                    ["data_item", "data-item"]));
     }
 }

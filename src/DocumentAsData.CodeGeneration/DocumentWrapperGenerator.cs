@@ -44,7 +44,11 @@ public static class DocumentWrapperGenerator
             .. from mergeField in document.MergeFields
                select mergeField.Name,
             .. from contentControl in document.ContentControls
-               select contentControl.Tag
+               select contentControl.Tag,
+            .. from checkBox in document.CheckBoxes
+               select checkBox.Tag,
+            .. from datePicker in document.DatePickers
+               select datePicker.Tag
         ];
 
         return
