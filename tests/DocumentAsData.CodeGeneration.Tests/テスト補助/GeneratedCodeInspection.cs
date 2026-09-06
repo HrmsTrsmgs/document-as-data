@@ -17,9 +17,12 @@ static class GeneratedCodeInspection
     /// 指定したWord文書から生成されるC#ソースコードを取得します。
     /// </summary>
     /// <param name="filePath">コード生成元のWord文書。</param>
+    /// <param name="configure">コード生成設定を変更する処理。</param>
     /// <returns>生成されたC#ソースコード。</returns>
-    internal static string[] GenerateSources(string filePath) =>
-        DocumentWrapperGenerator.GenerateSources(filePath);
+    internal static string[] GenerateSources(
+        string filePath,
+        Action<CodeGenerationOptions>? configure = null) =>
+        DocumentWrapperGenerator.GenerateSources(filePath, configure);
 
     /// <summary>
     /// 生成済みソースコードをコンパイルします。

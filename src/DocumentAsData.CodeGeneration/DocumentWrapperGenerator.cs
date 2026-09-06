@@ -9,9 +9,15 @@ public static class DocumentWrapperGenerator
     /// 指定したWord文書からC#ソースコードを生成します。
     /// </summary>
     /// <param name="filePath">生成元のWord文書のパス。</param>
+    /// <param name="configure">コード生成設定を変更する処理。</param>
     /// <returns>生成されたC#ソースコード。</returns>
-    public static string[] GenerateSources(string filePath)
+    public static string[] GenerateSources(
+        string filePath,
+        Action<CodeGenerationOptions>? configure = null)
     {
+        var options = new CodeGenerationOptions();
+        configure?.Invoke(options);
+
         var typeName = $"{Path.GetFileNameWithoutExtension(filePath)}Document";
 
         return
@@ -19,7 +25,7 @@ public static class DocumentWrapperGenerator
             $$"""
             using Marimo.DocumentAsData;
 
-            namespace Generated;
+            namespace {{options.Namespace}};
 
             public partial class {{typeName}} : Document
             {
