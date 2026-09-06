@@ -11,6 +11,8 @@ public sealed class コード生成名前設定のテスト
         @"TestData\コード生成\顧客.docx";
     const string TextContentControlDocumentFilePath =
         @"TestData\コード生成\文字列ContentControl.docx";
+    const string CheckBoxDocumentFilePath =
+        @"TestData\コード生成\チェック済みCheckBox.docx";
 
     [Fact]
     public void NameMappingsは自動名前変換より優先されます()
@@ -67,6 +69,20 @@ public sealed class コード生成名前設定のテスト
                         options.NameMappings["CustomerName"] = "ClientName"))
             .GeneratedType("文字列ContentControlDocument")
             .GetProperty("ClientName")
+            .Should().NotBeNull();
+    }
+
+    [Fact]
+    public void NameMappingsはCheckBoxのTagへ適用されます()
+    {
+        GeneratedCodeInspection
+            .AssemblyFrom(
+                GeneratedCodeInspection.GenerateSources(
+                    CheckBoxDocumentFilePath,
+                    options =>
+                        options.NameMappings["Agreement"] = "Consent"))
+            .GeneratedType("チェック済みCheckBoxDocument")
+            .GetProperty("Consent")
             .Should().NotBeNull();
     }
 }

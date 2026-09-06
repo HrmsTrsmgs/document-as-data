@@ -60,7 +60,7 @@ static class DocumentWrapperComponents
                        contentControl,
                        options),
                 .. from checkBox in document.CheckBoxes
-                   select CheckBoxPropertyDeclaration(checkBox),
+                   select CheckBoxPropertyDeclaration(checkBox, options),
                 .. from datePicker in document.DatePickers
                    select DatePickerPropertyDeclaration(datePicker)
             ])}}
@@ -111,14 +111,17 @@ static class DocumentWrapperComponents
     /// 生成Document型から指定したCheckBoxを取得するプロパティ宣言を生成します。
     /// </summary>
     /// <param name="checkBox">プロパティとして公開するCheckBox。</param>
+    /// <param name="options">コード生成時に適用する設定。</param>
     /// <returns>CheckBoxプロパティのC#コード。</returns>
-    internal static string CheckBoxPropertyDeclaration(CheckBox checkBox) =>
+    internal static string CheckBoxPropertyDeclaration(
+        CheckBox checkBox,
+        CodeGenerationOptions options) =>
         $$"""
 
             /// <summary>
             /// CheckBox「{{checkBox.Tag}}」のチェック状態を取得または設定します。
             /// </summary>
-            public bool {{checkBox.Tag.ToCSharpIdentifier()}}
+            public bool {{options.GeneratedName(checkBox.Tag)}}
             {
                 get => CheckBoxes["{{checkBox.Tag}}"].IsChecked;
                 set => CheckBoxes["{{checkBox.Tag}}"].IsChecked = value;
