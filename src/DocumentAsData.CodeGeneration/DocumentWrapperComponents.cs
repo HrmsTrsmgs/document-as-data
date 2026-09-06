@@ -76,7 +76,7 @@ static class DocumentWrapperComponents
     internal static string DatePickerPropertyDeclaration(DatePicker datePicker) =>
         $$"""
 
-            public System.DateTimeOffset {{datePicker.Tag}}
+            public System.DateTimeOffset {{datePicker.Tag.ToCSharpIdentifier()}}
             {
                 get => DatePickers["{{datePicker.Tag}}"].SelectedDateTime;
                 set => DatePickers["{{datePicker.Tag}}"].SelectedDateTime = value;

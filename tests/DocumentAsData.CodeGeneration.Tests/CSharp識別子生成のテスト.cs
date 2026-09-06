@@ -14,6 +14,8 @@ public sealed class CSharp識別子生成のテスト
         @"TestData\コード生成\customerForm.docx";
     const string キャメルケースCheckBoxDocumentFilePath =
         @"TestData\コード生成\acceptanceForm.docx";
+    const string キャメルケースDatePickerDocumentFilePath =
+        @"TestData\コード生成\deliveryForm.docx";
 
     [Theory]
     [InlineData("salesReport", "SalesReport")]
@@ -74,6 +76,18 @@ public sealed class CSharp識別子生成のテスト
                     キャメルケースCheckBoxDocumentFilePath))
             .GeneratedType("AcceptanceFormDocument")
             .GetProperty("TermsAccepted")
+            .Should().NotBeNull();
+    }
+
+    [Fact]
+    public void キャメルケースDatePickerのTagはPascalCaseのプロパティ名へ変換します()
+    {
+        GeneratedCodeInspection
+            .AssemblyFrom(
+                GeneratedCodeInspection.GenerateSources(
+                    キャメルケースDatePickerDocumentFilePath))
+            .GeneratedType("DeliveryFormDocument")
+            .GetProperty("DeliveryDate")
             .Should().NotBeNull();
     }
 
