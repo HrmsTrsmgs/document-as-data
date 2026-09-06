@@ -41,7 +41,7 @@ static class DocumentWrapperComponents
                     new(stream);
             {{ForEach([
                 .. from mergeField in document.MergeFields
-                   select MergeFieldPropertyDeclaration(mergeField),
+                   select MergeFieldPropertyDeclaration(mergeField, options),
                 .. from contentControl in document.ContentControls
                    select TextContentControlPropertyDeclaration(contentControl),
                 .. from checkBox in document.CheckBoxes
@@ -57,11 +57,14 @@ static class DocumentWrapperComponents
     /// 生成Document型から指定したMERGEFIELDを取得するプロパティ宣言を生成します。
     /// </summary>
     /// <param name="mergeField">プロパティとして公開するMERGEFIELD。</param>
+    /// <param name="options">コード生成時に適用する設定。</param>
     /// <returns>MERGEFIELDプロパティのC#コード。</returns>
-    internal static string MergeFieldPropertyDeclaration(MergeField mergeField) =>
+    internal static string MergeFieldPropertyDeclaration(
+        MergeField mergeField,
+        CodeGenerationOptions options) =>
         $$"""
 
-            public string {{mergeField.Name.ToCSharpIdentifier()}}
+            public string {{options.GeneratedName(mergeField.Name)}}
             {
                 get => MergeFields["{{mergeField.Name}}"].Text;
                 set => MergeFields["{{mergeField.Name}}"].Text = value;
