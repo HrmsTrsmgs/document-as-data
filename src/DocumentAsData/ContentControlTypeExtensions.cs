@@ -24,6 +24,12 @@ static class ContentControlTypeExtensions
         /// </summary>
         internal bool IsCheckBox =>
             self.PropertyElements<Word2010.SdtContentCheckBox>().Any();
+
+        /// <summary>
+        /// このContent Controlが日付選択かを取得します。
+        /// </summary>
+        internal bool IsDatePicker =>
+            self.PropertyElements<Wordprocessing.SdtContentDate>().Any();
     }
 
     /// <summary>

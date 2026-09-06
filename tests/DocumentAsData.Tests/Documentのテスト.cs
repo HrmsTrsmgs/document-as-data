@@ -19,6 +19,8 @@ public class Documentのテスト
         Path.Combine("TestData", "同名のMERGEFIELDとContent Control.docx");
     static readonly string InvalidContentControlWithoutTagValuePath =
         Path.Combine("TestData", "Tagの値が欠落した不正なContent Control.docx");
+    static readonly string DatePickerContentControlPath =
+        Path.Combine("TestData", "日付選択のContent Control.docx");
 
     [Fact]
     public void Openはファイルを束縛します()
@@ -399,6 +401,51 @@ public class Documentのテスト
     }
 
     [Fact]
+    public void Readは日付選択ContentControlからDateTimeOffsetプロパティを読み込みます()
+    {
+        var filePath =
+            TestDocument.CreateTemporaryCopy(DatePickerContentControlPath);
+        try
+        {
+            using var document = Document.Open(filePath, true);
+
+            document.Read<DateDocumentData>().DeliveryDate
+                .Should().Be(
+                    new DateTimeOffset(
+                        2026,
+                        9,
+                        4,
+                        0,
+                        0,
+                        0,
+                        TimeSpan.Zero));
+        }
+        finally
+        {
+            File.Delete(filePath);
+        }
+    }
+
+    [Fact]
+    public void Readは対応する日付選択ContentControlがない場合に失敗します()
+    {
+        var filePath =
+            TestDocument.CreateTemporaryCopy(DatePickerContentControlPath);
+        try
+        {
+            using var document = Document.Open(filePath, true);
+
+            var action = () => document.Read<MissingDateDocumentData>();
+
+            action.Should().Throw<DocumentMappingException>();
+        }
+        finally
+        {
+            File.Delete(filePath);
+        }
+    }
+
+    [Fact]
     public void Readは同名のMERGEFIELDとContentControlがある場合に失敗します()
     {
         var filePath = TestDocument.CreateTemporaryCopy(AmbiguousCustomerNamePath);
@@ -572,6 +619,76 @@ public class Documentのテスト
                     new UnsupportedPropertyTypeData
                     {
                         Value = DateTime.Today
+                    });
+
+            action.Should().Throw<DocumentMappingException>();
+        }
+        finally
+        {
+            File.Delete(filePath);
+        }
+    }
+
+    [Fact]
+    public void ReplaceはDateTimeOffsetプロパティを日付選択ContentControlへ書き込みます()
+    {
+        var filePath =
+            TestDocument.CreateTemporaryCopy(DatePickerContentControlPath);
+        try
+        {
+            using var document = Document.Open(filePath, true);
+
+            document.Replace(
+                new DateDocumentData
+                {
+                    DeliveryDate = new DateTimeOffset(
+                        2027,
+                        1,
+                        2,
+                        0,
+                        0,
+                        0,
+                        TimeSpan.FromHours(9))
+                });
+
+            document.DatePickers["DeliveryDate"].Value
+                .Should().Be(
+                    new DateTimeOffset(
+                        2027,
+                        1,
+                        2,
+                        0,
+                        0,
+                        0,
+                        TimeSpan.FromHours(9)));
+        }
+        finally
+        {
+            File.Delete(filePath);
+        }
+    }
+
+    [Fact]
+    public void Replaceは対応する日付選択ContentControlがない場合に失敗します()
+    {
+        var filePath =
+            TestDocument.CreateTemporaryCopy(DatePickerContentControlPath);
+        try
+        {
+            using var document = Document.Open(filePath, true);
+
+            var action = () =>
+                document.Replace(
+                    new MissingDateDocumentData
+                    {
+                        DeliveryDate = new DateTimeOffset(
+                            2027,
+                            1,
+                            2,
+                            0,
+                            0,
+                            0,
+                            TimeSpan.FromHours(9))
                     });
 
             action.Should().Throw<DocumentMappingException>();
@@ -890,6 +1007,41 @@ public class Documentのテスト
         }
     }
 
+    [Fact]
+    public void SaveAsで保存した日付選択ContentControl文書は検証して開けます()
+    {
+        var sourcePath =
+            TestDocument.CreateTemporaryCopy(DatePickerContentControlPath);
+        var outputPath = TestDocument.CreateOutputPath();
+        var value = new DateTimeOffset(
+            2027,
+            1,
+            2,
+            0,
+            0,
+            0,
+            TimeSpan.FromHours(9));
+        try
+        {
+            using (var document = Document.Open(sourcePath, true))
+            {
+                document.DatePickers["DeliveryDate"].Value = value;
+                document.SaveAs(outputPath);
+            }
+
+            using var saved = Document.Open(outputPath, true);
+            var actual = saved.DatePickers["DeliveryDate"].Value;
+
+            actual.Should().Be(value);
+            actual.Offset.Should().Be(value.Offset);
+        }
+        finally
+        {
+            File.Delete(sourcePath);
+            File.Delete(outputPath);
+        }
+    }
+
     public sealed class DocumentData
     {
         public string CustomerName { get; set; } = "";
@@ -949,6 +1101,17 @@ public class Documentのテスト
     {
         [DocumentItem("CustomerName")]
         public DateTime Value { get; set; }
+    }
+
+    public sealed class DateDocumentData
+    {
+        public DateTimeOffset DeliveryDate { get; set; }
+    }
+
+    public sealed class MissingDateDocumentData
+    {
+        [DocumentItem("Missing")]
+        public DateTimeOffset DeliveryDate { get; set; }
     }
 
 }

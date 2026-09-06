@@ -47,6 +47,7 @@ public class Document : IDisposable
         MergeFields = new(this);
         ContentControls = new(this);
         CheckBoxes = new(this);
+        DatePickers = new(this);
     }
 
     /// <summary>
@@ -159,6 +160,9 @@ public class Document : IDisposable
     /// </summary>
     /// <typeparam name="T">文書のデータを読み込む型。</typeparam>
     /// <returns>文書内のデータを読み込んだオブジェクト。</returns>
+    /// <exception cref="DocumentMappingException">
+    /// DateTimeOffsetプロパティに対応する日付選択Content Controlが存在しない場合。
+    /// </exception>
     public T Read<T>()
     {
         var data = Activator.CreateInstance<T>();
@@ -168,7 +172,7 @@ public class Document : IDisposable
             var name = property.GetCustomAttribute<DocumentItemAttribute>()?.Name
                 ?? property.Name;
 
-            property.SetValue(data, ReadValue(name));
+            property.SetValue(data, ReadValue(name, property.PropertyType));
         }
 
         return data;
@@ -178,9 +182,12 @@ public class Document : IDisposable
     /// 同じ名前のContent ControlまたはMERGEFIELDから値を読み込みます。
     /// </summary>
     /// <param name="name">読み込む名前。</param>
+    /// <param name="propertyType">読み込み先のプロパティ型。</param>
     /// <returns>文書から読み込んだ値。</returns>
-    string ReadValue(string name) =>
-        (FindValueTarget(name) ?? throw new InvalidOperationException()).Value;
+    object ReadValue(string name, Type propertyType) =>
+        propertyType == typeof(DateTimeOffset)
+            ? (FindDatePicker(name) ?? throw new DocumentMappingException()).Value
+            : (FindValueTarget(name) ?? throw new InvalidOperationException()).Value;
 
     /// <summary>
     /// 指定したオブジェクトのプロパティを、同じ名前のContent ControlまたはMERGEFIELDへ書き込みます。
@@ -217,7 +224,7 @@ public class Document : IDisposable
             throw new DocumentMappingException();
         }
 
-        if (mappings.Any(it => it.Property.PropertyType != typeof(string)))
+        if (mappings.Any(it => !IsSupportedPropertyType(it.Property.PropertyType)))
         {
             throw new DocumentMappingException();
         }
@@ -231,21 +238,38 @@ public class Document : IDisposable
         {
             ReplaceValue(
                 mapping.ItemName,
-                (string)mapping.Property.GetValue(data)!);
+                mapping.Property.GetValue(data)!);
         }
     }
 
     /// <summary>
-    /// 同じ名前のContent ControlまたはMERGEFIELDへ値を書き込みます。
+    /// オブジェクトとの対応付けで扱えるプロパティ型かを取得します。
+    /// </summary>
+    /// <param name="type">確認するプロパティ型。</param>
+    /// <returns>対応している型の場合は<c>true</c>。</returns>
+    static bool IsSupportedPropertyType(Type type) =>
+        type == typeof(string) ||
+        type == typeof(DateTimeOffset);
+
+    /// <summary>
+    /// 同じ名前の文書項目へ値を書き込みます。
     /// </summary>
     /// <param name="name">書き込む名前。</param>
     /// <param name="value">書き込む値。</param>
     /// <exception cref="DocumentMappingException">対応する文書項目が存在しない場合。</exception>
-    void ReplaceValue(string name, string value)
+    void ReplaceValue(string name, object value)
     {
+        if (value is DateTimeOffset dateTime)
+        {
+            var datePicker = FindDatePicker(name) ?? throw new DocumentMappingException();
+
+            datePicker.Value = dateTime;
+            return;
+        }
+
         var target = FindValueTarget(name) ?? throw new DocumentMappingException();
 
-        target.Value = value;
+        target.Value = (string)value;
     }
 
     /// <summary>
@@ -266,6 +290,19 @@ public class Document : IDisposable
             .SingleOrDefault();
 
     /// <summary>
+    /// 同じTagの日付選択Content Controlから、一件だけある対象を取得します。
+    /// </summary>
+    /// <param name="tag">取得するTag。</param>
+    /// <returns>取得した日付選択Content Control。存在しない場合はnull。</returns>
+    /// <exception cref="InvalidOperationException">同じTagの対象が複数存在する場合。</exception>
+    DatePicker? FindDatePicker(string tag) =>
+        (
+            from datePicker in DatePickers
+            where datePicker.Tag == tag
+            select datePicker
+        ).SingleOrDefault();
+
+    /// <summary>
     /// 文書内のMERGEFIELDを取得するコレクションを取得します。
     /// </summary>
     public MergeFieldCollection MergeFields { get; }
@@ -279,6 +316,11 @@ public class Document : IDisposable
     /// 文書内のチェックボックスを取得するコレクションを取得します。
     /// </summary>
     public CheckBoxCollection CheckBoxes { get; }
+
+    /// <summary>
+    /// 文書内の日付選択Content Controlを取得するコレクションを取得します。
+    /// </summary>
+    public DatePickerCollection DatePickers { get; }
 
     /// <summary>
     /// 保存元を変更せず、文書を別のDOCXファイルとして保存します。
