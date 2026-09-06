@@ -9,6 +9,8 @@ public sealed class コード生成名前付き項目のテスト : IDisposable
         @"TestData\コード生成\MERGEFIELD.docx";
     const string TextContentControlDocumentFilePath =
         @"TestData\コード生成\文字列ContentControl.docx";
+    const string SpecialCharacterTagDocumentFilePath =
+        @"TestData\コード生成\引用符とバックスラッシュを含むTag.docx";
     const string CheckBoxDocumentFilePath =
         @"TestData\コード生成\チェック済みCheckBox.docx";
     const string DatePickerDocumentFilePath =
@@ -79,6 +81,27 @@ public sealed class コード生成名前付き項目のテスト : IDisposable
 
         dynamic documentAccessor = document;
         string tested = documentAccessor.CustomerName;
+
+        tested.Should().Be("山田太郎");
+    }
+
+    [Fact]
+    public void 特殊文字を含むTagから生成したプロパティで文字列を読み取れます()
+    {
+        using var document = GeneratedCodeInspection
+            .AssemblyFrom(
+                GeneratedCodeInspection.GenerateSources(
+                    SpecialCharacterTagDocumentFilePath,
+                    options =>
+                        options.NameMappings[
+                            @"C:\temp\""document"] = "SpecialValue"))
+            .GeneratedType("引用符とバックスラッシュを含むTagDocument")
+            .InvokeStaticMethod<Document>(
+                "Open",
+                SpecialCharacterTagDocumentFilePath);
+
+        dynamic documentAccessor = document;
+        string tested = documentAccessor.SpecialValue;
 
         tested.Should().Be("山田太郎");
     }

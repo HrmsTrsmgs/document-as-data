@@ -147,8 +147,8 @@ static class DocumentWrapperComponents
             /// </summary>
             public string {{options.GeneratedName(contentControl.Tag)}}
             {
-                get => ContentControls["{{contentControl.Tag}}"].Text;
-                set => ContentControls["{{contentControl.Tag}}"].Text = value;
+                get => ContentControls[{{StringLiteral(contentControl.Tag)}}].Text;
+                set => ContentControls[{{StringLiteral(contentControl.Tag)}}].Text = value;
             }
         """;
 
@@ -157,4 +157,10 @@ static class DocumentWrapperComponents
     /// </summary>
     internal static string ForEach(IEnumerable<string> generatedBlocks) =>
         string.Join(Environment.NewLine, generatedBlocks);
+
+    /// <summary>
+    /// 生成コード内へ埋め込む文字列リテラルを作ります。
+    /// </summary>
+    internal static string StringLiteral(string value) =>
+        "\"" + value.Replace("\\", "\\\\").Replace("\"", "\\\"") + "\"";
 }
