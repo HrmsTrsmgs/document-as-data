@@ -19,4 +19,15 @@ public sealed class コード生成診断のテスト
                     "CustomerId",
                     ["customer_id", "customer-id"]));
     }
+
+    [Fact]
+    public void MERGEFIELDプロパティ名の衝突を自動的な連番追加では解消しません()
+    {
+        GeneratedCodeInspection
+            .GenerateSources(MergeFieldNameCollisionDocumentFilePath)
+            .Should().NotContain(
+                source => source.Contains(
+                    "CustomerId2",
+                    StringComparison.Ordinal));
+    }
 }
