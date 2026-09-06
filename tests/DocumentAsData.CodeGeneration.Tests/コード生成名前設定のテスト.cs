@@ -13,6 +13,8 @@ public sealed class コード生成名前設定のテスト
         @"TestData\コード生成\文字列ContentControl.docx";
     const string CheckBoxDocumentFilePath =
         @"TestData\コード生成\チェック済みCheckBox.docx";
+    const string DatePickerDocumentFilePath =
+        @"TestData\コード生成\日付選択ContentControl.docx";
 
     [Fact]
     public void NameMappingsは自動名前変換より優先されます()
@@ -83,6 +85,20 @@ public sealed class コード生成名前設定のテスト
                         options.NameMappings["Agreement"] = "Consent"))
             .GeneratedType("チェック済みCheckBoxDocument")
             .GetProperty("Consent")
+            .Should().NotBeNull();
+    }
+
+    [Fact]
+    public void NameMappingsはDatePickerのTagへ適用されます()
+    {
+        GeneratedCodeInspection
+            .AssemblyFrom(
+                GeneratedCodeInspection.GenerateSources(
+                    DatePickerDocumentFilePath,
+                    options =>
+                        options.NameMappings["DeliveryDate"] = "DueDate"))
+            .GeneratedType("日付選択ContentControlDocument")
+            .GetProperty("DueDate")
             .Should().NotBeNull();
     }
 }

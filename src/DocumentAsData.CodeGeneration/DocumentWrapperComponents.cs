@@ -62,7 +62,7 @@ static class DocumentWrapperComponents
                 .. from checkBox in document.CheckBoxes
                    select CheckBoxPropertyDeclaration(checkBox, options),
                 .. from datePicker in document.DatePickers
-                   select DatePickerPropertyDeclaration(datePicker)
+                   select DatePickerPropertyDeclaration(datePicker, options)
             ])}}
             }
             """;
@@ -93,14 +93,17 @@ static class DocumentWrapperComponents
     /// 生成Document型から指定したDatePickerを取得するプロパティ宣言を生成します。
     /// </summary>
     /// <param name="datePicker">プロパティとして公開するDatePicker。</param>
+    /// <param name="options">コード生成時に適用する設定。</param>
     /// <returns>DatePickerプロパティのC#コード。</returns>
-    internal static string DatePickerPropertyDeclaration(DatePicker datePicker) =>
+    internal static string DatePickerPropertyDeclaration(
+        DatePicker datePicker,
+        CodeGenerationOptions options) =>
         $$"""
 
             /// <summary>
             /// DatePicker「{{datePicker.Tag}}」の日時を取得または設定します。
             /// </summary>
-            public System.DateTimeOffset {{datePicker.Tag.ToCSharpIdentifier()}}
+            public System.DateTimeOffset {{options.GeneratedName(datePicker.Tag)}}
             {
                 get => DatePickers["{{datePicker.Tag}}"].SelectedDateTime;
                 set => DatePickers["{{datePicker.Tag}}"].SelectedDateTime = value;
