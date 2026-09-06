@@ -21,4 +21,21 @@ public sealed class コード生成名前設定のテスト
             .GetProperty("ClientName")
             .Should().NotBeNull();
     }
+
+    [Fact]
+    public void NameMappingsは辞書を代入して設定できます()
+    {
+        GeneratedCodeInspection
+            .AssemblyFrom(
+                GeneratedCodeInspection.GenerateSources(
+                    CustomerDataDocumentFilePath,
+                    options =>
+                        options.NameMappings = new()
+                        {
+                            ["customerName"] = "ClientName"
+                        }))
+            .GeneratedType("CustomerDataDocument")
+            .GetProperty("ClientName")
+            .Should().NotBeNull();
+    }
 }
