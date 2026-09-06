@@ -25,6 +25,17 @@ static class GeneratedCodeInspection
         DocumentWrapperGenerator.GenerateSources(filePath, configure);
 
     /// <summary>
+    /// 製品コードのコード生成診断APIを呼び出します。
+    /// </summary>
+    /// <param name="filePath">診断対象のWord文書。</param>
+    /// <param name="configure">コード生成設定を変更する処理。</param>
+    /// <returns>コード生成前に検出された診断情報。</returns>
+    internal static CodeGenerationDiagnostic[] GenerateDiagnostics(
+        string filePath,
+        Action<CodeGenerationOptions>? configure = null) =>
+        DocumentWrapperGenerator.GenerateDiagnostics(filePath, configure);
+
+    /// <summary>
     /// 生成済みソースコードをコンパイルします。
     /// </summary>
     /// <param name="sources">コンパイルするC#ソースコード。</param>

@@ -43,4 +43,12 @@ public sealed class コード生成統合のテスト
             .Should().Equal(GeneratedCodeInspection.GenerateSources(
                 IntegratedDocumentFilePath));
     }
+
+    [Fact]
+    public void 正常なWord文書ではエラー診断を返しません()
+    {
+        GeneratedCodeInspection
+            .GenerateDiagnostics(IntegratedDocumentFilePath)
+            .Should().BeEmpty();
+    }
 }

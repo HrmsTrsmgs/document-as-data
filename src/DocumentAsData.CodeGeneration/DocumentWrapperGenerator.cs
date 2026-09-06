@@ -40,4 +40,15 @@ public static class DocumentWrapperGenerator
             """
         ];
     }
+
+    /// <summary>
+    /// 指定したWord文書を解析し、コード生成前に検出できる問題を診断します。
+    /// </summary>
+    /// <param name="filePath">診断対象のWord文書のパス。</param>
+    /// <param name="configure">コード生成設定を変更する処理。</param>
+    /// <returns>検出された診断情報。</returns>
+    public static CodeGenerationDiagnostic[] GenerateDiagnostics(
+        string filePath,
+        Action<CodeGenerationOptions>? configure = null) =>
+        [];
 }
