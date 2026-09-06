@@ -28,7 +28,10 @@ Word文書をWordのオブジェクトモデルではなく、名前の付いた
 * `docs/design-v0.1.md` に記載された公開API案は初期のラフ案であり、実装の参考または仕様として使用しない。
 * 公開APIはSpreadsheetAsDataの対応する既存APIとテストを基準とし、一つずつDocumentAsData向けに読み替える。
 * SpreadsheetAsDataのAPIや構成から変える場合は、Word固有の理由または新規OSSとして変更する理由を示す。
-* SpreadsheetAsDataのコード生成、型付きDTO、Ruby版など、DocumentAsDataの初期目的にない機能は機械的に移植しない。
+* SpreadsheetAsDataのコード生成も移植元として確認し、DocumentAsDataの名前付き文書項目に自然に対応する機能を一つずつ読み替える。
+* Excelのワークシート、テーブル、行、列などに固有のコード生成機能は機械的に移植しない。
+* 利用側へ文書固有の型を生成する汎用機能は、ライブラリ自体へ業務固有のDTOを含めることとは区別する。
+* Ruby版など、DocumentAsDataの初期目的にない実装は機械的に移植しない。
 * SpreadsheetAsDataの依存バージョンや暫定実装を、妥当性を確認せずコピーしない。
 
 ## TDDによる移植手順
