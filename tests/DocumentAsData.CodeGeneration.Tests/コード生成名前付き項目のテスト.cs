@@ -78,4 +78,29 @@ public sealed class コード生成名前付き項目のテスト : IDisposable
 
         tested.Should().Be("山田太郎");
     }
+
+    [Fact]
+    public void 生成されたDocument型の文字列ContentControlプロパティへ文字列を直接書き込めます()
+    {
+        var savedPath = temporaryFiles.NewFilePath();
+
+        using (var document = GeneratedCodeInspection
+                   .AssemblyFrom(
+                       GeneratedCodeInspection.GenerateSources(
+                           TextContentControlDocumentFilePath))
+                   .GeneratedType("文字列ContentControlDocument")
+                   .InvokeStaticMethod<Document>(
+                       "Open",
+                       TextContentControlDocumentFilePath))
+        {
+            dynamic documentAccessor = document;
+
+            documentAccessor.CustomerName = "生成後";
+            document.SaveAs(savedPath);
+        }
+
+        using var tested = Document.Open(savedPath);
+
+        tested.ContentControls["CustomerName"].Text.Should().Be("生成後");
+    }
 }

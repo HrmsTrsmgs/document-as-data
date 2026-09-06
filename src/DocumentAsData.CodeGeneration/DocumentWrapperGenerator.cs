@@ -74,8 +74,11 @@ public static class DocumentWrapperGenerator
         TextContentControl contentControl) =>
         $$"""
 
-            public string {{contentControl.Tag}} =>
-                ContentControls["{{contentControl.Tag}}"].Text;
+            public string {{contentControl.Tag}}
+            {
+                get => ContentControls["{{contentControl.Tag}}"].Text;
+                set => ContentControls["{{contentControl.Tag}}"].Text = value;
+            }
         """;
 
     /// <summary>
