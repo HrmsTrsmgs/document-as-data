@@ -40,4 +40,25 @@ public sealed class MSBuild連携タスクのテスト
         tested.SingleGeneratedFile.GetMetadata("DesignTimeSharedInput")
             .Should().Be("true");
     }
+
+    [Fact]
+    public void プロジェクト直下の辞書を使用します()
+    {
+        using var project = MSBuild連携テストプロジェクト.Create();
+        var documentFilePath =
+            project.AddCustomerDataDocument(@"Schemas\customerData.docx");
+        project.AddProjectDictionaryFor(
+            "customerData.docx",
+            """
+            {
+              "customerName": "ClientName"
+            }
+            """);
+
+        var tested = project.Generate(documentFilePath);
+
+        tested.Succeeded.Should().BeTrue();
+        tested.SingleGeneratedSource
+            .Should().Contain("public string ClientName");
+    }
 }

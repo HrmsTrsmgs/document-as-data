@@ -1,4 +1,5 @@
-﻿using Marimo.DocumentAsData.CodeGeneration;
+﻿using System.Text.Json;
+using Marimo.DocumentAsData.CodeGeneration;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 
@@ -14,6 +15,12 @@ public sealed class GenerateDocumentAsData : Microsoft.Build.Utilities.Task
     /// </summary>
     [Required]
     public ITaskItem[] DocumentFiles { get; set; } = [];
+
+    /// <summary>
+    /// 対象プロジェクトのディレクトリを取得または設定します。
+    /// </summary>
+    [Required]
+    public string ProjectDirectory { get; set; } = "";
 
     /// <summary>
     /// 生成したC#ソースファイルを取得します。
@@ -41,16 +48,21 @@ public sealed class GenerateDocumentAsData : Microsoft.Build.Utilities.Task
     /// </summary>
     /// <param name="documentFile">コード生成対象のWord文書。</param>
     /// <returns>生成したC#ソースファイルを表すMSBuild項目。</returns>
-    static ITaskItem Generate(ITaskItem documentFile)
+    ITaskItem Generate(ITaskItem documentFile)
     {
         var documentFilePath = Path.GetFullPath(documentFile.ItemSpec);
         var generatedFilePath = Path.Combine(
             Path.GetDirectoryName(documentFilePath)!,
             $"{Path.GetFileNameWithoutExtension(documentFilePath)}.DocumentAsData.g.cs");
+        var nameMappings = LoadNameMappings(documentFilePath);
 
         File.WriteAllText(
             generatedFilePath,
-            DocumentWrapperGenerator.GenerateSources(documentFilePath).Single());
+            DocumentWrapperGenerator
+                .GenerateSources(
+                    documentFilePath,
+                    options => options.NameMappings = nameMappings)
+                .Single());
 
         var generatedFile = new TaskItem(generatedFilePath);
         generatedFile.SetMetadata(
@@ -58,5 +70,26 @@ public sealed class GenerateDocumentAsData : Microsoft.Build.Utilities.Task
             Path.GetFileName(documentFilePath));
         generatedFile.SetMetadata("DesignTimeSharedInput", "true");
         return generatedFile;
+    }
+
+    /// <summary>
+    /// プロジェクト直下にある、指定したWord文書用の識別子名変換辞書を読み込みます。
+    /// </summary>
+    /// <param name="documentFilePath">コード生成対象のWord文書。</param>
+    /// <returns>文書内の名前から生成後のC#名への対応表。</returns>
+    Dictionary<string, string> LoadNameMappings(string documentFilePath)
+    {
+        var dictionaryFilePath = Path.Combine(
+            ProjectDirectory,
+            $"{Path.GetFileNameWithoutExtension(documentFilePath)}.documentasdata.json");
+
+        if (!File.Exists(dictionaryFilePath))
+        {
+            return [];
+        }
+
+        return JsonSerializer.Deserialize<Dictionary<string, string>>(
+            File.ReadAllText(dictionaryFilePath))
+            ?? [];
     }
 }

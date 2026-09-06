@@ -12,6 +12,8 @@ sealed class MSBuild連携テストプロジェクト : IDisposable
 {
     const string BasicStructureDocumentFilePath =
         @"TestData\コード生成\BasicStructure.docx";
+    const string CustomerDataDocumentFilePath =
+        @"TestData\コード生成\customerData.docx";
 
     /// <summary>
     /// テストごとに分離した一時プロジェクトを作成します。
@@ -52,13 +54,31 @@ sealed class MSBuild連携テストプロジェクト : IDisposable
     /// </summary>
     /// <param name="relativePath">一時プロジェクト内のWord文書相対パス。</param>
     /// <returns>追加したWord文書の絶対パス。</returns>
-    internal string AddBasicStructureDocument(string relativePath)
-    {
-        var destinationPath = Path.Combine(DirectoryPath, relativePath);
-        Directory.CreateDirectory(Path.GetDirectoryName(destinationPath)!);
-        File.Copy(BasicStructureDocumentFilePath, destinationPath);
-        return destinationPath;
-    }
+    internal string AddBasicStructureDocument(string relativePath) =>
+        AddDocument(BasicStructureDocumentFilePath, relativePath);
+
+    /// <summary>
+    /// 既存の顧客データテスト文書を、指定した相対パスへ追加します。
+    /// </summary>
+    /// <param name="relativePath">一時プロジェクト内のWord文書相対パス。</param>
+    /// <returns>追加したWord文書の絶対パス。</returns>
+    internal string AddCustomerDataDocument(string relativePath) =>
+        AddDocument(CustomerDataDocumentFilePath, relativePath);
+
+    /// <summary>
+    /// プロジェクト直下へ、指定したWord文書用の識別子名変換辞書を置きます。
+    /// </summary>
+    /// <param name="documentFileName">対応するWord文書のファイル名。</param>
+    /// <param name="json">辞書JSON。</param>
+    /// <returns>作成した辞書ファイルの絶対パス。</returns>
+    internal string AddProjectDictionaryFor(
+        string documentFileName,
+        string json) =>
+        WriteDictionary(
+            Path.Combine(
+                DirectoryPath,
+                DictionaryFileName(documentFileName)),
+            json);
 
     /// <summary>
     /// MSBuildタスクを直接実行します。
@@ -75,7 +95,8 @@ sealed class MSBuild連携テストプロジェクト : IDisposable
             [
                 .. from filePath in documentFilePaths
                    select new TaskItem(filePath)
-            ]
+            ],
+            ProjectDirectory = DirectoryPath
         };
 
         return new(
@@ -94,6 +115,45 @@ sealed class MSBuild連携テストプロジェクト : IDisposable
             DirectoryPath,
             Path.GetDirectoryName(documentRelativePath) ?? "",
             $"{Path.GetFileNameWithoutExtension(documentRelativePath)}.DocumentAsData.g.cs");
+
+    /// <summary>
+    /// 既存のWord文書を一時プロジェクトへコピーします。
+    /// </summary>
+    /// <param name="sourcePath">コピー元のWord文書。</param>
+    /// <param name="relativePath">一時プロジェクト内のWord文書相対パス。</param>
+    /// <returns>コピーしたWord文書の絶対パス。</returns>
+    string AddDocument(
+        string sourcePath,
+        string relativePath)
+    {
+        var destinationPath = Path.Combine(DirectoryPath, relativePath);
+        Directory.CreateDirectory(Path.GetDirectoryName(destinationPath)!);
+        File.Copy(sourcePath, destinationPath);
+        return destinationPath;
+    }
+
+    /// <summary>
+    /// 識別子名変換辞書を書き込みます。
+    /// </summary>
+    /// <param name="filePath">書き込み先ファイル。</param>
+    /// <param name="json">辞書JSON。</param>
+    /// <returns>作成した辞書ファイルの絶対パス。</returns>
+    static string WriteDictionary(
+        string filePath,
+        string json)
+    {
+        Directory.CreateDirectory(Path.GetDirectoryName(filePath)!);
+        File.WriteAllText(filePath, json);
+        return filePath;
+    }
+
+    /// <summary>
+    /// Word文書名に対応する識別子名変換辞書のファイル名を作ります。
+    /// </summary>
+    /// <param name="documentFileName">対応するWord文書のファイル名。</param>
+    /// <returns>識別子名変換辞書のファイル名。</returns>
+    static string DictionaryFileName(string documentFileName) =>
+        $"{Path.GetFileNameWithoutExtension(documentFileName)}.documentasdata.json";
 }
 
 /// <summary>
