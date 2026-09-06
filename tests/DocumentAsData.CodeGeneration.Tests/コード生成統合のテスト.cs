@@ -34,4 +34,13 @@ public sealed class コード生成統合のテスト
         generatedTypes
             .Should().OnlyContain(it => it.Namespace == "Generated.Custom");
     }
+
+    [Fact]
+    public void 同じWord文書と設定から同じ生成結果を返します()
+    {
+        GeneratedCodeInspection
+            .GenerateSources(IntegratedDocumentFilePath)
+            .Should().Equal(GeneratedCodeInspection.GenerateSources(
+                IntegratedDocumentFilePath));
+    }
 }
