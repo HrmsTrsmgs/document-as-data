@@ -10,20 +10,25 @@ public static class DocumentWrapperGenerator
     /// </summary>
     /// <param name="filePath">生成元のWord文書のパス。</param>
     /// <returns>生成されたC#ソースコード。</returns>
-    public static string[] GenerateSources(string filePath) =>
+    public static string[] GenerateSources(string filePath)
+    {
+        var typeName = $"{Path.GetFileNameWithoutExtension(filePath)}Document";
+
+        return
         [
-            """
+            $$"""
             using Marimo.DocumentAsData;
 
             namespace Generated;
 
-            public class BasicStructureDocument : Document
+            public class {{typeName}} : Document
             {
-                BasicStructureDocument(string filePath)
+                {{typeName}}(string filePath)
                     : base(filePath)
                 {
                 }
             }
             """
         ];
+    }
 }
