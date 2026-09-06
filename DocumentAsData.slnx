@@ -1,8 +1,10 @@
 <Solution>
   <Folder Name="/src/">
+    <Project Path="src/DocumentAsData.CodeGeneration/DocumentAsData.CodeGeneration.csproj" />
     <Project Path="src/DocumentAsData/DocumentAsData.csproj" />
   </Folder>
   <Folder Name="/tests/">
+    <Project Path="tests/DocumentAsData.CodeGeneration.Tests/DocumentAsData.CodeGeneration.Tests.csproj" />
     <Project Path="tests/DocumentAsData.Tests/DocumentAsData.Tests.csproj" />
   </Folder>
 </Solution>

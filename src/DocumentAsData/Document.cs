@@ -30,6 +30,30 @@ public class Document : IDisposable
     readonly Stream? workingStream;
 
     /// <summary>
+    /// 派生した型付き文書から、指定したDOCXファイルを開きます。
+    /// </summary>
+    /// <param name="filePath">開くDOCXファイルのパス。</param>
+    protected Document(string filePath)
+        : this(OpenWorkingCopy(filePath))
+    {
+    }
+
+    /// <summary>
+    /// ファイルパス版で開いた文書と、その保存元および作業コピーを所有します。
+    /// </summary>
+    /// <param name="workingCopy">開いた文書と、その生存期間中に保持するストリーム。</param>
+    Document((
+        Packaging.WordprocessingDocument Document,
+        Stream SourceStream,
+        Stream WorkingStream) workingCopy)
+        : this(
+            workingCopy.Document,
+            workingCopy.SourceStream,
+            workingCopy.WorkingStream)
+    {
+    }
+
+    /// <summary>
     /// ファイルパス版で使う保存元と作業コピーを、Open XML文書と同じ生存期間で解放できるよう所有します。
     /// Stream版ではストリームを所有しません。
     /// </summary>
@@ -61,7 +85,18 @@ public class Document : IDisposable
     /// </summary>
     /// <param name="filePath">開くDOCXファイルのパス。</param>
     /// <returns>開いた文書。</returns>
-    public static Document Open(string filePath)
+    public static Document Open(string filePath) =>
+        new(filePath);
+
+    /// <summary>
+    /// 指定したDOCXファイルを開き、保存元を変更しない作業コピーを作成します。
+    /// </summary>
+    /// <param name="filePath">開くDOCXファイルのパス。</param>
+    /// <returns>開いた文書と、その生存期間中に保持するストリーム。</returns>
+    static (
+        Packaging.WordprocessingDocument Document,
+        Stream SourceStream,
+        Stream WorkingStream) OpenWorkingCopy(string filePath)
     {
         var sourceStream = File.OpenRead(filePath);
         try
@@ -79,15 +114,18 @@ public class Document : IDisposable
     /// 指定した保存元ストリームを複製し、編集可能な文書として開きます。
     /// </summary>
     /// <param name="sourceStream">複製するDOCX文書のストリーム。</param>
-    /// <returns>保存元と作業コピーを所有する文書。</returns>
-    static Document OpenWorkingCopy(Stream sourceStream)
+    /// <returns>開いた文書と、その生存期間中に保持するストリーム。</returns>
+    static (
+        Packaging.WordprocessingDocument Document,
+        Stream SourceStream,
+        Stream WorkingStream) OpenWorkingCopy(Stream sourceStream)
     {
         var workingStream = new MemoryStream();
         try
         {
             sourceStream.CopyTo(workingStream);
             workingStream.Position = 0;
-            return new(
+            return (
                 Packaging.WordprocessingDocument.Open(workingStream, true),
                 sourceStream,
                 workingStream);
