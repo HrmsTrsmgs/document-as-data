@@ -56,7 +56,9 @@ static class DocumentWrapperComponents
                 .. from mergeField in document.MergeFields
                    select MergeFieldPropertyDeclaration(mergeField, options),
                 .. from contentControl in document.ContentControls
-                   select TextContentControlPropertyDeclaration(contentControl),
+                   select TextContentControlPropertyDeclaration(
+                       contentControl,
+                       options),
                 .. from checkBox in document.CheckBoxes
                    select CheckBoxPropertyDeclaration(checkBox),
                 .. from datePicker in document.DatePickers
@@ -127,15 +129,17 @@ static class DocumentWrapperComponents
     /// 生成Document型から指定した文字列Content Controlを取得するプロパティ宣言を生成します。
     /// </summary>
     /// <param name="contentControl">プロパティとして公開する文字列Content Control。</param>
+    /// <param name="options">コード生成時に適用する設定。</param>
     /// <returns>文字列Content ControlプロパティのC#コード。</returns>
     internal static string TextContentControlPropertyDeclaration(
-        TextContentControl contentControl) =>
+        TextContentControl contentControl,
+        CodeGenerationOptions options) =>
         $$"""
 
             /// <summary>
             /// 文字列Content Control「{{contentControl.Tag}}」の文字列を取得または設定します。
             /// </summary>
-            public string {{contentControl.Tag.ToCSharpIdentifier()}}
+            public string {{options.GeneratedName(contentControl.Tag)}}
             {
                 get => ContentControls["{{contentControl.Tag}}"].Text;
                 set => ContentControls["{{contentControl.Tag}}"].Text = value;

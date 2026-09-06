@@ -9,6 +9,8 @@ public sealed class コード生成名前設定のテスト
         @"TestData\コード生成\customerData.docx";
     const string SharedNameDocumentFilePath =
         @"TestData\コード生成\顧客.docx";
+    const string TextContentControlDocumentFilePath =
+        @"TestData\コード生成\文字列ContentControl.docx";
 
     [Fact]
     public void NameMappingsは自動名前変換より優先されます()
@@ -52,5 +54,19 @@ public sealed class コード生成名前設定のテスト
         var generatedType = assembly.GeneratedType("CustomerDocument");
 
         generatedType.GetProperty("Customer").Should().NotBeNull();
+    }
+
+    [Fact]
+    public void NameMappingsは文字列ContentControlのTagへ適用されます()
+    {
+        GeneratedCodeInspection
+            .AssemblyFrom(
+                GeneratedCodeInspection.GenerateSources(
+                    TextContentControlDocumentFilePath,
+                    options =>
+                        options.NameMappings["CustomerName"] = "ClientName"))
+            .GeneratedType("文字列ContentControlDocument")
+            .GetProperty("ClientName")
+            .Should().NotBeNull();
     }
 }
