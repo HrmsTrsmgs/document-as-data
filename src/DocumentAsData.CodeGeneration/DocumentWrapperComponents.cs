@@ -65,6 +65,32 @@ static class DocumentWrapperComponents
                    select DatePickerPropertyDeclaration(datePicker, options)
             ])}}
             }
+
+            {{DataDeclaration(filePath, options)}}
+            """;
+    }
+
+    /// <summary>
+    /// Word文書全体のデータを表す型の宣言を生成します。
+    /// </summary>
+    /// <param name="filePath">生成元のWord文書のパス。</param>
+    /// <param name="options">コード生成時に適用する設定。</param>
+    /// <returns>文書データ型のC#コード。</returns>
+    internal static string DataDeclaration(
+        string filePath,
+        CodeGenerationOptions options)
+    {
+        var documentName = Path.GetFileNameWithoutExtension(filePath);
+        var typeName = $"{options.GeneratedName(documentName)}Data";
+
+        return
+            $$"""
+            /// <summary>
+            /// Word文書「{{documentName}}」のデータを表します。
+            /// </summary>
+            public partial class {{typeName}}
+            {
+            }
             """;
     }
 
