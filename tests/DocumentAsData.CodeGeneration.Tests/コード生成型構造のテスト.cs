@@ -35,6 +35,18 @@ public sealed class コード生成型構造のテスト
     }
 
     [Fact]
+    public void Word文書全体のデータを表す型を生成します()
+    {
+        GeneratedCodeInspection
+            .AssemblyFrom(
+                GeneratedCodeInspection.GenerateSources(
+                    BasicStructureDocumentFilePath))
+            .DefinedTypes
+            .Select(it => it.Name)
+            .Should().Contain("BasicStructureData");
+    }
+
+    [Fact]
     public void 生成されたDocument型は指定ファイルを開く静的Openメソッドを公開します()
     {
         var tested = GeneratedCodeInspection
