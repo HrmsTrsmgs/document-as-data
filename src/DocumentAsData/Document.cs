@@ -1,5 +1,4 @@
-﻿using System.Reflection;
-using DocumentFormat.OpenXml;
+﻿using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Packaging;
 using Packaging = DocumentFormat.OpenXml.Packaging;
 using Validation = DocumentFormat.OpenXml.Validation;
@@ -16,6 +15,11 @@ public class Document : IDisposable
     /// 読み取り・書き込み対象のOpen XML文書です。
     /// </summary>
     readonly Packaging.WordprocessingDocument document;
+
+    /// <summary>
+    /// 文書内の名前付き項目とオブジェクトのプロパティを対応付けます。
+    /// </summary>
+    readonly DocumentObjectMapper objectMapper;
 
     /// <summary>
     /// ファイルパス版で開いた保存元を、文書の生存期間中に束縛するストリームです。
@@ -84,6 +88,7 @@ public class Document : IDisposable
         ContentControls = new(this);
         CheckBoxes = new(this);
         DatePickers = new(this);
+        objectMapper = new(this);
     }
 
     /// <summary>
@@ -213,31 +218,8 @@ public class Document : IDisposable
     /// <exception cref="DocumentMappingException">
     /// DateTimeOffsetプロパティに対応する日付選択Content Controlが存在しない場合。
     /// </exception>
-    public T Read<T>()
-    {
-        var data = Activator.CreateInstance<T>();
-
-        foreach (var property in typeof(T).GetProperties())
-        {
-            var name = property.GetCustomAttribute<DocumentItemAttribute>()?.Name
-                ?? property.Name;
-
-            property.SetValue(data, ReadValue(name, property.PropertyType));
-        }
-
-        return data;
-    }
-
-    /// <summary>
-    /// 同じ名前のContent ControlまたはMERGEFIELDから値を読み込みます。
-    /// </summary>
-    /// <param name="name">読み込む名前。</param>
-    /// <param name="propertyType">読み込み先のプロパティ型。</param>
-    /// <returns>文書から読み込んだ値。</returns>
-    object ReadValue(string name, Type propertyType) =>
-        propertyType == typeof(DateTimeOffset)
-            ? (FindDatePicker(name) ?? throw new DocumentMappingException()).SelectedDateTime
-            : (FindValueTarget(name) ?? throw new InvalidOperationException()).Text;
+    public T Read<T>() =>
+        objectMapper.Read<T>();
 
     /// <summary>
     /// 指定したオブジェクトのプロパティを、同じ名前のContent ControlまたはMERGEFIELDへ書き込みます。
@@ -253,108 +235,8 @@ public class Document : IDisposable
     /// <exception cref="InvalidOperationException">
     /// 同じ名前のContent ControlとMERGEFIELDが両方に存在する場合。
     /// </exception>
-    public void Replace<T>(T data)
-    {
-        var mappings = (
-            from property in typeof(T).GetProperties()
-            let attribute = property.GetCustomAttribute<DocumentItemAttribute>()
-            where attribute is not null || property.GetMethod?.IsPublic == true
-            select new
-            {
-                Property = property,
-                ItemName = attribute?.Name ?? property.Name,
-                IsExplicitlyMapped = attribute is not null
-            }
-        ).ToArray();
-
-        if (mappings.Any(it =>
-            it.IsExplicitlyMapped &&
-            it.Property.GetMethod?.IsPublic != true))
-        {
-            throw new DocumentMappingException();
-        }
-
-        if (mappings.Any(it => !IsSupportedPropertyType(it.Property.PropertyType)))
-        {
-            throw new DocumentMappingException();
-        }
-
-        if (mappings.Select(it => it.ItemName).Distinct().Count() != mappings.Length)
-        {
-            throw new DocumentMappingException();
-        }
-
-        foreach (var mapping in mappings)
-        {
-            ReplaceValue(
-                mapping.ItemName,
-                mapping.Property.GetValue(data)!);
-        }
-    }
-
-    /// <summary>
-    /// オブジェクトとの対応付けで扱えるプロパティ型かを取得します。
-    /// </summary>
-    /// <param name="type">確認するプロパティ型。</param>
-    /// <returns>対応している型の場合は<c>true</c>。</returns>
-    static bool IsSupportedPropertyType(Type type) =>
-        type == typeof(string) ||
-        type == typeof(DateTimeOffset);
-
-    /// <summary>
-    /// 同じ名前の文書項目へ値を書き込みます。
-    /// </summary>
-    /// <param name="name">書き込む名前。</param>
-    /// <param name="value">書き込む値。</param>
-    /// <exception cref="DocumentMappingException">対応する文書項目が存在しない場合。</exception>
-    void ReplaceValue(string name, object value)
-    {
-        if (value is DateTimeOffset dateTime)
-        {
-            var datePicker = FindDatePicker(name) ?? throw new DocumentMappingException();
-
-            datePicker.SelectedDateTime = dateTime;
-            return;
-        }
-
-        var target = FindValueTarget(name) ?? throw new DocumentMappingException();
-
-        target.Text = (string)value;
-    }
-
-    /// <summary>
-    /// 同じ名前のContent ControlとMERGEFIELDから、一件だけある読み書き対象を取得します。
-    /// </summary>
-    /// <param name="name">取得する名前。</param>
-    /// <returns>取得した文字列データ項目。存在しない場合はnull。</returns>
-    /// <exception cref="InvalidOperationException">同じ名前の対象が複数存在する場合。</exception>
-    DocumentTextItem? FindValueTarget(string name)
-    {
-        IEnumerable<DocumentTextItem> targets =
-        [
-            .. from contentControl in ContentControls
-               where contentControl.Tag == name
-               select contentControl,
-            .. from mergeField in MergeFields
-               where mergeField.Name == name
-               select mergeField
-        ];
-
-        return targets.SingleOrDefault();
-    }
-
-    /// <summary>
-    /// 同じTagの日付選択Content Controlから、一件だけある対象を取得します。
-    /// </summary>
-    /// <param name="tag">取得するTag。</param>
-    /// <returns>取得した日付選択Content Control。存在しない場合はnull。</returns>
-    /// <exception cref="InvalidOperationException">同じTagの対象が複数存在する場合。</exception>
-    DatePicker? FindDatePicker(string tag) =>
-        (
-            from datePicker in DatePickers
-            where datePicker.Tag == tag
-            select datePicker
-        ).SingleOrDefault();
+    public void Replace<T>(T data) =>
+        objectMapper.Replace(data);
 
     /// <summary>
     /// 文書内のMERGEFIELDを取得するコレクションを取得します。
