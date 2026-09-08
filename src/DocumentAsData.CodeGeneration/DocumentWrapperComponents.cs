@@ -66,7 +66,7 @@ static class DocumentWrapperComponents
             ])}}
             }
 
-            {{DataDeclaration(filePath, options)}}
+            {{DataDeclaration(filePath, options, document)}}
             """;
     }
 
@@ -75,10 +75,12 @@ static class DocumentWrapperComponents
     /// </summary>
     /// <param name="filePath">生成元のWord文書のパス。</param>
     /// <param name="options">コード生成時に適用する設定。</param>
+    /// <param name="document">コード生成元の文書。</param>
     /// <returns>文書データ型のC#コード。</returns>
     internal static string DataDeclaration(
         string filePath,
-        CodeGenerationOptions options)
+        CodeGenerationOptions options,
+        Document document)
     {
         var documentName = Path.GetFileNameWithoutExtension(filePath);
         var typeName = $"{options.GeneratedName(documentName)}Data";
@@ -90,9 +92,32 @@ static class DocumentWrapperComponents
             /// </summary>
             public partial class {{typeName}}
             {
+            {{ForEach([
+                .. from mergeField in document.MergeFields
+                   select DataTextPropertyDeclaration(mergeField.Name, options),
+                .. from contentControl in document.ContentControls
+                   select DataTextPropertyDeclaration(contentControl.Tag, options)
+            ])}}
             }
             """;
     }
+
+    /// <summary>
+    /// 文書データ型に、文字列項目を表すプロパティ宣言を生成します。
+    /// </summary>
+    /// <param name="itemName">プロパティとして公開する文書項目の名前。</param>
+    /// <param name="options">コード生成時に適用する設定。</param>
+    /// <returns>文字列項目プロパティのC#コード。</returns>
+    internal static string DataTextPropertyDeclaration(
+        string itemName,
+        CodeGenerationOptions options) =>
+        $$"""
+
+            /// <summary>
+            /// 文書項目「{{itemName}}」の文字列を取得または設定します。
+            /// </summary>
+            public string {{options.GeneratedName(itemName)}} { get; set; } = "";
+        """;
 
     /// <summary>
     /// 生成Document型から指定したMERGEFIELDを取得するプロパティ宣言を生成します。

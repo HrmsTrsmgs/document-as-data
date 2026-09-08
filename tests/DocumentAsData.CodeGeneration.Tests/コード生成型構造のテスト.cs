@@ -7,6 +7,9 @@ public sealed class コード生成型構造のテスト
 {
     const string BasicStructureDocumentFilePath = @"TestData\コード生成\BasicStructure.docx";
     const string IntegratedDocumentFilePath = @"TestData\コード生成\統合.docx";
+    const string MergeFieldDocumentFilePath = @"TestData\コード生成\MERGEFIELD.docx";
+    const string TextContentControlDocumentFilePath =
+        @"TestData\コード生成\文字列ContentControl.docx";
 
     [Theory]
     [InlineData(BasicStructureDocumentFilePath, "BasicStructureDocument")]
@@ -44,6 +47,27 @@ public sealed class コード生成型構造のテスト
             .DefinedTypes
             .Select(it => it.Name)
             .Should().Contain("BasicStructureData");
+    }
+
+    [Theory]
+    [InlineData(
+        MergeFieldDocumentFilePath,
+        "MergefieldData")]
+    [InlineData(
+        TextContentControlDocumentFilePath,
+        "文字列ContentControlData")]
+    public void 文字列項目を文書データ型のstringプロパティとして生成します(
+        string documentFilePath,
+        string dataTypeName)
+    {
+        var tested = GeneratedCodeInspection
+            .AssemblyFrom(
+                GeneratedCodeInspection.GenerateSources(documentFilePath))
+            .GeneratedType(dataTypeName)
+            .GetProperty("CustomerName");
+
+        tested.Should().NotBeNull();
+        tested.PropertyType.Should().Be(typeof(string));
     }
 
     [Fact]
