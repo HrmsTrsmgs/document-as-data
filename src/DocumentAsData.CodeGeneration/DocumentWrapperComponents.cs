@@ -15,6 +15,7 @@ static class DocumentWrapperComponents
     {
         var documentName = Path.GetFileNameWithoutExtension(filePath);
         var typeName = $"{options.GeneratedName(documentName)}Document";
+        var dataTypeName = $"{options.GeneratedName(documentName)}Data";
 
         return
             $$"""
@@ -52,6 +53,20 @@ static class DocumentWrapperComponents
                 /// <returns>開いた型付きWord文書。</returns>
                 public static new {{typeName}} Open(System.IO.Stream stream) =>
                     new(stream);
+
+                /// <summary>
+                /// Word文書全体のデータを読み込みます。
+                /// </summary>
+                /// <returns>文書内のデータを読み込んだオブジェクト。</returns>
+                public new {{dataTypeName}} Read() =>
+                    base.Read<{{dataTypeName}}>();
+
+                /// <summary>
+                /// Word文書全体のデータを置換します。
+                /// </summary>
+                /// <param name="data">文書へ書き込むデータ。</param>
+                public new void Replace({{dataTypeName}} data) =>
+                    base.Replace(data);
             {{ForEach([
                 .. from mergeField in document.MergeFields
                    select MergeFieldPropertyDeclaration(mergeField, options),

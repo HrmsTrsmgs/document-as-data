@@ -1,4 +1,5 @@
-﻿using FluentAssertions;
+﻿using System.Reflection;
+using FluentAssertions;
 using Marimo.DocumentAsData.CodeGeneration.Test.テスト補助;
 
 namespace Marimo.DocumentAsData.CodeGeneration.Test;
@@ -68,6 +69,50 @@ public sealed class コード生成型構造のテスト
 
         tested.Should().NotBeNull();
         tested.PropertyType.Should().Be(typeof(string));
+    }
+
+    [Fact]
+    public void 生成されたDocument型は文書データ型を返すReadメソッドを公開します()
+    {
+        var generatedAssembly = GeneratedCodeInspection.AssemblyFrom(
+            GeneratedCodeInspection.GenerateSources(
+                BasicStructureDocumentFilePath));
+        var dataType = generatedAssembly.GeneratedType("BasicStructureData");
+        var tested = generatedAssembly
+            .GeneratedType("BasicStructureDocument")
+            .GetMethods(
+                BindingFlags.Public |
+                BindingFlags.Instance |
+                BindingFlags.DeclaredOnly)
+            .SingleOrDefault(it =>
+                it.Name == "Read" &&
+                it.GetParameters().Length == 0);
+
+        tested.Should().NotBeNull();
+        tested.IsGenericMethod.Should().BeFalse();
+        tested.ReturnType.Should().Be(dataType);
+    }
+
+    [Fact]
+    public void 生成されたDocument型は文書データ型を受け取るReplaceメソッドを公開します()
+    {
+        var generatedAssembly = GeneratedCodeInspection.AssemblyFrom(
+            GeneratedCodeInspection.GenerateSources(
+                BasicStructureDocumentFilePath));
+        var dataType = generatedAssembly.GeneratedType("BasicStructureData");
+        var tested = generatedAssembly
+            .GeneratedType("BasicStructureDocument")
+            .GetMethods(
+                BindingFlags.Public |
+                BindingFlags.Instance |
+                BindingFlags.DeclaredOnly)
+            .SingleOrDefault(it =>
+                it.Name == "Replace" &&
+                it.GetParameters().Select(parameter => parameter.ParameterType)
+                    .SequenceEqual([dataType]));
+
+        tested.Should().NotBeNull();
+        tested.ReturnType.Should().Be(typeof(void));
     }
 
     [Fact]
