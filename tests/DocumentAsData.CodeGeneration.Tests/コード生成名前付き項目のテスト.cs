@@ -242,6 +242,26 @@ public sealed class コード生成名前付き項目のテスト : IDisposable
     }
 
     [Fact]
+    public void 生成されたDocument型のReplaceで文書データをCheckBoxへ書き込めます()
+    {
+        using var document = GeneratedCodeInspection
+            .AssemblyFrom(
+                GeneratedCodeInspection.GenerateSources(
+                    CheckBoxDocumentFilePath))
+            .GeneratedType("チェック済みCheckBoxDocument")
+            .InvokeStaticMethod<Document>(
+                "Open",
+                CheckBoxDocumentFilePath);
+        dynamic documentAccessor = document;
+        var data = documentAccessor.Read();
+
+        data.Agreement = false;
+        documentAccessor.Replace(data);
+
+        document.CheckBoxes["Agreement"].IsChecked.Should().BeFalse();
+    }
+
+    [Fact]
     public void 生成されたDocument型のDatePickerプロパティから日時を直接読み取れます()
     {
         using var document = GeneratedCodeInspection

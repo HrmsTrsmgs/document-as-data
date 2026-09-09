@@ -120,7 +120,8 @@ sealed class DocumentObjectMapper
     /// <returns>対応している型の場合は<c>true</c>。</returns>
     static bool IsSupportedPropertyType(Type type) =>
         type == typeof(string) ||
-        type == typeof(DateTimeOffset);
+        type == typeof(DateTimeOffset) ||
+        type == typeof(bool);
 
     /// <summary>
     /// 同じ名前の文書項目へ値を書き込みます。
@@ -130,17 +131,23 @@ sealed class DocumentObjectMapper
     /// <exception cref="DocumentMappingException">対応する文書項目が存在しない場合。</exception>
     void ReplaceValue(string name, object value)
     {
-        if (value is DateTimeOffset dateTime)
+        switch (value)
         {
-            var datePicker = FindDatePicker(name) ?? throw new DocumentMappingException();
+            case DateTimeOffset dateTime:
+                (FindDatePicker(name) ?? throw new DocumentMappingException())
+                    .SelectedDateTime = dateTime;
+                return;
 
-            datePicker.SelectedDateTime = dateTime;
-            return;
+            case bool isChecked:
+                (FindCheckBox(name) ?? throw new DocumentMappingException())
+                    .IsChecked = isChecked;
+                return;
+
+            default:
+                (FindValueTarget(name) ?? throw new DocumentMappingException())
+                    .Text = (string)value;
+                return;
         }
-
-        var target = FindValueTarget(name) ?? throw new DocumentMappingException();
-
-        target.Text = (string)value;
     }
 
     /// <summary>
