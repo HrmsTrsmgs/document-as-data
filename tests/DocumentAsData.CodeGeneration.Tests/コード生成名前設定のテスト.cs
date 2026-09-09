@@ -122,4 +122,26 @@ public sealed class コード生成名前設定のテスト
             .Should().BeOfType<string>()
             .Which.Should().Be("株式会社○○");
     }
+
+    [Fact]
+    public void NameMappingsで変更した生成DataプロパティからMERGEFIELDへ文字列を書き込みます()
+    {
+        using var tested = GeneratedCodeInspection
+            .AssemblyFrom(
+                GeneratedCodeInspection.GenerateSources(
+                    CustomerDataDocumentFilePath,
+                    options =>
+                        options.NameMappings["customerName"] = "ClientName"))
+            .GeneratedType("CustomerDataDocument")
+            .InvokeStaticMethod<Document>(
+                "Open",
+                CustomerDataDocumentFilePath);
+        dynamic documentAccessor = tested;
+        dynamic data = documentAccessor.Read();
+        data.ClientName = "変更後";
+
+        documentAccessor.Replace(data);
+
+        tested.MergeFields["customerName"].Text.Should().Be("変更後");
+    }
 }
