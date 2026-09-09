@@ -165,4 +165,26 @@ public sealed class コード生成名前設定のテスト
             .Should().BeOfType<string>()
             .Which.Should().Be("山田太郎");
     }
+
+    [Fact]
+    public void NameMappingsで変更した生成Dataプロパティから文字列ContentControlへ文字列を書き込みます()
+    {
+        using var tested = GeneratedCodeInspection
+            .AssemblyFrom(
+                GeneratedCodeInspection.GenerateSources(
+                    TextContentControlDocumentFilePath,
+                    options =>
+                        options.NameMappings["CustomerName"] = "ClientName"))
+            .GeneratedType("文字列ContentControlDocument")
+            .InvokeStaticMethod<Document>(
+                "Open",
+                TextContentControlDocumentFilePath);
+        dynamic documentAccessor = tested;
+        dynamic data = documentAccessor.Read();
+        data.ClientName = "変更後";
+
+        documentAccessor.Replace(data);
+
+        tested.ContentControls["CustomerName"].Text.Should().Be("変更後");
+    }
 }
