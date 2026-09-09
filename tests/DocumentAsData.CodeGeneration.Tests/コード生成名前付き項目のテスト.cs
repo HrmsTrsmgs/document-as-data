@@ -177,6 +177,25 @@ public sealed class コード生成名前付き項目のテスト : IDisposable
     }
 
     [Fact]
+    public void 生成されたDocument型のReadでCheckBoxを文書データとして読み取れます()
+    {
+        using var document = GeneratedCodeInspection
+            .AssemblyFrom(
+                GeneratedCodeInspection.GenerateSources(
+                    CheckBoxDocumentFilePath))
+            .GeneratedType("チェック済みCheckBoxDocument")
+            .InvokeStaticMethod<Document>(
+                "Open",
+                CheckBoxDocumentFilePath);
+
+        dynamic documentAccessor = document;
+        var data = documentAccessor.Read();
+        bool tested = data.Agreement;
+
+        tested.Should().BeTrue();
+    }
+
+    [Fact]
     public void 特殊文字を含むTagから生成したCheckBoxプロパティでチェック状態を読み取れます()
     {
         using var document = GeneratedCodeInspection
