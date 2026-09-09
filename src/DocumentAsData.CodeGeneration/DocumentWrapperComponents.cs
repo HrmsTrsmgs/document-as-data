@@ -111,7 +111,9 @@ static class DocumentWrapperComponents
                 .. from mergeField in document.MergeFields
                    select DataTextPropertyDeclaration(mergeField.Name, options),
                 .. from contentControl in document.ContentControls
-                   select DataTextPropertyDeclaration(contentControl.Tag, options)
+                   select DataTextPropertyDeclaration(contentControl.Tag, options),
+                .. from checkBox in document.CheckBoxes
+                   select DataCheckBoxPropertyDeclaration(checkBox, options)
             ])}}
             }
             """;
@@ -132,6 +134,23 @@ static class DocumentWrapperComponents
             /// 文書項目「{{itemName}}」の文字列を取得または設定します。
             /// </summary>
             public string {{options.GeneratedName(itemName)}} { get; set; } = "";
+        """;
+
+    /// <summary>
+    /// 文書データ型に、CheckBoxを表すプロパティ宣言を生成します。
+    /// </summary>
+    /// <param name="checkBox">プロパティとして公開するCheckBox。</param>
+    /// <param name="options">コード生成時に適用する設定。</param>
+    /// <returns>CheckBoxプロパティのC#コード。</returns>
+    internal static string DataCheckBoxPropertyDeclaration(
+        CheckBox checkBox,
+        CodeGenerationOptions options) =>
+        $$"""
+
+            /// <summary>
+            /// CheckBox「{{checkBox.Tag}}」のチェック状態を取得または設定します。
+            /// </summary>
+            public bool {{options.GeneratedName(checkBox.Tag)}} { get; set; }
         """;
 
     /// <summary>

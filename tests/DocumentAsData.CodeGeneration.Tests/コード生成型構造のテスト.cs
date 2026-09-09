@@ -11,6 +11,8 @@ public sealed class コード生成型構造のテスト
     const string MergeFieldDocumentFilePath = @"TestData\コード生成\MERGEFIELD.docx";
     const string TextContentControlDocumentFilePath =
         @"TestData\コード生成\文字列ContentControl.docx";
+    const string CheckBoxDocumentFilePath =
+        @"TestData\コード生成\チェック済みCheckBox.docx";
 
     [Theory]
     [InlineData(BasicStructureDocumentFilePath, "BasicStructureDocument")]
@@ -69,6 +71,20 @@ public sealed class コード生成型構造のテスト
 
         tested.Should().NotBeNull();
         tested.PropertyType.Should().Be(typeof(string));
+    }
+
+    [Fact]
+    public void CheckBoxを文書データ型のboolプロパティとして生成します()
+    {
+        var tested = GeneratedCodeInspection
+            .AssemblyFrom(
+                GeneratedCodeInspection.GenerateSources(
+                    CheckBoxDocumentFilePath))
+            .GeneratedType("チェック済みCheckBoxData")
+            .GetProperty("Agreement");
+
+        tested.Should().NotBeNull();
+        tested.PropertyType.Should().Be(typeof(bool));
     }
 
     [Fact]
