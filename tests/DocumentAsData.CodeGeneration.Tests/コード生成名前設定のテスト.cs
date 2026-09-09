@@ -101,4 +101,25 @@ public sealed class コード生成名前設定のテスト
             .GetProperty("DueDate")
             .Should().NotBeNull();
     }
+
+    [Fact]
+    public void NameMappingsで変更した生成DataプロパティへMERGEFIELDの文字列を読み込みます()
+    {
+        using var document = GeneratedCodeInspection
+            .AssemblyFrom(
+                GeneratedCodeInspection.GenerateSources(
+                    CustomerDataDocumentFilePath,
+                    options =>
+                        options.NameMappings["customerName"] = "ClientName"))
+            .GeneratedType("CustomerDataDocument")
+            .InvokeStaticMethod<Document>(
+                "Open",
+                CustomerDataDocumentFilePath);
+        dynamic documentAccessor = document;
+        dynamic tested = documentAccessor.Read();
+
+        (tested.ClientName as object)
+            .Should().BeOfType<string>()
+            .Which.Should().Be("株式会社○○");
+    }
 }

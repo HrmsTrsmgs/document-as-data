@@ -129,14 +129,21 @@ static class DocumentWrapperComponents
     /// <returns>文字列項目プロパティのC#コード。</returns>
     internal static string DataTextPropertyDeclaration(
         string itemName,
-        CodeGenerationOptions options) =>
-        $$"""
+        CodeGenerationOptions options)
+    {
+        var propertyName = options.GeneratedName(itemName);
+        var attributeDeclaration = itemName == propertyName
+            ? ""
+            : $"[DocumentItem({StringLiteral(itemName)})]{Environment.NewLine}    ";
+
+        return $$"""
 
             /// <summary>
             /// 文書項目「{{itemName}}」の文字列を取得または設定します。
             /// </summary>
-            public string {{options.GeneratedName(itemName)}} { get; set; } = "";
+            {{attributeDeclaration}}public string {{propertyName}} { get; set; } = "";
         """;
+    }
 
     /// <summary>
     /// 文書データ型に、CheckBoxを表すプロパティ宣言を生成します。
