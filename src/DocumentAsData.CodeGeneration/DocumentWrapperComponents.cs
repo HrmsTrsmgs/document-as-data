@@ -177,14 +177,21 @@ static class DocumentWrapperComponents
     /// <returns>DatePickerプロパティのC#コード。</returns>
     internal static string DataDatePickerPropertyDeclaration(
         DatePicker datePicker,
-        CodeGenerationOptions options) =>
-        $$"""
+        CodeGenerationOptions options)
+    {
+        var propertyName = options.GeneratedName(datePicker.Tag);
+        var attributeDeclaration = datePicker.Tag == propertyName
+            ? ""
+            : $"[DocumentItemName({StringLiteral(datePicker.Tag)})]{Environment.NewLine}    ";
+
+        return $$"""
 
             /// <summary>
             /// DatePicker「{{datePicker.Tag}}」の日時を取得または設定します。
             /// </summary>
-            public System.DateTimeOffset {{options.GeneratedName(datePicker.Tag)}} { get; set; }
+            {{attributeDeclaration}}public System.DateTimeOffset {{propertyName}} { get; set; }
         """;
+    }
 
     /// <summary>
     /// 生成Document型から指定したMERGEFIELDを取得するプロパティ宣言を生成します。

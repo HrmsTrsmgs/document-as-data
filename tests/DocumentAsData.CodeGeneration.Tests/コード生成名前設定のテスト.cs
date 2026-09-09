@@ -230,4 +230,33 @@ public sealed class コード生成名前設定のテスト
 
         tested.CheckBoxes["Agreement"].IsChecked.Should().BeFalse();
     }
+
+    [Fact]
+    public void NameMappingsで変更した生成DataプロパティへDatePickerの選択日時を読み込みます()
+    {
+        using var document = GeneratedCodeInspection
+            .AssemblyFrom(
+                GeneratedCodeInspection.GenerateSources(
+                    DatePickerDocumentFilePath,
+                    options =>
+                        options.NameMappings["DeliveryDate"] = "DueDate"))
+            .GeneratedType("日付選択ContentControlDocument")
+            .InvokeStaticMethod<Document>(
+                "Open",
+                DatePickerDocumentFilePath);
+        dynamic documentAccessor = document;
+        dynamic tested = documentAccessor.Read();
+
+        (tested.DueDate as object)
+            .Should().BeOfType<DateTimeOffset>()
+            .Which.Should().Be(
+                new DateTimeOffset(
+                    2026,
+                    9,
+                    4,
+                    0,
+                    0,
+                    0,
+                    TimeSpan.Zero));
+    }
 }
