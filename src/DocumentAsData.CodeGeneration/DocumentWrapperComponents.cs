@@ -153,14 +153,21 @@ static class DocumentWrapperComponents
     /// <returns>CheckBoxプロパティのC#コード。</returns>
     internal static string DataCheckBoxPropertyDeclaration(
         CheckBox checkBox,
-        CodeGenerationOptions options) =>
-        $$"""
+        CodeGenerationOptions options)
+    {
+        var propertyName = options.GeneratedName(checkBox.Tag);
+        var attributeDeclaration = checkBox.Tag == propertyName
+            ? ""
+            : $"[DocumentItem({StringLiteral(checkBox.Tag)})]{Environment.NewLine}    ";
+
+        return $$"""
 
             /// <summary>
             /// CheckBox「{{checkBox.Tag}}」のチェック状態を取得または設定します。
             /// </summary>
-            public bool {{options.GeneratedName(checkBox.Tag)}} { get; set; }
+            {{attributeDeclaration}}public bool {{propertyName}} { get; set; }
         """;
+    }
 
     /// <summary>
     /// 文書データ型に、DatePickerを表すプロパティ宣言を生成します。
