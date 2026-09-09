@@ -13,6 +13,8 @@ public sealed class コード生成型構造のテスト
         @"TestData\コード生成\文字列ContentControl.docx";
     const string CheckBoxDocumentFilePath =
         @"TestData\コード生成\チェック済みCheckBox.docx";
+    const string DatePickerDocumentFilePath =
+        @"TestData\コード生成\日付選択ContentControl.docx";
 
     [Theory]
     [InlineData(BasicStructureDocumentFilePath, "BasicStructureDocument")]
@@ -85,6 +87,20 @@ public sealed class コード生成型構造のテスト
 
         tested.Should().NotBeNull();
         tested.PropertyType.Should().Be(typeof(bool));
+    }
+
+    [Fact]
+    public void DatePickerを文書データ型のDateTimeOffsetプロパティとして生成します()
+    {
+        var tested = GeneratedCodeInspection
+            .AssemblyFrom(
+                GeneratedCodeInspection.GenerateSources(
+                    DatePickerDocumentFilePath))
+            .GeneratedType("日付選択ContentControlData")
+            .GetProperty("DeliveryDate");
+
+        tested.Should().NotBeNull();
+        tested.PropertyType.Should().Be(typeof(DateTimeOffset));
     }
 
     [Fact]

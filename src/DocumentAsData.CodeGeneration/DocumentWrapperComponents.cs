@@ -113,7 +113,9 @@ static class DocumentWrapperComponents
                 .. from contentControl in document.ContentControls
                    select DataTextPropertyDeclaration(contentControl.Tag, options),
                 .. from checkBox in document.CheckBoxes
-                   select DataCheckBoxPropertyDeclaration(checkBox, options)
+                   select DataCheckBoxPropertyDeclaration(checkBox, options),
+                .. from datePicker in document.DatePickers
+                   select DataDatePickerPropertyDeclaration(datePicker, options)
             ])}}
             }
             """;
@@ -151,6 +153,23 @@ static class DocumentWrapperComponents
             /// CheckBox「{{checkBox.Tag}}」のチェック状態を取得または設定します。
             /// </summary>
             public bool {{options.GeneratedName(checkBox.Tag)}} { get; set; }
+        """;
+
+    /// <summary>
+    /// 文書データ型に、DatePickerを表すプロパティ宣言を生成します。
+    /// </summary>
+    /// <param name="datePicker">プロパティとして公開するDatePicker。</param>
+    /// <param name="options">コード生成時に適用する設定。</param>
+    /// <returns>DatePickerプロパティのC#コード。</returns>
+    internal static string DataDatePickerPropertyDeclaration(
+        DatePicker datePicker,
+        CodeGenerationOptions options) =>
+        $$"""
+
+            /// <summary>
+            /// DatePicker「{{datePicker.Tag}}」の日時を取得または設定します。
+            /// </summary>
+            public System.DateTimeOffset {{options.GeneratedName(datePicker.Tag)}} { get; set; }
         """;
 
     /// <summary>
