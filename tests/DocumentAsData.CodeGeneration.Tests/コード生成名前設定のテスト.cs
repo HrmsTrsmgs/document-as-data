@@ -208,4 +208,26 @@ public sealed class コード生成名前設定のテスト
             .Should().BeOfType<bool>()
             .Which.Should().BeTrue();
     }
+
+    [Fact]
+    public void NameMappingsで変更した生成DataプロパティからCheckBoxへチェック状態を書き込みます()
+    {
+        using var tested = GeneratedCodeInspection
+            .AssemblyFrom(
+                GeneratedCodeInspection.GenerateSources(
+                    CheckBoxDocumentFilePath,
+                    options =>
+                        options.NameMappings["Agreement"] = "Consent"))
+            .GeneratedType("チェック済みCheckBoxDocument")
+            .InvokeStaticMethod<Document>(
+                "Open",
+                CheckBoxDocumentFilePath);
+        dynamic documentAccessor = tested;
+        dynamic data = documentAccessor.Read();
+        data.Consent = false;
+
+        documentAccessor.Replace(data);
+
+        tested.CheckBoxes["Agreement"].IsChecked.Should().BeFalse();
+    }
 }
