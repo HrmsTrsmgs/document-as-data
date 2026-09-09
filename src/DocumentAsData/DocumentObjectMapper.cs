@@ -35,7 +35,7 @@ sealed class DocumentObjectMapper
 
         foreach (var property in typeof(T).GetProperties())
         {
-            var name = property.GetCustomAttribute<DocumentItemAttribute>()?.Name
+            var name = property.GetCustomAttribute<DocumentItemNameAttribute>()?.Name
                 ?? property.Name;
 
             property.SetValue(data, ReadValue(name, property.PropertyType));
@@ -68,7 +68,7 @@ sealed class DocumentObjectMapper
     /// <exception cref="DocumentMappingException">
     /// プロパティに対応する文書項目が存在しないか、
     /// 複数のプロパティが同じ文書項目に対応するか、
-    /// DocumentItem属性を指定したプロパティにpublicなgetterがないか、
+    /// DocumentItemName属性を指定したプロパティにpublicなgetterがないか、
     /// プロパティの型に対応していない場合。
     /// </exception>
     /// <exception cref="InvalidOperationException">
@@ -78,7 +78,7 @@ sealed class DocumentObjectMapper
     {
         var mappings = (
             from property in typeof(T).GetProperties()
-            let attribute = property.GetCustomAttribute<DocumentItemAttribute>()
+            let attribute = property.GetCustomAttribute<DocumentItemNameAttribute>()
             where attribute is not null || property.GetMethod?.IsPublic == true
             select new
             {

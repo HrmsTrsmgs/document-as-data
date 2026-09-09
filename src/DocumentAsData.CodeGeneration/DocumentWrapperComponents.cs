@@ -134,7 +134,7 @@ static class DocumentWrapperComponents
         var propertyName = options.GeneratedName(itemName);
         var attributeDeclaration = itemName == propertyName
             ? ""
-            : $"[DocumentItem({StringLiteral(itemName)})]{Environment.NewLine}    ";
+            : $"[DocumentItemName({StringLiteral(itemName)})]{Environment.NewLine}    ";
 
         return $$"""
 
@@ -158,7 +158,7 @@ static class DocumentWrapperComponents
         var propertyName = options.GeneratedName(checkBox.Tag);
         var attributeDeclaration = checkBox.Tag == propertyName
             ? ""
-            : $"[DocumentItem({StringLiteral(checkBox.Tag)})]{Environment.NewLine}    ";
+            : $"[DocumentItemName({StringLiteral(checkBox.Tag)})]{Environment.NewLine}    ";
 
         return $$"""
 

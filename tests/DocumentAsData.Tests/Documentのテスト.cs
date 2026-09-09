@@ -379,7 +379,7 @@ public class Documentのテスト
     }
 
     [Fact]
-    public void ReadはDocumentItem属性で指定した名前からオブジェクトを読み込みます()
+    public void ReadはDocumentItemName属性で指定した名前からオブジェクトを読み込みます()
     {
         var filePath = TestDocument.CreateTemporaryCopy(ContentControlsPath);
         try
@@ -491,7 +491,7 @@ public class Documentのテスト
     }
 
     [Fact]
-    public void ReplaceはDocumentItem属性で指定した名前へオブジェクトを書き込みます()
+    public void ReplaceはDocumentItemName属性で指定した名前へオブジェクトを書き込みます()
     {
         var filePath = TestDocument.CreateTemporaryCopy(ContentControlsPath);
         try
@@ -517,7 +517,7 @@ public class Documentのテスト
     }
 
     [Fact]
-    public void ReplaceはDocumentItem属性で指定した項目が存在しない場合に失敗します()
+    public void ReplaceはDocumentItemName属性で指定した項目が存在しない場合に失敗します()
     {
         var filePath = TestDocument.CreateTemporaryCopy(ContentControlsPath);
         try
@@ -564,7 +564,7 @@ public class Documentのテスト
     }
 
     [Fact]
-    public void ReplaceはDocumentItem属性を付けたプロパティにpublicなgetterがない場合に失敗します()
+    public void ReplaceはDocumentItemName属性を付けたプロパティにpublicなgetterがない場合に失敗します()
     {
         var filePath = TestDocument.CreateTemporaryCopy(ContentControlsPath);
         try
@@ -584,7 +584,7 @@ public class Documentのテスト
     }
 
     [Fact]
-    public void ReplaceはDocumentItem属性のない書き込み専用プロパティを無視します()
+    public void ReplaceはDocumentItemName属性のない書き込み専用プロパティを無視します()
     {
         var filePath = TestDocument.CreateTemporaryCopy(ContentControlsPath);
         try
@@ -1056,31 +1056,31 @@ public class Documentのテスト
 
     public sealed class AttributedDocumentData
     {
-        [DocumentItem("CustomerName")]
+        [DocumentItemName("CustomerName")]
         public string Name { get; set; } = "";
 
-        [DocumentItem("Address")]
+        [DocumentItemName("Address")]
         public string Location { get; set; } = "";
     }
 
     public sealed class MissingDocumentItemData
     {
-        [DocumentItem("Missing")]
+        [DocumentItemName("Missing")]
         public string Value { get; set; } = "";
     }
 
     public sealed class DuplicateDocumentItemData
     {
-        [DocumentItem("CustomerName")]
+        [DocumentItemName("CustomerName")]
         public string FirstValue { get; set; } = "";
 
-        [DocumentItem("CustomerName")]
+        [DocumentItemName("CustomerName")]
         public string SecondValue { get; set; } = "";
     }
 
     public sealed class AttributedPropertyWithoutPublicGetterData
     {
-        [DocumentItem("CustomerName")]
+        [DocumentItemName("CustomerName")]
         public string Value
         {
             set { }
@@ -1099,7 +1099,7 @@ public class Documentのテスト
 
     public sealed class UnsupportedPropertyTypeData
     {
-        [DocumentItem("CustomerName")]
+        [DocumentItemName("CustomerName")]
         public DateTime Value { get; set; }
     }
 
@@ -1110,7 +1110,7 @@ public class Documentのテスト
 
     public sealed class MissingDateDocumentData
     {
-        [DocumentItem("Missing")]
+        [DocumentItemName("Missing")]
         public DateTimeOffset DeliveryDate { get; set; }
     }
 

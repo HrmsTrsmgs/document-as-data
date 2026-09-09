@@ -229,7 +229,7 @@ public class Document : IDisposable
     /// <exception cref="DocumentMappingException">
     /// プロパティに対応する文書項目が存在しないか、
     /// 複数のプロパティが同じ文書項目に対応するか、
-    /// DocumentItem属性を指定したプロパティにpublicなgetterがないか、
+    /// DocumentItemName属性を指定したプロパティにpublicなgetterがないか、
     /// プロパティの型に対応していない場合。
     /// </exception>
     /// <exception cref="InvalidOperationException">

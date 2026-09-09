@@ -4,13 +4,13 @@
 /// プロパティに対応する文書項目の名前を指定します。
 /// </summary>
 [AttributeUsage(AttributeTargets.Property)]
-public sealed class DocumentItemAttribute : Attribute
+public sealed class DocumentItemNameAttribute : Attribute
 {
     /// <summary>
     /// 指定した文書項目の名前で属性を初期化します。
     /// </summary>
     /// <param name="name">文書項目の名前。</param>
-    public DocumentItemAttribute(string name)
+    public DocumentItemNameAttribute(string name)
     {
         Name = name;
     }
