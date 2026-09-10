@@ -105,6 +105,18 @@ public sealed class コード生成コメントのテスト
     }
 
     [Fact]
+    public void Data型のDatePickerプロパティのコメントを生成します()
+    {
+        GeneratedCodeInspection
+            .GenerateSources(DatePickerDocumentFilePath)
+            .TypeDeclaration("日付選択ContentControlData")
+            .PropertyDeclaration("DeliveryDate")
+            .SummaryText()
+            .Should().Be(
+                "DatePicker「DeliveryDate」の日時を取得または設定します。");
+    }
+
+    [Fact]
     public void MERGEFIELDプロパティのコメントを生成します()
     {
         GeneratedCodeInspection
