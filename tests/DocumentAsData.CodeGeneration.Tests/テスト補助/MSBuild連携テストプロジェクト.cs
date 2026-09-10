@@ -76,6 +76,57 @@ sealed class MSBuild連携テストプロジェクト : IDisposable
     }
 
     /// <summary>
+    /// 生成型を参照するSDKプロジェクトを作り、通常ビルドによる自動生成とコンパイルを観測します。
+    /// ビルド済みライブラリを参照し、外部パッケージソースを使わずにrestoreします。
+    /// </summary>
+    /// <returns>通常ビルドを実行するPowerShellスクリプトのパス。</returns>
+    internal string AddPowerShellSdkBuildSample()
+    {
+        File.WriteAllText(
+            Path.Combine(DirectoryPath, "DocumentAsData.BuildSample.csproj"),
+            $$"""
+            <Project Sdk="Microsoft.NET.Sdk">
+              <PropertyGroup>
+                <TargetFramework>net10.0</TargetFramework>
+                <Nullable>enable</Nullable>
+                <UseSharedCompilation>false</UseSharedCompilation>
+                <DocumentAsDataTaskAssembly>{{SecurityElement.Escape(typeof(GenerateDocumentAsData).Assembly.Location)}}</DocumentAsDataTaskAssembly>
+              </PropertyGroup>
+              <ItemGroup>
+                <Reference Include="DocumentAsData" HintPath="{{SecurityElement.Escape(typeof(Document).Assembly.Location)}}" />
+                <DocumentAsData Include="BasicStructure.docx" />
+              </ItemGroup>
+              <Import Project="{{SecurityElement.Escape(TargetsPath)}}" />
+            </Project>
+            """);
+        File.WriteAllText(
+            Path.Combine(DirectoryPath, "Consumer.cs"),
+            """
+            public sealed class Consumer
+            {
+                public Generated.BasicStructureDocument? Document { get; set; }
+            }
+            """);
+        File.WriteAllText(
+            Path.Combine(DirectoryPath, "NuGet.Config"),
+            """
+            <configuration>
+              <packageSources><clear /></packageSources>
+            </configuration>
+            """);
+        var scriptFilePath = Path.Combine(DirectoryPath, "Build.ps1");
+        File.WriteAllText(
+            scriptFilePath,
+            """
+            $ErrorActionPreference = 'Stop'
+            [Console]::OutputEncoding = [System.Text.UTF8Encoding]::new($false)
+            dotnet build ./DocumentAsData.BuildSample.csproj --nologo --verbosity minimal
+            exit $LASTEXITCODE
+            """);
+        return scriptFilePath;
+    }
+
+    /// <summary>
     /// 生成を実行せず、DesignTimeBuildで評価されたCompile項目を書き出す一時プロジェクトを作ります。
     /// SDKの既定Compile項目に助けられないよう、SDKを指定しないプロジェクトで登録を観測します。
     /// </summary>

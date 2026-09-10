@@ -20,8 +20,8 @@
       DependentUpon="%(DocumentAsDataDependentUpon)" />
   </ItemGroup>
 
-  <!-- 明示的に実行するコード生成ターゲットです。 -->
-  <Target Name="GenerateDocumentAsDataSources">
+  <!-- 明示実行に加え、コンパイル前にもコードを生成します。 -->
+  <Target Name="GenerateDocumentAsDataSources" BeforeTargets="CoreCompile">
     <Marimo.DocumentAsData.Build.GenerateDocumentAsData
       DocumentFiles="@(DocumentAsData)"
       ProjectDirectory="$(MSBuildProjectDirectory)" />
