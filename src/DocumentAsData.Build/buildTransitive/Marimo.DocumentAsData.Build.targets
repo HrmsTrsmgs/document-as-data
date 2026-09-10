@@ -14,6 +14,7 @@
     <!-- SDKの既定Compile項目に含まれる場合も、対象の生成ファイルを一度だけ登録します。 -->
     <Compile Remove="@(DocumentAsData->'%(RootDir)%(Directory)%(Filename).DocumentAsData.g.cs')" />
     <None Remove="@(DocumentAsData->'%(RootDir)%(Directory)%(Filename).DocumentAsData.g.cs')" />
+    <Content Remove="@(DocumentAsData->'%(RootDir)%(Directory)%(Filename).DocumentAsData.g.cs')" />
     <Compile
       Include="@(DocumentAsData->'%(RootDir)%(Directory)%(Filename).DocumentAsData.g.cs')"
       DependentUpon="%(DocumentAsDataDependentUpon)" />

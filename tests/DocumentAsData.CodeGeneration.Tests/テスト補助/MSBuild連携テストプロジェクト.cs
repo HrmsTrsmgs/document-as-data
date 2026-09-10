@@ -116,8 +116,11 @@ sealed class MSBuild連携テストプロジェクト : IDisposable
     /// コンパイルやrestoreは行わず、生成済みソースの項目評価だけを確認します。
     /// </summary>
     /// <param name="includeGeneratedSourceAsNone">生成ソースをNoneにも明示登録し、重複除去を検証する場合はtrue。</param>
+    /// <param name="includeGeneratedSourceAsContent">生成ソースと元文書をContentにも登録し、生成ソースだけの重複除去を検証する場合はtrue。</param>
     /// <returns>実行するPowerShellスクリプトのパス。</returns>
-    internal string AddPowerShellSdkProjectSample(bool includeGeneratedSourceAsNone = false)
+    internal string AddPowerShellSdkProjectSample(
+        bool includeGeneratedSourceAsNone = false,
+        bool includeGeneratedSourceAsContent = false)
     {
         File.WriteAllText(
             Path.Combine(DirectoryPath, "DocumentAsData.SdkProject.csproj"),
@@ -131,11 +134,14 @@ sealed class MSBuild連携テストプロジェクト : IDisposable
               <ItemGroup>
                 <!-- SDKは通常.csをNoneから除外するため、重複ケースでは明示的に追加します。 -->
                 <None Include="Schemas\BasicStructure.DocumentAsData.g.cs" Condition="'{{includeGeneratedSourceAsNone}}' == 'True'" />
+                <!-- 元文書もContentに登録し、生成ソース以外を除去しないことを確認します。 -->
+                <Content Include="Schemas\BasicStructure.DocumentAsData.g.cs;Schemas\BasicStructure.docx" Condition="'{{includeGeneratedSourceAsContent}}' == 'True'" />
                 <DocumentAsData Include="Schemas\BasicStructure.docx" />
               </ItemGroup>
               <Import Project="{{SecurityElement.Escape(TargetsPath)}}" />
               <Target Name="WriteCompileItems">
                 <WriteLinesToFile File="None.txt" Lines="@(None->'%(FullPath)')" Overwrite="true" />
+                <WriteLinesToFile File="Content.txt" Lines="@(Content->'%(FullPath)')" Overwrite="true" />
                 <WriteLinesToFile File="Compile.txt" Lines="@(Compile->'%(FullPath)')" Overwrite="true" />
                 <!-- DependentUponは、生成ソースを元文書の子として表示するための親ファイル名です。 -->
                 <WriteLinesToFile File="CompileNesting.txt" Lines="@(Compile->'%(FullPath)|%(DependentUpon)')" Overwrite="true" />
