@@ -69,6 +69,27 @@ public sealed class CustomerData
 プロパティを変更した後は `Replace(data)` で文書へ反映し、`SaveAs` で別ファイルへ保存します。
 `Replace(data)` の型引数は、渡したオブジェクトから推論されます。
 
+### 文書の名前とプロパティ名を変える
+
+プロパティ名とは別の名前で文書項目を指定するには、DTOのプロパティに `DocumentItemName` 属性を付けます。
+前の例の `CustomerData` を次の定義に置き換えると、`Name` が文書内の `CustomerName` に対応します。
+呼び出し側の代入も `data.CustomerName = ...` から `data.Name = ...` へ変更します。
+
+```csharp
+public sealed class CustomerData
+{
+    [DocumentItemName("CustomerName")]
+    public string Name { get; set; } = "";
+
+    public string Address { get; set; } = "";
+}
+```
+
+`Read<CustomerData>()` は `CustomerName` の値を `Name` へ読み込み、
+`Replace(data)` は `data.Name` の値を `CustomerName` へ書き込みます。
+属性のない `Address` は、引き続きプロパティ名で対応付けます。
+文書内の名前やTag自体を変更する機能ではありません。
+
 ## 日付選択Content Control
 
 Tagを名前として、Wordの日付選択Content Controlに記録された日時を
