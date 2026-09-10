@@ -36,6 +36,39 @@ MERGEFIELDやContent Controlの構造は残したまま保存します。
 データとして扱いたい場所には、Word側で明示的に名前付きの構造を付けます。
 自由入力された文章から氏名や住所を推測して取り出す機能ではありません。
 
+## オブジェクトとして読み書きする
+
+`Read<T>()` で文書の値をオブジェクトへ読み込み、`Replace<T>()` でオブジェクトの値を文書へ書き込めます。
+前の例と同じ `template.docx` を、次のように扱えます。
+
+```csharp
+using Marimo.DocumentAsData;
+
+using var document = Document.Open("template.docx");
+
+var data = document.Read<CustomerData>();
+data.CustomerName = "株式会社○○";
+data.Address = "東京都…";
+
+document.Replace(data);
+document.SaveAs("output.docx");
+
+public sealed class CustomerData
+{
+    public string CustomerName { get; set; } = "";
+
+    public string Address { get; set; } = "";
+}
+```
+
+文字列プロパティは、プロパティ名と同じ名前のMERGEFIELD、または同じTagの文字列Content Controlへ対応付けます。
+この例では `CustomerName` はMERGEFIELD、`Address` はContent Controlですが、DTO側で種類を指定する必要はありません。
+両方に同名の項目がある場合は、対応先を一つに決められないため例外になります。
+
+`Read<T>()` が返すのは文書と連動するオブジェクトではありません。
+プロパティを変更した後は `Replace(data)` で文書へ反映し、`SaveAs` で別ファイルへ保存します。
+`Replace(data)` の型引数は、渡したオブジェクトから推論されます。
+
 ## 日付選択Content Control
 
 Tagを名前として、Wordの日付選択Content Controlに記録された日時を
