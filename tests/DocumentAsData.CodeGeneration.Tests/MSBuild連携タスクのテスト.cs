@@ -20,6 +20,21 @@ public sealed class MSBuild連携タスクのテスト
     }
 
     [Fact]
+    public void PowerShellからdotnet_msbuildのDesignTimeBuildで生成コードを参照できます()
+    {
+        using var project = MSBuild連携テストプロジェクト.Create();
+        var documentFilePath = project.AddBasicStructureDocument(@"Schemas\BasicStructure.docx");
+        project.Generate(documentFilePath).Succeeded.Should().BeTrue();
+        var scriptFilePath = project.AddPowerShellDesignTimeBuildSample();
+
+        var tested = PowerShell実行結果.Run(scriptFilePath, project.DirectoryPath);
+
+        tested.ExitCode.Should().Be(0, tested.Output);
+        File.ReadAllLines(Path.Combine(project.DirectoryPath, "Compile.txt"))
+            .Should().Equal(project.GeneratedFilePathFor(@"Schemas\BasicStructure.docx"));
+    }
+
+    [Fact]
     public void DocumentAsData項目からWord文書の隣へ生成コードを出力します()
     {
         using var project = MSBuild連携テストプロジェクト.Create();

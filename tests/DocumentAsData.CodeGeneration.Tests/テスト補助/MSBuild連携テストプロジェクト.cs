@@ -35,16 +35,20 @@ sealed class MSBuild連携テストプロジェクト : IDisposable
     internal string DirectoryPath { get; }
 
     /// <summary>
+    /// パッケージ配置に依存せず、リポジトリで開発中のtargetsを参照します。
+    /// </summary>
+    static string TargetsPath => Path.GetFullPath(Path.Combine(
+        AppContext.BaseDirectory,
+        "..", "..", "..", "..", "..",
+        "src", "DocumentAsData.Build", "buildTransitive",
+        "Marimo.DocumentAsData.Build.targets"));
+
+    /// <summary>
     /// リポジトリのtargetsとビルド済みタスクを使う一時プロジェクトを作ります。パッケージの配置は対象外です。
     /// </summary>
     /// <returns>実行するPowerShellスクリプトのパス。</returns>
     internal string AddPowerShellGenerationSample()
     {
-        var targetsPath = Path.GetFullPath(Path.Combine(
-            AppContext.BaseDirectory,
-            "..", "..", "..", "..", "..",
-            "src", "DocumentAsData.Build", "buildTransitive",
-            "Marimo.DocumentAsData.Build.targets"));
         File.WriteAllText(
             Path.Combine(DirectoryPath, "DocumentAsData.Generate.proj"),
             $$"""
@@ -55,7 +59,7 @@ sealed class MSBuild連携テストプロジェクト : IDisposable
               <ItemGroup>
                 <DocumentAsData Include="BasicStructure.docx" />
               </ItemGroup>
-              <Import Project="{{SecurityElement.Escape(targetsPath)}}" />
+              <Import Project="{{SecurityElement.Escape(TargetsPath)}}" />
               <Target Name="Build" DependsOnTargets="GenerateDocumentAsDataSources" />
             </Project>
             """);
@@ -66,6 +70,42 @@ sealed class MSBuild連携テストプロジェクト : IDisposable
             $ErrorActionPreference = 'Stop'
             [Console]::OutputEncoding = [System.Text.UTF8Encoding]::new($false)
             dotnet msbuild ./DocumentAsData.Generate.proj /t:Build /nologo /v:minimal
+            exit $LASTEXITCODE
+            """);
+        return scriptFilePath;
+    }
+
+    /// <summary>
+    /// 生成を実行せず、DesignTimeBuildで評価されたCompile項目を書き出す一時プロジェクトを作ります。
+    /// SDKの既定Compile項目に助けられないよう、SDKを指定しないプロジェクトで登録を観測します。
+    /// </summary>
+    /// <returns>実行するPowerShellスクリプトのパス。</returns>
+    internal string AddPowerShellDesignTimeBuildSample()
+    {
+        File.WriteAllText(
+            Path.Combine(DirectoryPath, "DocumentAsData.DesignTimeBuild.proj"),
+            $$"""
+            <Project>
+              <PropertyGroup>
+                <DesignTimeBuild>true</DesignTimeBuild>
+                <DocumentAsDataTaskAssembly>{{SecurityElement.Escape(typeof(GenerateDocumentAsData).Assembly.Location)}}</DocumentAsDataTaskAssembly>
+              </PropertyGroup>
+              <ItemGroup>
+                <DocumentAsData Include="Schemas\BasicStructure.docx" />
+              </ItemGroup>
+              <Import Project="{{SecurityElement.Escape(TargetsPath)}}" />
+              <Target Name="Build">
+                <WriteLinesToFile File="Compile.txt" Lines="@(Compile->'%(FullPath)')" Overwrite="true" />
+              </Target>
+            </Project>
+            """);
+        var scriptFilePath = Path.Combine(DirectoryPath, "DesignTimeBuild.ps1");
+        File.WriteAllText(
+            scriptFilePath,
+            """
+            $ErrorActionPreference = 'Stop'
+            [Console]::OutputEncoding = [System.Text.UTF8Encoding]::new($false)
+            dotnet msbuild ./DocumentAsData.DesignTimeBuild.proj /t:Build /nologo /v:minimal
             exit $LASTEXITCODE
             """);
         return scriptFilePath;

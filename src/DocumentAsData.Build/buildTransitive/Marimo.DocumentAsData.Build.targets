@@ -4,7 +4,12 @@
     TaskName="Marimo.DocumentAsData.Build.GenerateDocumentAsData"
     AssemblyFile="$(DocumentAsDataTaskAssembly)" />
 
-  <!-- 明示的に実行するコード生成ターゲットです。Compileへの追加は行いません。 -->
+  <!-- デザイン時には、文書の隣の生成済みソースをコンパイル対象として参照します。 -->
+  <ItemGroup Condition="'$(DesignTimeBuild)' == 'true'">
+    <Compile Include="@(DocumentAsData->'%(RootDir)%(Directory)%(Filename).DocumentAsData.g.cs')" />
+  </ItemGroup>
+
+  <!-- 明示的に実行するコード生成ターゲットです。 -->
   <Target Name="GenerateDocumentAsDataSources">
     <Marimo.DocumentAsData.Build.GenerateDocumentAsData
       DocumentFiles="@(DocumentAsData)"

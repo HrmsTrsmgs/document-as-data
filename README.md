@@ -303,8 +303,10 @@ var sources = DocumentWrapperGenerator.GenerateSources(
 `DocumentAsData` 項目から `GenerateDocumentAsDataSources` ターゲットで生成できます。
 PowerShellから `dotnet msbuild` でこのターゲットを呼び出す動作をテストしています。
 
+`DesignTimeBuild=true` で評価すると、対象DOCXに対応する生成済みソースを `Compile` 項目へ登録します。
+これは登録の処理であり、生成ファイルは事前に作成しておく必要があります。
 NuGet経由の自動import、ビルドアクションの登録、通常ビルドへの自動組み込み、
-生成ファイルの `Compile` への自動追加はまだ整備していません。
+SDKの既定Compile項目との重複対策はまだ整備していません。
 このテストはVisual Studio全体の操作を保証するものではありません。
 
 ## 現在対応していないもの
