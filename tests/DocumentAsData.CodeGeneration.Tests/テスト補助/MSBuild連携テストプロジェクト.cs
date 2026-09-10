@@ -133,6 +133,8 @@ sealed class MSBuild連携テストプロジェクト : IDisposable
               <Import Project="{{SecurityElement.Escape(TargetsPath)}}" />
               <Target Name="WriteCompileItems">
                 <WriteLinesToFile File="Compile.txt" Lines="@(Compile->'%(FullPath)')" Overwrite="true" />
+                <!-- DependentUponは、生成ソースを元文書の子として表示するための親ファイル名です。 -->
+                <WriteLinesToFile File="CompileNesting.txt" Lines="@(Compile->'%(FullPath)|%(DependentUpon)')" Overwrite="true" />
               </Target>
             </Project>
             """);

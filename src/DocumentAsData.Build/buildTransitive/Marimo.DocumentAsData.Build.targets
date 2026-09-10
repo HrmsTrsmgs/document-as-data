@@ -6,9 +6,15 @@
 
   <!-- デザイン時には、文書の隣の生成済みソースをコンパイル対象として参照します。 -->
   <ItemGroup Condition="'$(DesignTimeBuild)' == 'true'">
+    <!-- 生成ソースへのパス変換前に、親となる元文書のファイル名を保持します。 -->
+    <DocumentAsData Update="@(DocumentAsData)">
+      <DocumentAsDataDependentUpon>%(Filename)%(Extension)</DocumentAsDataDependentUpon>
+    </DocumentAsData>
     <!-- SDKの既定Compile項目に含まれる場合も、対象の生成ファイルを一度だけ登録します。 -->
     <Compile Remove="@(DocumentAsData->'%(RootDir)%(Directory)%(Filename).DocumentAsData.g.cs')" />
-    <Compile Include="@(DocumentAsData->'%(RootDir)%(Directory)%(Filename).DocumentAsData.g.cs')" />
+    <Compile
+      Include="@(DocumentAsData->'%(RootDir)%(Directory)%(Filename).DocumentAsData.g.cs')"
+      DependentUpon="%(DocumentAsDataDependentUpon)" />
   </ItemGroup>
 
   <!-- 明示的に実行するコード生成ターゲットです。 -->
