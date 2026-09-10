@@ -248,6 +248,33 @@ public sealed class MSBuild連携タスクのテスト
     }
 
     [Fact]
+    public void 辞書を削除して再生成すると辞書なしのプロパティ名へ戻ります()
+    {
+        using var project = MSBuild連携テストプロジェクト.Create();
+        var documentFilePath = project.AddCustomerDataDocument(@"Schemas\customerData.docx");
+        project.Generate(documentFilePath).Succeeded.Should().BeTrue();
+        var sourceWithoutDictionary = File.ReadAllText(
+            project.GeneratedFilePathFor(@"Schemas\customerData.docx"));
+        var dictionaryFilePath = project.AddProjectDictionaryFor(
+            "customerData.docx",
+            """
+            {
+              "customerName": "ClientName"
+            }
+            """);
+        project.Generate(documentFilePath).Succeeded.Should().BeTrue();
+        File.ReadAllText(project.GeneratedFilePathFor(@"Schemas\customerData.docx"))
+            .Should().Contain("public string ClientName");
+
+        File.Delete(dictionaryFilePath);
+
+        var tested = project.Generate(documentFilePath);
+
+        tested.Succeeded.Should().BeTrue();
+        tested.SingleGeneratedSource.Should().Be(sourceWithoutDictionary);
+    }
+
+    [Fact]
     public void 不正な辞書JSONでは辞書ファイルを示して失敗します()
     {
         using var project = MSBuild連携テストプロジェクト.Create();
