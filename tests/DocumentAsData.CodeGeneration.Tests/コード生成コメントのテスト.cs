@@ -93,6 +93,18 @@ public sealed class コード生成コメントのテスト
     }
 
     [Fact]
+    public void Data型のCheckBoxプロパティのコメントを生成します()
+    {
+        GeneratedCodeInspection
+            .GenerateSources(CheckBoxDocumentFilePath)
+            .TypeDeclaration("チェック済みCheckBoxData")
+            .PropertyDeclaration("Agreement")
+            .SummaryText()
+            .Should().Be(
+                "CheckBox「Agreement」のチェック状態を取得または設定します。");
+    }
+
+    [Fact]
     public void MERGEFIELDプロパティのコメントを生成します()
     {
         GeneratedCodeInspection
