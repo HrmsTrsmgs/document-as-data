@@ -135,6 +135,8 @@ sealed class MSBuild連携テストプロジェクト : IDisposable
                 <WriteLinesToFile File="Compile.txt" Lines="@(Compile->'%(FullPath)')" Overwrite="true" />
                 <!-- DependentUponは、生成ソースを元文書の子として表示するための親ファイル名です。 -->
                 <WriteLinesToFile File="CompileNesting.txt" Lines="@(Compile->'%(FullPath)|%(DependentUpon)')" Overwrite="true" />
+                <!-- LastGenOutputは、元文書から対応する生成ソースを識別するためのファイル名です。 -->
+                <WriteLinesToFile File="DocumentGeneratedOutput.txt" Lines="@(DocumentAsData->'%(FullPath)|%(LastGenOutput)')" Overwrite="true" />
               </Target>
             </Project>
             """);

@@ -9,6 +9,7 @@
     <!-- 生成ソースへのパス変換前に、親となる元文書のファイル名を保持します。 -->
     <DocumentAsData Update="@(DocumentAsData)">
       <DocumentAsDataDependentUpon>%(Filename)%(Extension)</DocumentAsDataDependentUpon>
+      <LastGenOutput>%(Filename).DocumentAsData.g.cs</LastGenOutput>
     </DocumentAsData>
     <!-- SDKの既定Compile項目に含まれる場合も、対象の生成ファイルを一度だけ登録します。 -->
     <Compile Remove="@(DocumentAsData->'%(RootDir)%(Directory)%(Filename).DocumentAsData.g.cs')" />
