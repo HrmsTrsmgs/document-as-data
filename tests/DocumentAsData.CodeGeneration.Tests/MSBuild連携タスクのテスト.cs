@@ -34,6 +34,20 @@ public sealed class MSBuild連携タスクのテスト
     }
 
     [Fact]
+    public void SDK形式プロジェクトのRootNamespaceで生成型を利用できます()
+    {
+        using var project = MSBuild連携テストプロジェクト.Create();
+        project.AddBasicStructureDocument("BasicStructure.docx");
+        var scriptFilePath = project.AddPowerShellSdkBuildSample(rootNamespace: "Sample.Documents");
+
+        var tested = PowerShell実行結果.Run(scriptFilePath, project.DirectoryPath);
+
+        tested.ExitCode.Should().Be(0, tested.Output);
+        File.ReadAllText(project.GeneratedFilePathFor("BasicStructure.docx"))
+            .Should().Contain("namespace Sample.Documents;");
+    }
+
+    [Fact]
     public void 対象Word文書がないSDK形式プロジェクトも通常ビルドできます()
     {
         using var project = MSBuild連携テストプロジェクト.Create();

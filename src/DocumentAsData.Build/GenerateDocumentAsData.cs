@@ -23,6 +23,11 @@ public sealed class GenerateDocumentAsData : Microsoft.Build.Utilities.Task
     public string ProjectDirectory { get; set; } = "";
 
     /// <summary>
+    /// 生成コードの名前空間を取得または設定します。既定値はGeneratedです。
+    /// </summary>
+    public string RootNamespace { get; set; } = "Generated";
+
+    /// <summary>
     /// 生成したC#ソースファイルを取得します。
     /// </summary>
     [Output]
@@ -68,7 +73,11 @@ public sealed class GenerateDocumentAsData : Microsoft.Build.Utilities.Task
             DocumentWrapperGenerator
                 .GenerateSources(
                     documentFilePath,
-                    options => options.NameMappings = nameMappings)
+                    options =>
+                    {
+                        options.NameMappings = nameMappings;
+                        options.Namespace = RootNamespace;
+                    })
                 .Single());
 
         var generatedFile = new TaskItem(generatedFilePath);

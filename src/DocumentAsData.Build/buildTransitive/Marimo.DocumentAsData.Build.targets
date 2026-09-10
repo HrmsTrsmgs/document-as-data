@@ -27,6 +27,7 @@
     Condition="'$(DesignTimeBuild)' != 'true'">
     <Marimo.DocumentAsData.Build.GenerateDocumentAsData
       DocumentFiles="@(DocumentAsData)"
+      RootNamespace="$(RootNamespace)"
       ProjectDirectory="$(MSBuildProjectDirectory)" />
   </Target>
 </Project>

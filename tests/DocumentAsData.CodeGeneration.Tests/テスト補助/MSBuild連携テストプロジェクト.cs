@@ -81,8 +81,12 @@ sealed class MSBuild連携テストプロジェクト : IDisposable
     /// </summary>
     /// <param name="designTimeBuild">デザイン時の生成抑止を確認する場合はtrue。</param>
     /// <param name="includeDocument">生成対象と生成型の参照を含める場合はtrue。</param>
+    /// <param name="rootNamespace">プロジェクトに指定し、利用コードから生成型を参照する名前空間。</param>
     /// <returns>ビルドを実行するPowerShellスクリプトのパス。</returns>
-    internal string AddPowerShellSdkBuildSample(bool designTimeBuild = false, bool includeDocument = true)
+    internal string AddPowerShellSdkBuildSample(
+        bool designTimeBuild = false,
+        bool includeDocument = true,
+        string rootNamespace = "Generated")
     {
         Directory.CreateDirectory(DirectoryPath);
         File.WriteAllText(
@@ -92,6 +96,7 @@ sealed class MSBuild連携テストプロジェクト : IDisposable
               <PropertyGroup>
                 <TargetFramework>net10.0</TargetFramework>
                 <Nullable>enable</Nullable>
+                <RootNamespace>{{SecurityElement.Escape(rootNamespace)}}</RootNamespace>
                 <DesignTimeBuild>{{designTimeBuild}}</DesignTimeBuild>
                 <UseSharedCompilation>false</UseSharedCompilation>
                 <DocumentAsDataTaskAssembly>{{SecurityElement.Escape(typeof(GenerateDocumentAsData).Assembly.Location)}}</DocumentAsDataTaskAssembly>
@@ -109,7 +114,7 @@ sealed class MSBuild連携テストプロジェクト : IDisposable
             public sealed class Consumer
             {
                 public {{(includeDocument
-                    ? "Generated.BasicStructureDocument"
+                    ? $"{rootNamespace}.BasicStructureDocument"
                     : "Marimo.DocumentAsData.Document")}}? Document { get; set; }
             }
             """);
