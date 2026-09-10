@@ -217,6 +217,37 @@ public sealed class MSBuild連携タスクのテスト
     }
 
     [Fact]
+    public void 辞書を変更して再生成すると生成プロパティ名を更新します()
+    {
+        using var project = MSBuild連携テストプロジェクト.Create();
+        var documentFilePath = project.AddCustomerDataDocument(@"Schemas\customerData.docx");
+        project.AddProjectDictionaryFor(
+            "customerData.docx",
+            """
+            {
+              "customerName": "ClientName"
+            }
+            """);
+        project.Generate(documentFilePath).Succeeded.Should().BeTrue();
+        File.ReadAllText(project.GeneratedFilePathFor(@"Schemas\customerData.docx"))
+            .Should().Contain("public string ClientName");
+
+        project.AddProjectDictionaryFor(
+            "customerData.docx",
+            """
+            {
+              "customerName": "RecipientName"
+            }
+            """);
+
+        var tested = project.Generate(documentFilePath);
+
+        tested.Succeeded.Should().BeTrue();
+        tested.SingleGeneratedSource.Should().Contain("public string RecipientName")
+            .And.NotContain("public string ClientName");
+    }
+
+    [Fact]
     public void 不正な辞書JSONでは辞書ファイルを示して失敗します()
     {
         using var project = MSBuild連携テストプロジェクト.Create();
