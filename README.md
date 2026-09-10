@@ -298,10 +298,14 @@ var sources = DocumentWrapperGenerator.GenerateSources(
 文書と同じディレクトリを優先し、見つからなければ `ProjectDirectory` 直下を探します。
 両方ある場合に辞書をマージする動作ではありません。タスクが生成する名前空間は現在 `Generated` です。
 
-現時点では、自動組み込み用の `.props`・`.targets` はリポジトリにありません。
-ビルドアクションを選択するだけの導入手順や、生成ファイルの `Compile` への自動追加は、
-このREADMEでは利用可能な機能として案内していません。
-テストはタスクを直接呼び出す形であり、Visual Studio全体の操作を保証するものではありません。
+`src/DocumentAsData.Build/buildTransitive/Marimo.DocumentAsData.Build.targets` を明示的にimportし、
+`DocumentAsDataTaskAssembly` にビルド済みタスクDLLのパスを指定すると、
+`DocumentAsData` 項目から `GenerateDocumentAsDataSources` ターゲットで生成できます。
+PowerShellから `dotnet msbuild` でこのターゲットを呼び出す動作をテストしています。
+
+NuGet経由の自動import、ビルドアクションの登録、通常ビルドへの自動組み込み、
+生成ファイルの `Compile` への自動追加はまだ整備していません。
+このテストはVisual Studio全体の操作を保証するものではありません。
 
 ## 現在対応していないもの
 
@@ -329,6 +333,7 @@ PDFが必要な場合は、生成したDOCXをWordやLibreOfficeなどで変換�
 ## 開発とテスト
 
 `global.json` は .NET SDK `10.0.302` を指定しています（同系列の最新パッチを許容）。
+MSBuild連携テストではPowerShell 7の `pwsh` をPATH上から起動します。
 リポジトリのルートで実行します。
 
 ```powershell

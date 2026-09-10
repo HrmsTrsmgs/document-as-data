@@ -6,6 +6,20 @@ namespace Marimo.DocumentAsData.CodeGeneration.Test;
 public sealed class MSBuild連携タスクのテスト
 {
     [Fact]
+    public void PowerShellからdotnet_msbuildでコード生成できます()
+    {
+        using var project = MSBuild連携テストプロジェクト.Create();
+        project.AddBasicStructureDocument("BasicStructure.docx");
+        var scriptFilePath = project.AddPowerShellGenerationSample();
+
+        var tested = PowerShell実行結果.Run(scriptFilePath, project.DirectoryPath);
+
+        tested.ExitCode.Should().Be(0, tested.Output);
+        File.ReadAllText(project.GeneratedFilePathFor("BasicStructure.docx"))
+            .Should().Contain("public partial class BasicStructureDocument : Document");
+    }
+
+    [Fact]
     public void DocumentAsData項目からWord文書の隣へ生成コードを出力します()
     {
         using var project = MSBuild連携テストプロジェクト.Create();

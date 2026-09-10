@@ -1,4 +1,7 @@
 ﻿using System.Collections;
+using System.Diagnostics;
+using System.Security;
+using System.Text;
 using Marimo.DocumentAsData.Build;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
@@ -30,6 +33,43 @@ sealed class MSBuild連携テストプロジェクト : IDisposable
     /// テスト対象プロジェクトのルートディレクトリです。
     /// </summary>
     internal string DirectoryPath { get; }
+
+    /// <summary>
+    /// リポジトリのtargetsとビルド済みタスクを使う一時プロジェクトを作ります。パッケージの配置は対象外です。
+    /// </summary>
+    /// <returns>実行するPowerShellスクリプトのパス。</returns>
+    internal string AddPowerShellGenerationSample()
+    {
+        var targetsPath = Path.GetFullPath(Path.Combine(
+            AppContext.BaseDirectory,
+            "..", "..", "..", "..", "..",
+            "src", "DocumentAsData.Build", "buildTransitive",
+            "Marimo.DocumentAsData.Build.targets"));
+        File.WriteAllText(
+            Path.Combine(DirectoryPath, "DocumentAsData.Generate.proj"),
+            $$"""
+            <Project>
+              <PropertyGroup>
+                <DocumentAsDataTaskAssembly>{{SecurityElement.Escape(typeof(GenerateDocumentAsData).Assembly.Location)}}</DocumentAsDataTaskAssembly>
+              </PropertyGroup>
+              <ItemGroup>
+                <DocumentAsData Include="BasicStructure.docx" />
+              </ItemGroup>
+              <Import Project="{{SecurityElement.Escape(targetsPath)}}" />
+              <Target Name="Build" DependsOnTargets="GenerateDocumentAsDataSources" />
+            </Project>
+            """);
+        var scriptFilePath = Path.Combine(DirectoryPath, "Generate.ps1");
+        File.WriteAllText(
+            scriptFilePath,
+            """
+            $ErrorActionPreference = 'Stop'
+            [Console]::OutputEncoding = [System.Text.UTF8Encoding]::new($false)
+            dotnet msbuild ./DocumentAsData.Generate.proj /t:Build /nologo /v:minimal
+            exit $LASTEXITCODE
+            """);
+        return scriptFilePath;
+    }
 
     /// <summary>
     /// 新しい一時プロジェクトを作成します。
@@ -206,6 +246,44 @@ sealed record MSBuild連携タスク実行結果(
     /// </summary>
     internal string SingleGeneratedSource =>
         File.ReadAllText(SingleGeneratedFilePath);
+}
+
+/// <summary>
+/// PowerShellの終了コードと診断出力を保持します。
+/// </summary>
+/// <param name="ExitCode">プロセスの終了コード。</param>
+/// <param name="Output">標準出力と標準エラー。</param>
+sealed record PowerShell実行結果(int ExitCode, string Output)
+{
+    /// <summary>
+    /// スクリプトを別プロセスで実行し、両方の出力を同時に読み出してバッファ待ちを防ぎます。
+    /// </summary>
+    /// <param name="scriptFilePath">実行するスクリプト。</param>
+    /// <param name="workingDirectory">MSBuildの作業ディレクトリ。</param>
+    /// <returns>終了コードと出力。</returns>
+    internal static PowerShell実行結果 Run(string scriptFilePath, string workingDirectory)
+    {
+        using var process = new Process
+        {
+            StartInfo = new ProcessStartInfo
+            {
+                FileName = "pwsh",
+                ArgumentList = { "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", scriptFilePath },
+                WorkingDirectory = workingDirectory,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                StandardOutputEncoding = Encoding.UTF8,
+                StandardErrorEncoding = Encoding.UTF8,
+                UseShellExecute = false,
+                CreateNoWindow = true
+            }
+        };
+        process.Start();
+        var output = process.StandardOutput.ReadToEndAsync();
+        var error = process.StandardError.ReadToEndAsync();
+        process.WaitForExit();
+        return new(process.ExitCode, output.GetAwaiter().GetResult() + error.GetAwaiter().GetResult());
+    }
 }
 
 /// <summary>
