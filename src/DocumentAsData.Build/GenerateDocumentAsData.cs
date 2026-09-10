@@ -34,7 +34,7 @@ public sealed class GenerateDocumentAsData : Microsoft.Build.Utilities.Task
     public ITaskItem[] GeneratedFiles { get; set; } = [];
 
     /// <summary>
-    /// コード生成を実行し、報告済みの辞書JSONエラーはタスクの失敗として返します。
+    /// コード生成を実行し、診断エラーと報告済みの辞書JSONエラーはタスクの失敗として返します。
     /// </summary>
     /// <returns>コード生成に成功した場合は <see langword="true"/>。</returns>
     public override bool Execute()
@@ -44,10 +44,11 @@ public sealed class GenerateDocumentAsData : Microsoft.Build.Utilities.Task
             GeneratedFiles =
             [
                 .. from documentFile in DocumentFiles
-                   select Generate(documentFile)
+                   from generatedFile in Generate(documentFile)
+                   select generatedFile
             ];
 
-            return true;
+            return !Log.HasLoggedErrors;
         }
         catch (JsonException) when (Log.HasLoggedErrors)
         {
@@ -56,11 +57,11 @@ public sealed class GenerateDocumentAsData : Microsoft.Build.Utilities.Task
     }
 
     /// <summary>
-    /// 一つのWord文書からC#ソースを生成します。
+    /// 一つのWord文書を診断し、エラーがなければC#ソースを生成します。
     /// </summary>
     /// <param name="documentFile">コード生成対象のWord文書。</param>
-    /// <returns>生成したC#ソースファイルを表すMSBuild項目。</returns>
-    ITaskItem Generate(ITaskItem documentFile)
+    /// <returns>生成したC#ソースファイルを表すMSBuild項目。診断エラーがある場合は空です。</returns>
+    IEnumerable<ITaskItem> Generate(ITaskItem documentFile)
     {
         var documentFilePath = Path.GetFullPath(documentFile.ItemSpec);
         var generatedFilePath = Path.Combine(
@@ -68,16 +69,37 @@ public sealed class GenerateDocumentAsData : Microsoft.Build.Utilities.Task
             $"{Path.GetFileNameWithoutExtension(documentFilePath)}.DocumentAsData.g.cs");
         var nameMappings = LoadNameMappings(documentFilePath);
 
+        foreach (var diagnostic in
+            from diagnostic in
+                DocumentWrapperGenerator.GenerateDiagnostics(
+                    documentFilePath,
+                    options => ConfigureOptions(options, nameMappings))
+            where diagnostic.IsError
+            select diagnostic)
+        {
+            Log.LogError(
+                subcategory: null,
+                errorCode: null,
+                helpKeyword: null,
+                file: documentFilePath,
+                lineNumber: 0,
+                columnNumber: 0,
+                endLineNumber: 0,
+                endColumnNumber: 0,
+                message: $"DocumentAsData のコード生成診断: 生成名 '{diagnostic.GeneratedName}'、元名 '{string.Join(", ", diagnostic.SourceNames)}'");
+        }
+
+        if (Log.HasLoggedErrors)
+        {
+            yield break;
+        }
+
         File.WriteAllText(
             generatedFilePath,
             DocumentWrapperGenerator
                 .GenerateSources(
                     documentFilePath,
-                    options =>
-                    {
-                        options.NameMappings = nameMappings;
-                        options.Namespace = RootNamespace;
-                    })
+                    options => ConfigureOptions(options, nameMappings))
                 .Single());
 
         var generatedFile = new TaskItem(generatedFilePath);
@@ -85,7 +107,18 @@ public sealed class GenerateDocumentAsData : Microsoft.Build.Utilities.Task
             "DependentUpon",
             Path.GetFileName(documentFilePath));
         generatedFile.SetMetadata("DesignTimeSharedInput", "true");
-        return generatedFile;
+        yield return generatedFile;
+    }
+
+    /// <summary>
+    /// 診断とソース生成へ同じ名前変換辞書と名前空間を適用します。
+    /// </summary>
+    /// <param name="options">適用先のコード生成設定。</param>
+    /// <param name="nameMappings">文書に対応する識別子名変換辞書。</param>
+    void ConfigureOptions(CodeGenerationOptions options, Dictionary<string, string> nameMappings)
+    {
+        options.NameMappings = nameMappings;
+        options.Namespace = RootNamespace;
     }
 
     /// <summary>

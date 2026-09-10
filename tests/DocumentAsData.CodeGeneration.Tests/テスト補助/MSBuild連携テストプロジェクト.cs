@@ -264,6 +264,14 @@ sealed class MSBuild連携テストプロジェクト : IDisposable
         AddDocument(CustomerDataDocumentFilePath, relativePath);
 
     /// <summary>
+    /// customer_idとcustomer-idが同じ生成名になる既存の文書を追加します。
+    /// </summary>
+    /// <param name="relativePath">一時プロジェクト内のWord文書相対パス。</param>
+    /// <returns>追加したWord文書の絶対パス。</returns>
+    internal string AddMergeFieldNameCollisionDocument(string relativePath) =>
+        AddDocument(@"TestData\コード生成\MERGEFIELD名衝突.docx", relativePath);
+
+    /// <summary>
     /// プロジェクト直下へ、指定したWord文書用の識別子名変換辞書を置きます。
     /// </summary>
     /// <param name="documentFileName">対応するWord文書のファイル名。</param>

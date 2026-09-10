@@ -349,6 +349,23 @@ public sealed class MSBuild連携タスクのテスト
     }
 
     [Fact]
+    public void 生成プロパティ名が衝突した場合は対象文書を示して失敗します()
+    {
+        using var project = MSBuild連携テストプロジェクト.Create();
+        var documentFilePath = project.AddMergeFieldNameCollisionDocument(@"Schemas\NameCollision.docx");
+
+        var tested = project.Generate(documentFilePath);
+
+        tested.Succeeded.Should().BeFalse();
+        tested.Errors.Should().ContainSingle();
+        tested.Errors.Single().File.Should().Be(documentFilePath);
+        tested.Errors.Single().Message.Should().Contain("CustomerId")
+            .And.Contain("customer_id").And.Contain("customer-id");
+        File.Exists(project.GeneratedFilePathFor(@"Schemas\NameCollision.docx"))
+            .Should().BeFalse();
+    }
+
+    [Fact]
     public void 不正な辞書JSONでは辞書ファイルを示して失敗します()
     {
         using var project = MSBuild連携テストプロジェクト.Create();
