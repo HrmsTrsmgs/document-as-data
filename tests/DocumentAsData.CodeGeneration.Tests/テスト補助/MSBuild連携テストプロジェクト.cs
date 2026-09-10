@@ -251,7 +251,8 @@ sealed class MSBuild連携テストプロジェクト : IDisposable
         return new(
             task.Execute(),
             task.GeneratedFiles,
-            buildEngine.Warnings);
+            buildEngine.Warnings,
+            buildEngine.Errors);
     }
 
     /// <summary>
@@ -311,10 +312,12 @@ sealed class MSBuild連携テストプロジェクト : IDisposable
 /// <param name="Succeeded">タスクが成功した場合は <see langword="true"/>。</param>
 /// <param name="GeneratedFiles">タスクが返した生成ファイル。</param>
 /// <param name="Warnings">タスクが記録した警告。</param>
+/// <param name="Errors">タスクが記録したエラー。</param>
 sealed record MSBuild連携タスク実行結果(
     bool Succeeded,
     ITaskItem[] GeneratedFiles,
-    IReadOnlyList<BuildWarningEventArgs> Warnings)
+    IReadOnlyList<BuildWarningEventArgs> Warnings,
+    IReadOnlyList<BuildErrorEventArgs> Errors)
 {
     /// <summary>
     /// 生成ファイルの絶対パス一覧です。
@@ -380,7 +383,7 @@ sealed record PowerShell実行結果(int ExitCode, string Output)
 }
 
 /// <summary>
-/// MSBuildタスクが出力した警告を記録します。
+/// MSBuildタスクが出力した警告とエラーを記録します。
 /// </summary>
 sealed class RecordingBuildEngine : IBuildEngine
 {
@@ -388,6 +391,11 @@ sealed class RecordingBuildEngine : IBuildEngine
     /// タスクが記録した警告です。
     /// </summary>
     internal List<BuildWarningEventArgs> Warnings { get; } = [];
+
+    /// <summary>
+    /// タスクが記録したエラーです。
+    /// </summary>
+    internal List<BuildErrorEventArgs> Errors { get; } = [];
 
     /// <summary>
     /// タスクエラー後も処理を継続するかどうかを取得します。
@@ -427,10 +435,11 @@ sealed class RecordingBuildEngine : IBuildEngine
     }
 
     /// <summary>
-    /// エラーイベントを受け取ります。
+    /// エラーイベントを記録します。
     /// </summary>
     public void LogErrorEvent(BuildErrorEventArgs e)
     {
+        Errors.Add(e);
     }
 
     /// <summary>

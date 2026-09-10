@@ -217,6 +217,22 @@ public sealed class MSBuild連携タスクのテスト
     }
 
     [Fact]
+    public void 不正な辞書JSONでは辞書ファイルを示して失敗します()
+    {
+        using var project = MSBuild連携テストプロジェクト.Create();
+        var documentFilePath = project.AddBasicStructureDocument(@"Schemas\BasicStructure.docx");
+        var dictionaryFilePath = project.AddDocumentDictionaryFor(
+            @"Schemas\BasicStructure.docx",
+            "{");
+
+        var tested = project.Generate(documentFilePath);
+
+        tested.Succeeded.Should().BeFalse();
+        tested.Errors.Should().ContainSingle();
+        tested.Errors.Single().File.Should().Be(dictionaryFilePath);
+    }
+
+    [Fact]
     public void 異なるディレクトリにある同名Word文書の生成ファイルは衝突しません()
     {
         using var project = MSBuild連携テストプロジェクト.Create();

@@ -29,18 +29,25 @@ public sealed class GenerateDocumentAsData : Microsoft.Build.Utilities.Task
     public ITaskItem[] GeneratedFiles { get; set; } = [];
 
     /// <summary>
-    /// コード生成を実行します。
+    /// コード生成を実行し、報告済みの辞書JSONエラーはタスクの失敗として返します。
     /// </summary>
     /// <returns>コード生成に成功した場合は <see langword="true"/>。</returns>
     public override bool Execute()
     {
-        GeneratedFiles =
-        [
-            .. from documentFile in DocumentFiles
-               select Generate(documentFile)
-        ];
+        try
+        {
+            GeneratedFiles =
+            [
+                .. from documentFile in DocumentFiles
+                   select Generate(documentFile)
+            ];
 
-        return true;
+            return true;
+        }
+        catch (JsonException) when (Log.HasLoggedErrors)
+        {
+            return false;
+        }
     }
 
     /// <summary>
@@ -73,7 +80,8 @@ public sealed class GenerateDocumentAsData : Microsoft.Build.Utilities.Task
     }
 
     /// <summary>
-    /// プロジェクト直下にある、指定したWord文書用の識別子名変換辞書を読み込みます。
+    /// 文書隣またはプロジェクト直下の識別子名変換辞書を読み込みます。
+    /// 不正なJSONは辞書のパス付きで報告し、再スローして生成を中断します。
     /// </summary>
     /// <param name="documentFilePath">コード生成対象のWord文書。</param>
     /// <returns>文書内の名前から生成後のC#名への対応表。</returns>
@@ -86,9 +94,26 @@ public sealed class GenerateDocumentAsData : Microsoft.Build.Utilities.Task
             return [];
         }
 
-        return JsonSerializer.Deserialize<Dictionary<string, string>>(
-            File.ReadAllText(dictionaryFilePath))
-            ?? [];
+        try
+        {
+            return JsonSerializer.Deserialize<Dictionary<string, string>>(
+                File.ReadAllText(dictionaryFilePath))
+                ?? [];
+        }
+        catch (JsonException exception)
+        {
+            Log.LogError(
+                subcategory: null,
+                errorCode: null,
+                helpKeyword: null,
+                file: dictionaryFilePath,
+                lineNumber: 0,
+                columnNumber: 0,
+                endLineNumber: 0,
+                endColumnNumber: 0,
+                message: exception.Message);
+            throw;
+        }
     }
 
     /// <summary>
