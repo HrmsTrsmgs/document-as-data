@@ -86,6 +86,19 @@ static class GeneratedSourceAssertions
             ).Single();
 
         /// <summary>
+        /// 指定した型宣言から、指定した名前の引数なしメソッド宣言を取得します。
+        /// </summary>
+        /// <param name="methodName">取得するメソッド名。</param>
+        /// <returns>指定した引数なしメソッド宣言。</returns>
+        internal MethodDeclarationSyntax MethodDeclaration(string methodName) =>
+            (
+                from method in self.Members.OfType<MethodDeclarationSyntax>()
+                where method.Identifier.ValueText == methodName
+                where method.ParameterList.Parameters.Count == 0
+                select method
+            ).Single();
+
+        /// <summary>
         /// 指定した型宣言から、名前と引数型が一致するメソッド宣言を取得します。
         /// </summary>
         /// <param name="methodName">取得するメソッド名。</param>

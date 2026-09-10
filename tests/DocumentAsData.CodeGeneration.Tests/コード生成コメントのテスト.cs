@@ -59,6 +59,17 @@ public sealed class コード生成コメントのテスト
     }
 
     [Fact]
+    public void Readメソッドのコメントを生成します()
+    {
+        GeneratedCodeInspection
+            .GenerateSources(BasicStructureDocumentFilePath)
+            .TypeDeclaration("BasicStructureDocument")
+            .MethodDeclaration("Read")
+            .SummaryText()
+            .Should().Be("Word文書全体のデータを読み込みます。");
+    }
+
+    [Fact]
     public void MERGEFIELDプロパティのコメントを生成します()
     {
         GeneratedCodeInspection
