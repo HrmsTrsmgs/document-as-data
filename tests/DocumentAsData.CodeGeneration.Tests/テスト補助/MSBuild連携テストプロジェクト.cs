@@ -80,9 +80,11 @@ sealed class MSBuild連携テストプロジェクト : IDisposable
     /// ビルド済みライブラリを参照し、外部パッケージソースを使わずにrestoreします。
     /// </summary>
     /// <param name="designTimeBuild">デザイン時の生成抑止を確認する場合はtrue。</param>
+    /// <param name="includeDocument">生成対象と生成型の参照を含める場合はtrue。</param>
     /// <returns>ビルドを実行するPowerShellスクリプトのパス。</returns>
-    internal string AddPowerShellSdkBuildSample(bool designTimeBuild = false)
+    internal string AddPowerShellSdkBuildSample(bool designTimeBuild = false, bool includeDocument = true)
     {
+        Directory.CreateDirectory(DirectoryPath);
         File.WriteAllText(
             Path.Combine(DirectoryPath, "DocumentAsData.BuildSample.csproj"),
             $$"""
@@ -96,17 +98,19 @@ sealed class MSBuild連携テストプロジェクト : IDisposable
               </PropertyGroup>
               <ItemGroup>
                 <Reference Include="DocumentAsData" HintPath="{{SecurityElement.Escape(typeof(Document).Assembly.Location)}}" />
-                <DocumentAsData Include="BasicStructure.docx" />
+                <DocumentAsData Include="BasicStructure.docx" Condition="'{{includeDocument}}' == 'True'" />
               </ItemGroup>
               <Import Project="{{SecurityElement.Escape(TargetsPath)}}" />
             </Project>
             """);
         File.WriteAllText(
             Path.Combine(DirectoryPath, "Consumer.cs"),
-            """
+            $$"""
             public sealed class Consumer
             {
-                public Generated.BasicStructureDocument? Document { get; set; }
+                public {{(includeDocument
+                    ? "Generated.BasicStructureDocument"
+                    : "Marimo.DocumentAsData.Document")}}? Document { get; set; }
             }
             """);
         File.WriteAllText(

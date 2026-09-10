@@ -34,6 +34,17 @@ public sealed class MSBuild連携タスクのテスト
     }
 
     [Fact]
+    public void 対象Word文書がないSDK形式プロジェクトも通常ビルドできます()
+    {
+        using var project = MSBuild連携テストプロジェクト.Create();
+        var scriptFilePath = project.AddPowerShellSdkBuildSample(includeDocument: false);
+
+        var tested = PowerShell実行結果.Run(scriptFilePath, project.DirectoryPath);
+
+        tested.ExitCode.Should().Be(0, tested.Output);
+    }
+
+    [Fact]
     public void デザイン時のコンパイルでは辞書が変更されてもコードを再生成しません()
     {
         using var project = MSBuild連携テストプロジェクト.Create();
