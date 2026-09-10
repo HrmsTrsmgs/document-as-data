@@ -132,16 +132,13 @@ static class DocumentWrapperComponents
         CodeGenerationOptions options)
     {
         var propertyName = options.GeneratedName(itemName);
-        var attributeDeclaration = itemName == propertyName
-            ? ""
-            : $"[DocumentItemName({StringLiteral(itemName)})]{Environment.NewLine}    ";
 
         return $$"""
 
             /// <summary>
             /// 文書項目「{{itemName}}」の文字列を取得または設定します。
             /// </summary>
-            {{attributeDeclaration}}public string {{propertyName}} { get; set; } = "";
+            {{DataItemNameAttributeDeclaration(itemName, propertyName)}}public string {{propertyName}} { get; set; } = "";
         """;
     }
 
@@ -156,16 +153,13 @@ static class DocumentWrapperComponents
         CodeGenerationOptions options)
     {
         var propertyName = options.GeneratedName(checkBox.Tag);
-        var attributeDeclaration = checkBox.Tag == propertyName
-            ? ""
-            : $"[DocumentItemName({StringLiteral(checkBox.Tag)})]{Environment.NewLine}    ";
 
         return $$"""
 
             /// <summary>
             /// CheckBox「{{checkBox.Tag}}」のチェック状態を取得または設定します。
             /// </summary>
-            {{attributeDeclaration}}public bool {{propertyName}} { get; set; }
+            {{DataItemNameAttributeDeclaration(checkBox.Tag, propertyName)}}public bool {{propertyName}} { get; set; }
         """;
     }
 
@@ -180,18 +174,26 @@ static class DocumentWrapperComponents
         CodeGenerationOptions options)
     {
         var propertyName = options.GeneratedName(datePicker.Tag);
-        var attributeDeclaration = datePicker.Tag == propertyName
-            ? ""
-            : $"[DocumentItemName({StringLiteral(datePicker.Tag)})]{Environment.NewLine}    ";
 
         return $$"""
 
             /// <summary>
             /// DatePicker「{{datePicker.Tag}}」の日時を取得または設定します。
             /// </summary>
-            {{attributeDeclaration}}public System.DateTimeOffset {{propertyName}} { get; set; }
+            {{DataItemNameAttributeDeclaration(datePicker.Tag, propertyName)}}public System.DateTimeOffset {{propertyName}} { get; set; }
         """;
     }
+
+    /// <summary>
+    /// 生成Dataプロパティ名が文書項目名と異なる場合に、ReadとReplaceへ元名を伝える属性を生成します。
+    /// </summary>
+    /// <param name="itemName">文書内の項目名またはTag。</param>
+    /// <param name="propertyName">生成するC#プロパティ名。</param>
+    /// <returns>属性と次行のインデント。同名の場合は空文字列。</returns>
+    static string DataItemNameAttributeDeclaration(string itemName, string propertyName) =>
+        itemName == propertyName
+            ? ""
+            : $"[DocumentItemName({StringLiteral(itemName)})]{Environment.NewLine}    ";
 
     /// <summary>
     /// 生成Document型から指定したMERGEFIELDを取得するプロパティ宣言を生成します。
