@@ -81,6 +81,18 @@ public sealed class コード生成コメントのテスト
     }
 
     [Fact]
+    public void Data型の文字列プロパティのコメントを生成します()
+    {
+        GeneratedCodeInspection
+            .GenerateSources(MergeFieldsDocumentFilePath)
+            .TypeDeclaration("MergefieldData")
+            .PropertyDeclaration("CustomerName")
+            .SummaryText()
+            .Should().Be(
+                "文書項目「CustomerName」の文字列を取得または設定します。");
+    }
+
+    [Fact]
     public void MERGEFIELDプロパティのコメントを生成します()
     {
         GeneratedCodeInspection
