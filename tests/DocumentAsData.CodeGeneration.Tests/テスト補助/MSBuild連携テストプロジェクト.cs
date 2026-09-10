@@ -112,15 +112,17 @@ sealed class MSBuild連携テストプロジェクト : IDisposable
     }
 
     /// <summary>
-    /// SDKの既定Compile項目が有効なプロジェクトを作り、DesignTimeBuild時の登録結果を観測します。
+    /// SDKの既定Compile項目が有効なプロジェクトを作り、項目の登録結果を観測します。
     /// コンパイルやrestoreは行わず、生成済みソースの項目評価だけを確認します。
     /// </summary>
     /// <param name="includeGeneratedSourceAsNone">生成ソースをNoneにも明示登録し、重複除去を検証する場合はtrue。</param>
     /// <param name="includeGeneratedSourceAsContent">生成ソースと元文書をContentにも登録し、生成ソースだけの重複除去を検証する場合はtrue。</param>
+    /// <param name="designTimeBuild">デザイン時の評価はtrue、通常の評価はfalse。</param>
     /// <returns>実行するPowerShellスクリプトのパス。</returns>
     internal string AddPowerShellSdkProjectSample(
         bool includeGeneratedSourceAsNone = false,
-        bool includeGeneratedSourceAsContent = false)
+        bool includeGeneratedSourceAsContent = false,
+        bool designTimeBuild = true)
     {
         File.WriteAllText(
             Path.Combine(DirectoryPath, "DocumentAsData.SdkProject.csproj"),
@@ -128,7 +130,7 @@ sealed class MSBuild連携テストプロジェクト : IDisposable
             <Project Sdk="Microsoft.NET.Sdk">
               <PropertyGroup>
                 <TargetFramework>net10.0</TargetFramework>
-                <DesignTimeBuild>true</DesignTimeBuild>
+                <DesignTimeBuild>{{designTimeBuild}}</DesignTimeBuild>
                 <DocumentAsDataTaskAssembly>{{SecurityElement.Escape(typeof(GenerateDocumentAsData).Assembly.Location)}}</DocumentAsDataTaskAssembly>
               </PropertyGroup>
               <ItemGroup>

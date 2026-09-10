@@ -4,8 +4,8 @@
     TaskName="Marimo.DocumentAsData.Build.GenerateDocumentAsData"
     AssemblyFile="$(DocumentAsDataTaskAssembly)" />
 
-  <!-- デザイン時には、文書の隣の生成済みソースをコンパイル対象として参照します。 -->
-  <ItemGroup Condition="'$(DesignTimeBuild)' == 'true'">
+  <!-- 通常評価とデザイン時の両方で、文書の隣の生成済みソースをコンパイル対象として参照します。 -->
+  <ItemGroup>
     <!-- 生成ソースへのパス変換前に、親となる元文書のファイル名を保持します。 -->
     <DocumentAsData Update="@(DocumentAsData)">
       <DocumentAsDataDependentUpon>%(Filename)%(Extension)</DocumentAsDataDependentUpon>
