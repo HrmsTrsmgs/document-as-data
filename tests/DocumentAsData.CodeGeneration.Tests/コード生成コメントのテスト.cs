@@ -70,6 +70,17 @@ public sealed class コード生成コメントのテスト
     }
 
     [Fact]
+    public void Replaceメソッドのコメントを生成します()
+    {
+        GeneratedCodeInspection
+            .GenerateSources(BasicStructureDocumentFilePath)
+            .TypeDeclaration("BasicStructureDocument")
+            .MethodDeclaration("Replace", "BasicStructureData")
+            .SummaryText()
+            .Should().Be("Word文書全体のデータを置換します。");
+    }
+
+    [Fact]
     public void MERGEFIELDプロパティのコメントを生成します()
     {
         GeneratedCodeInspection
