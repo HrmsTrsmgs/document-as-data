@@ -6,6 +6,8 @@
 
   <!-- デザイン時には、文書の隣の生成済みソースをコンパイル対象として参照します。 -->
   <ItemGroup Condition="'$(DesignTimeBuild)' == 'true'">
+    <!-- SDKの既定Compile項目に含まれる場合も、対象の生成ファイルを一度だけ登録します。 -->
+    <Compile Remove="@(DocumentAsData->'%(RootDir)%(Directory)%(Filename).DocumentAsData.g.cs')" />
     <Compile Include="@(DocumentAsData->'%(RootDir)%(Directory)%(Filename).DocumentAsData.g.cs')" />
   </ItemGroup>
 

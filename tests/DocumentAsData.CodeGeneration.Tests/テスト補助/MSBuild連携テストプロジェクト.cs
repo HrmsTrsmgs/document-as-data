@@ -112,6 +112,43 @@ sealed class MSBuild連携テストプロジェクト : IDisposable
     }
 
     /// <summary>
+    /// SDKの既定Compile項目が有効なプロジェクトを作り、DesignTimeBuild時の登録結果を観測します。
+    /// コンパイルやrestoreは行わず、生成済みソースの項目評価だけを確認します。
+    /// </summary>
+    /// <returns>実行するPowerShellスクリプトのパス。</returns>
+    internal string AddPowerShellSdkProjectSample()
+    {
+        File.WriteAllText(
+            Path.Combine(DirectoryPath, "DocumentAsData.SdkProject.csproj"),
+            $$"""
+            <Project Sdk="Microsoft.NET.Sdk">
+              <PropertyGroup>
+                <TargetFramework>net10.0</TargetFramework>
+                <DesignTimeBuild>true</DesignTimeBuild>
+                <DocumentAsDataTaskAssembly>{{SecurityElement.Escape(typeof(GenerateDocumentAsData).Assembly.Location)}}</DocumentAsDataTaskAssembly>
+              </PropertyGroup>
+              <ItemGroup>
+                <DocumentAsData Include="Schemas\BasicStructure.docx" />
+              </ItemGroup>
+              <Import Project="{{SecurityElement.Escape(TargetsPath)}}" />
+              <Target Name="WriteCompileItems">
+                <WriteLinesToFile File="Compile.txt" Lines="@(Compile->'%(FullPath)')" Overwrite="true" />
+              </Target>
+            </Project>
+            """);
+        var scriptFilePath = Path.Combine(DirectoryPath, "SdkProject.ps1");
+        File.WriteAllText(
+            scriptFilePath,
+            """
+            $ErrorActionPreference = 'Stop'
+            [Console]::OutputEncoding = [System.Text.UTF8Encoding]::new($false)
+            dotnet msbuild ./DocumentAsData.SdkProject.csproj /t:WriteCompileItems /nologo /v:minimal
+            exit $LASTEXITCODE
+            """);
+        return scriptFilePath;
+    }
+
+    /// <summary>
     /// 新しい一時プロジェクトを作成します。
     /// </summary>
     /// <returns>作成した一時プロジェクト。</returns>
