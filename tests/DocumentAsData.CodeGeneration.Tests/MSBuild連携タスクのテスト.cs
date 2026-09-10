@@ -366,6 +366,26 @@ public sealed class MSBuild連携タスクのテスト
     }
 
     [Fact]
+    public void 辞書で生成プロパティ名の衝突を解消するとコード生成できます()
+    {
+        using var project = MSBuild連携テストプロジェクト.Create();
+        var documentFilePath = project.AddMergeFieldNameCollisionDocument(@"Schemas\NameCollision.docx");
+        project.AddDocumentDictionaryFor(
+            @"Schemas\NameCollision.docx",
+            """
+            {
+              "customer-id": "CustomerIdDash"
+            }
+            """);
+
+        var tested = project.Generate(documentFilePath);
+
+        tested.Succeeded.Should().BeTrue();
+        tested.Errors.Should().BeEmpty();
+        tested.SingleGeneratedSource.Should().Contain("public string CustomerIdDash");
+    }
+
+    [Fact]
     public void 不正な辞書JSONでは辞書ファイルを示して失敗します()
     {
         using var project = MSBuild連携テストプロジェクト.Create();
