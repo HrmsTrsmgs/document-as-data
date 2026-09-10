@@ -27,6 +27,16 @@ public sealed class コード生成コメントのテスト
     }
 
     [Fact]
+    public void Data型のコメントを生成します()
+    {
+        GeneratedCodeInspection
+            .GenerateSources(BasicStructureDocumentFilePath)
+            .TypeDeclaration("BasicStructureData")
+            .SummaryText()
+            .Should().Be("Word文書「BasicStructure」のデータを表します。");
+    }
+
+    [Fact]
     public void ファイルパスから開くOpenメソッドのコメントを生成します()
     {
         GeneratedCodeInspection
