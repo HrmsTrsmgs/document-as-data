@@ -259,4 +259,36 @@ public sealed class コード生成名前設定のテスト
                     0,
                     TimeSpan.Zero));
     }
+
+    [Fact]
+    public void NameMappingsで変更した生成DataプロパティからDatePickerへ選択日時を書き込みます()
+    {
+        var selectedDateTime = new DateTimeOffset(
+            2026,
+            12,
+            31,
+            0,
+            0,
+            0,
+            TimeSpan.FromHours(9));
+        using var tested = GeneratedCodeInspection
+            .AssemblyFrom(
+                GeneratedCodeInspection.GenerateSources(
+                    DatePickerDocumentFilePath,
+                    options =>
+                        options.NameMappings["DeliveryDate"] = "DueDate"))
+            .GeneratedType("日付選択ContentControlDocument")
+            .InvokeStaticMethod<Document>(
+                "Open",
+                DatePickerDocumentFilePath);
+        dynamic documentAccessor = tested;
+        dynamic data = documentAccessor.Read();
+        data.DueDate = selectedDateTime;
+
+        documentAccessor.Replace(data);
+
+        var written = tested.DatePickers["DeliveryDate"].SelectedDateTime;
+        written.Should().Be(selectedDateTime);
+        written.Offset.Should().Be(selectedDateTime.Offset);
+    }
 }
