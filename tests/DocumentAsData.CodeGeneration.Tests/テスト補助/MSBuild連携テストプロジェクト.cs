@@ -76,11 +76,12 @@ sealed class MSBuild連携テストプロジェクト : IDisposable
     }
 
     /// <summary>
-    /// 生成型を参照するSDKプロジェクトを作り、通常ビルドによる自動生成とコンパイルを観測します。
+    /// 生成型を参照するSDKプロジェクトを作り、コンパイル経路でのコード生成を観測します。
     /// ビルド済みライブラリを参照し、外部パッケージソースを使わずにrestoreします。
     /// </summary>
-    /// <returns>通常ビルドを実行するPowerShellスクリプトのパス。</returns>
-    internal string AddPowerShellSdkBuildSample()
+    /// <param name="designTimeBuild">デザイン時の生成抑止を確認する場合はtrue。</param>
+    /// <returns>ビルドを実行するPowerShellスクリプトのパス。</returns>
+    internal string AddPowerShellSdkBuildSample(bool designTimeBuild = false)
     {
         File.WriteAllText(
             Path.Combine(DirectoryPath, "DocumentAsData.BuildSample.csproj"),
@@ -89,6 +90,7 @@ sealed class MSBuild連携テストプロジェクト : IDisposable
               <PropertyGroup>
                 <TargetFramework>net10.0</TargetFramework>
                 <Nullable>enable</Nullable>
+                <DesignTimeBuild>{{designTimeBuild}}</DesignTimeBuild>
                 <UseSharedCompilation>false</UseSharedCompilation>
                 <DocumentAsDataTaskAssembly>{{SecurityElement.Escape(typeof(GenerateDocumentAsData).Assembly.Location)}}</DocumentAsDataTaskAssembly>
               </PropertyGroup>

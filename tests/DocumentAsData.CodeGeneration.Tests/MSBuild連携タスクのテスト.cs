@@ -34,6 +34,29 @@ public sealed class MSBuild連携タスクのテスト
     }
 
     [Fact]
+    public void デザイン時のコンパイルでは辞書が変更されてもコードを再生成しません()
+    {
+        using var project = MSBuild連携テストプロジェクト.Create();
+        var documentFilePath = project.AddCustomerDataDocument("BasicStructure.docx");
+        project.Generate(documentFilePath).Succeeded.Should().BeTrue();
+        var generatedSource = File.ReadAllText(project.GeneratedFilePathFor("BasicStructure.docx"));
+        project.AddProjectDictionaryFor(
+            "BasicStructure.docx",
+            """
+            {
+              "customerName": "ClientName"
+            }
+            """);
+        var scriptFilePath = project.AddPowerShellSdkBuildSample(designTimeBuild: true);
+
+        var tested = PowerShell実行結果.Run(scriptFilePath, project.DirectoryPath);
+
+        tested.ExitCode.Should().Be(0, tested.Output);
+        File.ReadAllText(project.GeneratedFilePathFor("BasicStructure.docx"))
+            .Should().Be(generatedSource);
+    }
+
+    [Fact]
     public void PowerShellからdotnet_msbuildのDesignTimeBuildで生成コードを参照できます()
     {
         using var project = MSBuild連携テストプロジェクト.Create();
