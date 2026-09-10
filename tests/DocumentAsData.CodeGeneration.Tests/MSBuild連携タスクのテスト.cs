@@ -34,6 +34,18 @@ public sealed class MSBuild連携タスクのテスト
     }
 
     [Fact]
+    public void 生成コードは不要なnewの警告をエラー扱いにしてもビルドできます()
+    {
+        using var project = MSBuild連携テストプロジェクト.Create();
+        project.AddBasicStructureDocument("BasicStructure.docx");
+        var scriptFilePath = project.AddPowerShellSdkBuildSample(warningsAsErrors: "CS0109");
+
+        var tested = PowerShell実行結果.Run(scriptFilePath, project.DirectoryPath);
+
+        tested.ExitCode.Should().Be(0, tested.Output);
+    }
+
+    [Fact]
     public void SDK形式プロジェクトのRootNamespaceで生成型を利用できます()
     {
         using var project = MSBuild連携テストプロジェクト.Create();

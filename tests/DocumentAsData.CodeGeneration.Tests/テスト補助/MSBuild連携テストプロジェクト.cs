@@ -82,11 +82,13 @@ sealed class MSBuild連携テストプロジェクト : IDisposable
     /// <param name="designTimeBuild">デザイン時の生成抑止を確認する場合はtrue。</param>
     /// <param name="includeDocument">生成対象と生成型の参照を含める場合はtrue。</param>
     /// <param name="rootNamespace">プロジェクトに指定し、利用コードから生成型を参照する名前空間。</param>
+    /// <param name="warningsAsErrors">生成コードの検証でエラーとして扱うコンパイラ警告コード。</param>
     /// <returns>ビルドを実行するPowerShellスクリプトのパス。</returns>
     internal string AddPowerShellSdkBuildSample(
         bool designTimeBuild = false,
         bool includeDocument = true,
-        string rootNamespace = "Generated")
+        string rootNamespace = "Generated",
+        string warningsAsErrors = "")
     {
         Directory.CreateDirectory(DirectoryPath);
         File.WriteAllText(
@@ -97,6 +99,7 @@ sealed class MSBuild連携テストプロジェクト : IDisposable
                 <TargetFramework>net10.0</TargetFramework>
                 <Nullable>enable</Nullable>
                 <RootNamespace>{{SecurityElement.Escape(rootNamespace)}}</RootNamespace>
+                <WarningsAsErrors>{{SecurityElement.Escape(warningsAsErrors)}}</WarningsAsErrors>
                 <DesignTimeBuild>{{designTimeBuild}}</DesignTimeBuild>
                 <UseSharedCompilation>false</UseSharedCompilation>
                 <DocumentAsDataTaskAssembly>{{SecurityElement.Escape(typeof(GenerateDocumentAsData).Assembly.Location)}}</DocumentAsDataTaskAssembly>
