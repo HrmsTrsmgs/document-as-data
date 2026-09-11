@@ -94,7 +94,7 @@ public sealed class GenerateDocumentAsData : Microsoft.Build.Utilities.Task
             yield break;
         }
 
-        File.WriteAllText(
+        WriteIfChanged(
             generatedFilePath,
             DocumentWrapperGenerator
                 .GenerateSources(
@@ -108,6 +108,21 @@ public sealed class GenerateDocumentAsData : Microsoft.Build.Utilities.Task
             Path.GetFileName(documentFilePath));
         generatedFile.SetMetadata("DesignTimeSharedInput", "true");
         yield return generatedFile;
+    }
+
+    /// <summary>
+    /// 内容が変わった場合だけ書き込み、同じ内容での更新日時の変更を防ぎます。
+    /// </summary>
+    /// <param name="path">生成ファイルのパス。</param>
+    /// <param name="content">生成したソースコード。</param>
+    static void WriteIfChanged(string path, string content)
+    {
+        if (File.Exists(path) && File.ReadAllText(path) == content)
+        {
+            return;
+        }
+
+        File.WriteAllText(path, content);
     }
 
     /// <summary>

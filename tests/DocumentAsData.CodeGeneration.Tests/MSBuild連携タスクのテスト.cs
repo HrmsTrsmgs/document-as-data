@@ -226,6 +226,23 @@ public sealed class MSBuild連携タスクのテスト
     }
 
     [Fact]
+    public void 生成内容が同じ場合は生成ファイルの更新日時を変更しません()
+    {
+        using var project = MSBuild連携テストプロジェクト.Create();
+        var documentFilePath = project.AddBasicStructureDocument(@"Schemas\BasicStructure.docx");
+        project.Generate(documentFilePath).Succeeded.Should().BeTrue();
+        var generatedFilePath = project.GeneratedFilePathFor(@"Schemas\BasicStructure.docx");
+        var lastWriteTime = new DateTime(2000, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+        // 現在時刻との差を確実に作り、ファイルシステムの時刻精度を待機で補わないようにします。
+        File.SetLastWriteTimeUtc(generatedFilePath, lastWriteTime);
+
+        var tested = project.Generate(documentFilePath);
+
+        tested.Succeeded.Should().BeTrue();
+        File.GetLastWriteTimeUtc(generatedFilePath).Should().Be(lastWriteTime);
+    }
+
+    [Fact]
     public void 生成コードは元Word文書へ紐づくメタデータを返します()
     {
         using var project = MSBuild連携テストプロジェクト.Create();
