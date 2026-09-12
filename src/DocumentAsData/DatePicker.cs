@@ -22,6 +22,13 @@ public class DatePicker : ContentControl
     }
 
     /// <summary>
+    /// 種類と、引用符で囲んだTagを返します。
+    /// </summary>
+    /// <returns>種類とTagを確認できる表示文字列。</returns>
+    public override string ToString() =>
+        $"DatePicker {{ Tag = {QuoteName(Tag)} }}";
+
+    /// <summary>
     /// 日付選択Content Controlの日時を取得または設定します。
     /// </summary>
     /// <exception cref="InvalidOperationException">

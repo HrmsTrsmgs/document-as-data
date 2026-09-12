@@ -48,6 +48,24 @@ public class DatePickerのテスト
     }
 
     [Fact]
+    public void ToStringは種類と引用符で囲んだTagを返します()
+    {
+        var filePath =
+            TestDocument.CreateTemporaryCopy(DatePickerContentControlPath);
+        try
+        {
+            using var document = Document.Open(filePath, true);
+
+            document.DatePickers.Single().ToString().Should().Be(
+                "DatePicker { Tag = \"DeliveryDate\" }");
+        }
+        finally
+        {
+            File.Delete(filePath);
+        }
+    }
+
+    [Fact]
     public void SelectedDateTimeプロパティは日付選択ContentControlの日時を取得します()
     {
         var filePath =
