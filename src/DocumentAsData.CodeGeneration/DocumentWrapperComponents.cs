@@ -304,9 +304,8 @@ static class DocumentWrapperComponents
             /// </remarks>
             public string {{options.GeneratedName(mergeField.Name)}}
             {
-                get => MergeFields.SingleOrDefault(it => it.Name == {{StringLiteral(mergeField.Name)}}) is { } item
-                    ? item.Text
-                    : ContentControls[{{StringLiteral(mergeField.Name)}}].Text;
+                get => (MergeFields.SingleOrDefault(it => it.Name == {{StringLiteral(mergeField.Name)}}) as IDocumentTextItem
+                    ?? ContentControls[{{StringLiteral(mergeField.Name)}}]).Text;
                 set => (MergeFields.SingleOrDefault(it => it.Name == {{StringLiteral(mergeField.Name)}}) as IDocumentTextItem
                     ?? ContentControls[{{StringLiteral(mergeField.Name)}}]).Text = value;
             }
@@ -373,9 +372,8 @@ static class DocumentWrapperComponents
             /// </remarks>
             public string {{options.GeneratedName(contentControl.Tag)}}
             {
-                get => ContentControls.SingleOrDefault(it => it.Tag == {{StringLiteral(contentControl.Tag)}}) is { } item
-                    ? item.Text
-                    : MergeFields[{{StringLiteral(contentControl.Tag)}}].Text;
+                get => (ContentControls.SingleOrDefault(it => it.Tag == {{StringLiteral(contentControl.Tag)}}) as IDocumentTextItem
+                    ?? MergeFields[{{StringLiteral(contentControl.Tag)}}]).Text;
                 set => (ContentControls.SingleOrDefault(it => it.Tag == {{StringLiteral(contentControl.Tag)}}) as IDocumentTextItem
                     ?? MergeFields[{{StringLiteral(contentControl.Tag)}}]).Text = value;
             }
