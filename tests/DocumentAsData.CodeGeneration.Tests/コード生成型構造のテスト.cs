@@ -231,6 +231,29 @@ public sealed class コード生成型構造のテスト
     }
 
     [Fact]
+    public void 生成されたDocument型のOpenで不足した文字列ContentControlのTagと種類を例外メッセージで確認できます()
+    {
+        var generatedType = GeneratedCodeInspection
+            .AssemblyFrom(
+                GeneratedCodeInspection.GenerateSources(
+                    TextContentControlDocumentFilePath))
+            .GeneratedType("文字列ContentControlDocument");
+
+        // 生成元のTagがCustomerNameの文字列Content Controlが不足する文書を開きます。
+        var tested = () =>
+        {
+            using var document = generatedType.InvokeStaticMethod<Document>(
+                "Open",
+                BasicStructureDocumentFilePath);
+        };
+
+        // リフレクションの外側の例外ではなく、Openが投げた例外のメッセージを確認します。
+        tested.Should().Throw<TargetInvocationException>()
+            .WithInnerException<DocumentMappingException>()
+            .Which.Message.Should().ContainAll("文字列Content Control", "CustomerName");
+    }
+
+    [Fact]
     public void 生成されたDocument型は必要なCheckBoxが不足した文書をOpenすると例外になります()
     {
         var generatedType = GeneratedCodeInspection
@@ -253,6 +276,29 @@ public sealed class コード生成型構造のテスト
     }
 
     [Fact]
+    public void 生成されたDocument型のOpenで不足したCheckBoxのTagと種類を例外メッセージで確認できます()
+    {
+        var generatedType = GeneratedCodeInspection
+            .AssemblyFrom(
+                GeneratedCodeInspection.GenerateSources(
+                    CheckBoxDocumentFilePath))
+            .GeneratedType("チェック済みCheckBoxDocument");
+
+        // 生成元のTagがAgreementのCheckBoxが不足する文書を開きます。
+        var tested = () =>
+        {
+            using var document = generatedType.InvokeStaticMethod<Document>(
+                "Open",
+                BasicStructureDocumentFilePath);
+        };
+
+        // リフレクションの外側の例外ではなく、Openが投げた例外のメッセージを確認します。
+        tested.Should().Throw<TargetInvocationException>()
+            .WithInnerException<DocumentMappingException>()
+            .Which.Message.Should().ContainAll("CheckBox", "Agreement");
+    }
+
+    [Fact]
     public void 生成されたDocument型は必要なDatePickerが不足した文書をOpenすると例外になります()
     {
         var generatedType = GeneratedCodeInspection
@@ -272,6 +318,29 @@ public sealed class コード生成型構造のテスト
         // リフレクションによる呼び出しでは、Openの例外がInnerExceptionに入ります。
         tested.Should().Throw<TargetInvocationException>()
             .WithInnerException<DocumentMappingException>();
+    }
+
+    [Fact]
+    public void 生成されたDocument型のOpenで不足したDatePickerのTagと種類を例外メッセージで確認できます()
+    {
+        var generatedType = GeneratedCodeInspection
+            .AssemblyFrom(
+                GeneratedCodeInspection.GenerateSources(
+                    DatePickerDocumentFilePath))
+            .GeneratedType("日付選択ContentControlDocument");
+
+        // 生成元のTagがDeliveryDateのDatePickerが不足する文書を開きます。
+        var tested = () =>
+        {
+            using var document = generatedType.InvokeStaticMethod<Document>(
+                "Open",
+                BasicStructureDocumentFilePath);
+        };
+
+        // リフレクションの外側の例外ではなく、Openが投げた例外のメッセージを確認します。
+        tested.Should().Throw<TargetInvocationException>()
+            .WithInnerException<DocumentMappingException>()
+            .Which.Message.Should().ContainAll("DatePicker", "DeliveryDate");
     }
 
     [Fact]

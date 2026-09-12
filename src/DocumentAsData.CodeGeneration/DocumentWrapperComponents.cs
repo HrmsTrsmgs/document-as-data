@@ -102,13 +102,16 @@ static class DocumentWrapperComponents
                 "MERGEFIELD")}}
             {{RequiredItemsValidation(
                 [.. from contentControl in document.ContentControls select contentControl.Tag],
-                "ContentControls.Select(it => it.Tag)")}}
+                "ContentControls.Select(it => it.Tag)",
+                "文字列Content Control")}}
             {{RequiredItemsValidation(
                 [.. from checkBox in document.CheckBoxes select checkBox.Tag],
-                "CheckBoxes.Select(it => it.Tag)")}}
+                "CheckBoxes.Select(it => it.Tag)",
+                "CheckBox")}}
             {{RequiredItemsValidation(
                 [.. from datePicker in document.DatePickers select datePicker.Tag],
-                "DatePickers.Select(it => it.Tag)")}}
+                "DatePickers.Select(it => it.Tag)",
+                "DatePicker")}}
                 }
 
                 /// <summary>
