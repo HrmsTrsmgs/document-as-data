@@ -152,7 +152,7 @@ public sealed class コード生成名前付き項目のテスト : IDisposable
     }
 
     [Fact]
-    public void MERGEFIELDから生成したプロパティは同名の両種類が存在すると書き込まずに例外になります()
+    public void MERGEFIELDから生成したプロパティは同名の文字列ContentControlを変更せずMERGEFIELDへ書き込みます()
     {
         using var document = GeneratedCodeInspection
             .AssemblyFrom(
@@ -163,15 +163,11 @@ public sealed class コード生成名前付き項目のテスト : IDisposable
                 "Open",
                 @"TestData\コード生成\同名のMERGEFIELDとContent Control.docx");
 
-        // CustomerNameのMERGEFIELDと文字列Content Controlが各1件あるため、書き込み先を決められません。
+        // CustomerNameの両種類が各1件ありますが、生成元と同じMERGEFIELDだけを書き換えます。
         dynamic documentAccessor = document;
-        var tested = () =>
-        {
-            documentAccessor.CustomerName = "変更後";
-        };
+        documentAccessor.CustomerName = "変更後";
 
-        tested.Should().Throw<InvalidOperationException>();
-        document.MergeFields["CustomerName"].Text.Should().Be("MERGEFIELDの値");
+        document.MergeFields["CustomerName"].Text.Should().Be("変更後");
         document.ContentControls["CustomerName"].Text.Should().Be("Content Controlの値");
     }
 
