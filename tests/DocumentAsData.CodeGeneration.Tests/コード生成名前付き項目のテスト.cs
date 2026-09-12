@@ -113,6 +113,25 @@ public sealed class コード生成名前付き項目のテスト : IDisposable
     }
 
     [Fact]
+    public void 文字列ContentControlから生成したプロパティは同名のMERGEFIELDから文字列を読み取れます()
+    {
+        // 生成元はTagがCustomerNameの文字列Content Controlですが、開く文書では同名のMERGEFIELDです。
+        using var document = GeneratedCodeInspection
+            .AssemblyFrom(
+                GeneratedCodeInspection.GenerateSources(
+                    TextContentControlDocumentFilePath))
+            .GeneratedType("文字列ContentControlDocument")
+            .InvokeStaticMethod<Document>(
+                "Open",
+                MergeFieldsDocumentFilePath);
+
+        dynamic documentAccessor = document;
+        string tested = documentAccessor.CustomerName;
+
+        tested.Should().Be("株式会社○○");
+    }
+
+    [Fact]
     public void 特殊文字を含むTagから生成したプロパティで文字列を読み取れます()
     {
         using var document = GeneratedCodeInspection

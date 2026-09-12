@@ -40,7 +40,8 @@ static class DocumentWrapperComponents
                 /// <param name="filePath">開くWord文書のファイルパス。</param>
                 /// <returns>開いた型付きWord文書。</returns>
                 /// <exception cref="DocumentMappingException">
-                /// 生成元の文書にあったMERGEFIELD、文字列Content Control、CheckBox、DatePickerのいずれかが不足している場合。
+                /// 生成元の文書に対応する項目が不足している場合。
+                /// 文字列Content Controlは同名のMERGEFIELDでも代用できます。
                 /// </exception>
                 public static new {{typeName}} Open(string filePath)
                 {
@@ -69,7 +70,8 @@ static class DocumentWrapperComponents
                 /// <param name="stream">Word文書を保持するStream。</param>
                 /// <returns>開いた型付きWord文書。</returns>
                 /// <exception cref="DocumentMappingException">
-                /// 生成元の文書にあったMERGEFIELD、文字列Content Control、CheckBox、DatePickerのいずれかが不足している場合。
+                /// 生成元の文書に対応する項目が不足している場合。
+                /// 文字列Content Controlは同名のMERGEFIELDでも代用できます。
                 /// </exception>
                 public static new {{typeName}} Open(System.IO.Stream stream)
                 {
@@ -89,10 +91,11 @@ static class DocumentWrapperComponents
 
                 /// <summary>
                 /// 生成元の文書にあったMERGEFIELD、文字列Content Control、CheckBox、DatePickerが存在することを検証します。
+                /// 文字列Content Controlについては同名のMERGEFIELDも読み取り先として認めます。
                 /// 文書の生成、返却、解放は呼び出し元のOpenで行います。
                 /// </summary>
                 /// <exception cref="DocumentMappingException">
-                /// 生成元の文書にあったMERGEFIELD、文字列Content Control、CheckBox、DatePickerのいずれかが不足している場合。
+                /// 生成元の文書に対応する項目が不足している場合。
                 /// </exception>
                 void ValidateRequiredItems()
                 {
@@ -102,7 +105,7 @@ static class DocumentWrapperComponents
                 "MERGEFIELD")}}
             {{RequiredItemsValidation(
                 [.. from contentControl in document.ContentControls select contentControl.Tag],
-                "ContentControls.Select(it => it.Tag)",
+                "[.. ContentControls.Select(it => it.Tag), .. MergeFields.Select(it => it.Name)]",
                 "文字列Content Control")}}
             {{RequiredItemsValidation(
                 [.. from checkBox in document.CheckBoxes select checkBox.Tag],
@@ -377,9 +380,20 @@ static class DocumentWrapperComponents
             /// <summary>
             /// 文字列Content Control「{{contentControl.Tag}}」の文字列を取得または設定します。
             /// </summary>
+            /// <remarks>
+            /// 読み取りでは同名のMERGEFIELDも対象にします。設定先は文字列Content Controlです。
+            /// </remarks>
             public string {{options.GeneratedName(contentControl.Tag)}}
             {
-                get => ContentControls[{{StringLiteral(contentControl.Tag)}}].Text;
+                get => Enumerable.Single<string>(
+                    [
+                        .. from item in ContentControls
+                           where item.Tag == {{StringLiteral(contentControl.Tag)}}
+                           select item.Text,
+                        .. from item in MergeFields
+                           where item.Name == {{StringLiteral(contentControl.Tag)}}
+                           select item.Text
+                    ]);
                 set => ContentControls[{{StringLiteral(contentControl.Tag)}}].Text = value;
             }
         """;
