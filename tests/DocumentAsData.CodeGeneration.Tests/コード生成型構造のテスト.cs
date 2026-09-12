@@ -186,6 +186,29 @@ public sealed class コード生成型構造のテスト
     }
 
     [Fact]
+    public void 生成されたDocument型のOpenで不足したMERGEFIELDの名前と種類を例外メッセージで確認できます()
+    {
+        var generatedType = GeneratedCodeInspection
+            .AssemblyFrom(
+                GeneratedCodeInspection.GenerateSources(
+                    MergeFieldDocumentFilePath))
+            .GeneratedType("MergefieldDocument");
+
+        // 生成元のCustomerNameとAddressがどちらも不足する文書を開きます。
+        var tested = () =>
+        {
+            using var document = generatedType.InvokeStaticMethod<Document>(
+                "Open",
+                BasicStructureDocumentFilePath);
+        };
+
+        // リフレクションの外側の例外ではなく、Openが投げた例外のメッセージを確認します。
+        tested.Should().Throw<TargetInvocationException>()
+            .WithInnerException<DocumentMappingException>()
+            .Which.Message.Should().ContainAll("MERGEFIELD", "CustomerName", "Address");
+    }
+
+    [Fact]
     public void 生成されたDocument型は必要な文字列ContentControlが不足した文書をOpenすると例外になります()
     {
         var generatedType = GeneratedCodeInspection

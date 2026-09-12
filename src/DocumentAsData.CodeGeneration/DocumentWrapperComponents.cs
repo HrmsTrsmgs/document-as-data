@@ -98,7 +98,8 @@ static class DocumentWrapperComponents
                 {
             {{RequiredItemsValidation(
                 [.. from mergeField in document.MergeFields select mergeField.Name],
-                "MergeFields.Select(it => it.Name)")}}
+                "MergeFields.Select(it => it.Name)",
+                "MERGEFIELD")}}
             {{RequiredItemsValidation(
                 [.. from contentControl in document.ContentControls select contentControl.Tag],
                 "ContentControls.Select(it => it.Tag)")}}
@@ -156,6 +157,33 @@ static class DocumentWrapperComponents
                           .Any())
                       {
                           throw new DocumentMappingException();
+                      }
+              """;
+
+    /// <summary>
+    /// 不足した名前と種類を例外メッセージへ含める検査コードを生成します。
+    /// </summary>
+    /// <param name="requiredNames">生成元の文書に存在する、その種類の項目名またはTag。</param>
+    /// <param name="actualNamesExpression">開いた文書から同じ種類の名前を列挙するC#式。</param>
+    /// <param name="itemKind">メッセージに表示する項目の種類。</param>
+    /// <returns>詳細メッセージ付きの検査コード。対象が0件なら空文字列。</returns>
+    static string RequiredItemsValidation(
+        string[] requiredNames,
+        string actualNamesExpression,
+        string itemKind) =>
+        requiredNames.Length == 0
+            ? ""
+            : $$"""
+                      {
+                          var missingNames = new[] { {{string.Join(", ", requiredNames.Select(StringLiteral))}} }
+                              .Except({{actualNamesExpression}})
+                              .ToArray();
+
+                          if (missingNames.Length > 0)
+                          {
+                              throw new DocumentMappingException(
+                                  {{StringLiteral($"{itemKind}が不足しています: ")}} + string.Join(", ", missingNames));
+                          }
                       }
               """;
 
