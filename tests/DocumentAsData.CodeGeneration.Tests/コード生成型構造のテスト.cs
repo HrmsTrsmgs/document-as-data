@@ -204,6 +204,31 @@ public sealed class コード生成型構造のテスト
     }
 
     [Fact]
+    public void 生成されたDocument型は必要なMERGEFIELDが不足したStreamをOpenすると例外になります()
+    {
+        using var stream = new MemoryStream();
+        stream.Write(File.ReadAllBytes(BasicStructureDocumentFilePath));
+        stream.Position = 0;
+        var generatedType = GeneratedCodeInspection
+            .AssemblyFrom(
+                GeneratedCodeInspection.GenerateSources(
+                    MergeFieldDocumentFilePath))
+            .GeneratedType("MergefieldDocument");
+
+        // 生成元にはCustomerNameとAddressがあり、Stream上の文書には名前付き項目がありません。
+        var tested = () =>
+        {
+            using var document = generatedType.InvokeStaticMethod<Document>(
+                "Open",
+                stream);
+        };
+
+        // リフレクションによる呼び出しでは、Openの例外がInnerExceptionに入ります。
+        tested.Should().Throw<TargetInvocationException>()
+            .WithInnerException<DocumentMappingException>();
+    }
+
+    [Fact]
     public void 生成されたDocument型は別ファイルのpartial定義と共にコンパイルできます()
     {
         GeneratedSourceCompiler

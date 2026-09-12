@@ -48,17 +48,7 @@ static class DocumentWrapperComponents
 
                     try
                     {
-                        string[] requiredMergeFieldNames = [{{string.Join(", ",
-                            from mergeField in document.MergeFields
-                            select StringLiteral(mergeField.Name))}}];
-
-                        if (requiredMergeFieldNames
-                            .Except(document.MergeFields.Select(it => it.Name))
-                            .Any())
-                        {
-                            throw new DocumentMappingException();
-                        }
-
+                        document.ValidateRequiredItems();
                         return document;
                     }
                     catch
@@ -78,8 +68,45 @@ static class DocumentWrapperComponents
                 /// </summary>
                 /// <param name="stream">Word文書を保持するStream。</param>
                 /// <returns>開いた型付きWord文書。</returns>
-                public static new {{typeName}} Open(System.IO.Stream stream) =>
-                    new(stream);
+                /// <exception cref="DocumentMappingException">
+                /// 生成元の文書にあったMERGEFIELDが不足している場合。
+                /// </exception>
+                public static new {{typeName}} Open(System.IO.Stream stream)
+                {
+                    var document = new {{typeName}}(stream);
+
+                    try
+                    {
+                        document.ValidateRequiredItems();
+                        return document;
+                    }
+                    catch
+                    {
+                        document.Dispose();
+                        throw;
+                    }
+                }
+
+                /// <summary>
+                /// 生成元の文書にあったMERGEFIELDが存在することを検証します。
+                /// 文書の生成、返却、解放は呼び出し元のOpenで行います。
+                /// </summary>
+                /// <exception cref="DocumentMappingException">
+                /// 生成元の文書にあったMERGEFIELDが不足している場合。
+                /// </exception>
+                void ValidateRequiredItems()
+                {
+                    string[] requiredMergeFieldNames = [{{string.Join(", ",
+                        from mergeField in document.MergeFields
+                        select StringLiteral(mergeField.Name))}}];
+
+                    if (requiredMergeFieldNames
+                        .Except(MergeFields.Select(it => it.Name))
+                        .Any())
+                    {
+                        throw new DocumentMappingException();
+                    }
+                }
 
                 /// <summary>
                 /// Word文書全体のデータを読み込みます。
