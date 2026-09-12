@@ -99,6 +99,23 @@ public sealed class MSBuild連携タスクのテスト
     }
 
     [Fact]
+    public void パッケージから生成した型で文書を読み書きして保存後に読み直せます()
+    {
+        using var project = MSBuild連携テストプロジェクト.Create();
+        project.AddCustomerDataDocument("BasicStructure.docx");
+        var packScriptFilePath = project.AddPowerShellPackSample(includeProjectReferences: true);
+        var packed = PowerShell実行結果.Run(packScriptFilePath, project.DirectoryPath);
+        packed.ExitCode.Should().Be(0, packed.Output);
+        var scriptFilePath = project.AddPowerShellPackageReferenceSample(build: true, run: true);
+
+        var tested = PowerShell実行結果.Run(scriptFilePath, project.DirectoryPath);
+
+        tested.ExitCode.Should().Be(0, tested.Output);
+        tested.Output.Should().Contain("before:株式会社○○/東京都")
+            .And.Contain("after:更新後/大阪府");
+    }
+
+    [Fact]
     public void パッケージ利用プロジェクトのCleanは生成ソースだけを削除して元文書を残します()
     {
         using var project = MSBuild連携テストプロジェクト.Create();

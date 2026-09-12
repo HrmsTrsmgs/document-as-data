@@ -89,8 +89,9 @@ sealed class MSBuild連携テストプロジェクト : IDisposable
     /// </summary>
     /// <param name="build">生成型を使うコードを通常ビルドする場合はtrue、項目評価だけならfalse。</param>
     /// <param name="buildTarget">buildがtrueの場合に実行するターゲット。Cleanも同じ利用者プロジェクトで検証します。</param>
+    /// <param name="run">生成型で読み書きする実行用サンプルも作り、ビルド後に実行する場合はtrue。</param>
     /// <returns>restoreと指定した検証を実行するPowerShellスクリプトのパス。</returns>
-    internal string AddPowerShellPackageReferenceSample(bool build = false, string buildTarget = "Build")
+    internal string AddPowerShellPackageReferenceSample(bool build = false, string buildTarget = "Build", bool run = false)
     {
         using var package = ZipFile.OpenRead(
             Directory.GetFiles(Path.Combine(DirectoryPath, "packages"), "*DocumentAsData.Build.*.nupkg").Single());
@@ -116,6 +117,7 @@ sealed class MSBuild連携テストプロジェクト : IDisposable
             <Project Sdk="Microsoft.NET.Sdk">
               <PropertyGroup>
                 <TargetFramework>net10.0</TargetFramework>
+                <OutputType Condition="'{{run}}' == 'True'">Exe</OutputType>
                 <RestorePackagesPath>$(MSBuildProjectDirectory)/restored</RestorePackagesPath>
                 <NuGetAudit>false</NuGetAudit>
                 <RootNamespace>Generated</RootNamespace>
@@ -146,6 +148,26 @@ sealed class MSBuild連携テストプロジェクト : IDisposable
                 """);
         }
         var scriptFilePath = Path.Combine(DirectoryPath, "PackageReference.ps1");
+        if (run)
+        {
+            File.WriteAllText(
+                Path.Combine(DirectoryPath, "Program.cs"),
+                """
+                using Generated;
+
+                using (var document = BasicStructureDocument.Open("BasicStructure.docx"))
+                {
+                    var data = document.Read();
+                    System.Console.WriteLine($"before:{data.CustomerName}/{data.Address}");
+                    data.CustomerName = "更新後";
+                    data.Address = "大阪府";
+                    document.Replace(data);
+                    document.SaveAs("output.docx");
+                }
+                using var saved = BasicStructureDocument.Open("output.docx");
+                System.Console.WriteLine($"after:{saved.CustomerName}/{saved.Address}");
+                """);
+        }
         File.WriteAllText(
             scriptFilePath,
             $$"""
@@ -160,6 +182,10 @@ sealed class MSBuild連携テストプロジェクト : IDisposable
                 & $env:DOCUMENTASDATA_TEST_MSBUILD @buildArguments
             } else {
                 dotnet msbuild @buildArguments
+            }
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+            if ('{{run}}' -eq 'True') {
+                dotnet run --project ./PackageReference.csproj --no-build --no-restore
             }
             exit $LASTEXITCODE
             """);
