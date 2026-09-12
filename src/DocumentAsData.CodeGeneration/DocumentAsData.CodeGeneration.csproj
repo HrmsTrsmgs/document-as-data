@@ -3,6 +3,8 @@
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <RootNamespace>Marimo.DocumentAsData.CodeGeneration</RootNamespace>
+    <PackageId>Marimo.DocumentAsData.CodeGeneration</PackageId>
+    <Description>DOCXの名前付き項目から型付きのデータ入出力コードを生成します。</Description>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>

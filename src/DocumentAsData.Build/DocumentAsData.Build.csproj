@@ -4,6 +4,7 @@
     <TargetFramework>net10.0</TargetFramework>
     <RootNamespace>Marimo.DocumentAsData.Build</RootNamespace>
     <PackageId>Marimo.DocumentAsData.Build</PackageId>
+    <Description>MSBuildによるDocumentAsDataのコード自動生成を提供します。</Description>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>

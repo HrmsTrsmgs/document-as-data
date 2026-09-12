@@ -1,4 +1,5 @@
 ﻿using System.IO.Compression;
+using System.Xml.Linq;
 using FluentAssertions;
 using Marimo.DocumentAsData.CodeGeneration.Test.テスト補助;
 
@@ -6,6 +7,37 @@ namespace Marimo.DocumentAsData.CodeGeneration.Test;
 
 public sealed class MSBuild連携タスクのテスト
 {
+    [Fact]
+    public void 配布する三パッケージに識別情報とMITライセンスと説明書を含めます()
+    {
+        using var project = MSBuild連携テストプロジェクト.Create();
+        var scriptFilePath = project.AddPowerShellPackSample(includeProjectReferences: true);
+
+        var tested = PowerShell実行結果.Run(scriptFilePath, project.DirectoryPath);
+
+        tested.ExitCode.Should().Be(0, tested.Output);
+        Directory.GetFiles(Path.Combine(project.DirectoryPath, "packages"), "*.nupkg")
+            .Select(Path.GetFileName).Should().BeEquivalentTo([
+                "Marimo.DocumentAsData.Core.0.1.0.nupkg",
+                "Marimo.DocumentAsData.CodeGeneration.0.1.0.nupkg",
+                "Marimo.DocumentAsData.Build.0.1.0.nupkg"]);
+        foreach (var packagePath in Directory.GetFiles(Path.Combine(project.DirectoryPath, "packages"), "*.nupkg"))
+        {
+            using var package = ZipFile.OpenRead(packagePath);
+            using var manifestStream = package.Entries.Single(it => it.FullName.EndsWith(".nuspec")).Open();
+            // nuspecはNuGetが利用者へ公開するパッケージの識別情報と配布条件です。
+            var metadata = XDocument.Load(manifestStream).Descendants()
+                .Single(it => it.Name.LocalName == "metadata");
+            metadata.Elements().Single(it => it.Name.LocalName == "license").Value.Should().Be("MIT");
+            metadata.Elements().Single(it => it.Name.LocalName == "authors").Value.Should().Be("HrmsTrsmgs");
+            metadata.Elements().Single(it => it.Name.LocalName == "description").Value.Should().NotBeNullOrWhiteSpace();
+            metadata.Elements().Single(it => it.Name.LocalName == "repository").Attribute("url")?.Value
+                .Should().Be("https://github.com/HrmsTrsmgs/document-as-data");
+            metadata.Elements().Single(it => it.Name.LocalName == "readme").Value.Should().Be("README.md");
+            package.GetEntry("README.md").Should().NotBeNull();
+        }
+    }
+
     [Fact]
     public void NuGetパッケージにMSBuild連携のpropsとtargetsを含めます()
     {

@@ -3,6 +3,8 @@
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <RootNamespace>Marimo.DocumentAsData</RootNamespace>
+    <PackageId>Marimo.DocumentAsData.Core</PackageId>
+    <Description>DOCXの名前付き項目を構造化データとして読み書きします。</Description>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
