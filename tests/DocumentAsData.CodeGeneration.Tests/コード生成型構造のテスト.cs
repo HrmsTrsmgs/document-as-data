@@ -186,6 +186,28 @@ public sealed class コード生成型構造のテスト
     }
 
     [Fact]
+    public void 生成されたDocument型は必要な文字列ContentControlが不足した文書をOpenすると例外になります()
+    {
+        var generatedType = GeneratedCodeInspection
+            .AssemblyFrom(
+                GeneratedCodeInspection.GenerateSources(
+                    TextContentControlDocumentFilePath))
+            .GeneratedType("文字列ContentControlDocument");
+
+        // 生成元にはTagがCustomerNameの文字列Content Controlがあり、開く文書にはありません。
+        var tested = () =>
+        {
+            using var document = generatedType.InvokeStaticMethod<Document>(
+                "Open",
+                BasicStructureDocumentFilePath);
+        };
+
+        // リフレクションによる呼び出しでは、Openの例外がInnerExceptionに入ります。
+        tested.Should().Throw<TargetInvocationException>()
+            .WithInnerException<DocumentMappingException>();
+    }
+
+    [Fact]
     public void 生成されたDocument型はStreamから開けます()
     {
         using var stream = new MemoryStream();
