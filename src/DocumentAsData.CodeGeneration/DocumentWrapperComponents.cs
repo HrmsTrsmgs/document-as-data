@@ -40,7 +40,7 @@ static class DocumentWrapperComponents
                 /// <param name="filePath">開くWord文書のファイルパス。</param>
                 /// <returns>開いた型付きWord文書。</returns>
                 /// <exception cref="DocumentMappingException">
-                /// 生成元の文書にあったMERGEFIELDまたは文字列Content Controlが不足している場合。
+                /// 生成元の文書にあったMERGEFIELD、文字列Content Control、CheckBox、DatePickerのいずれかが不足している場合。
                 /// </exception>
                 public static new {{typeName}} Open(string filePath)
                 {
@@ -69,7 +69,7 @@ static class DocumentWrapperComponents
                 /// <param name="stream">Word文書を保持するStream。</param>
                 /// <returns>開いた型付きWord文書。</returns>
                 /// <exception cref="DocumentMappingException">
-                /// 生成元の文書にあったMERGEFIELDまたは文字列Content Controlが不足している場合。
+                /// 生成元の文書にあったMERGEFIELD、文字列Content Control、CheckBox、DatePickerのいずれかが不足している場合。
                 /// </exception>
                 public static new {{typeName}} Open(System.IO.Stream stream)
                 {
@@ -88,11 +88,11 @@ static class DocumentWrapperComponents
                 }
 
                 /// <summary>
-                /// 生成元の文書にあったMERGEFIELDと文字列Content Controlが存在することを検証します。
+                /// 生成元の文書にあったMERGEFIELD、文字列Content Control、CheckBox、DatePickerが存在することを検証します。
                 /// 文書の生成、返却、解放は呼び出し元のOpenで行います。
                 /// </summary>
                 /// <exception cref="DocumentMappingException">
-                /// 生成元の文書にあったMERGEFIELDまたは文字列Content Controlが不足している場合。
+                /// 生成元の文書にあったMERGEFIELD、文字列Content Control、CheckBox、DatePickerのいずれかが不足している場合。
                 /// </exception>
                 void ValidateRequiredItems()
                 {
@@ -102,6 +102,12 @@ static class DocumentWrapperComponents
             {{RequiredItemsValidation(
                 [.. from contentControl in document.ContentControls select contentControl.Tag],
                 "ContentControls.Select(it => it.Tag)")}}
+            {{RequiredItemsValidation(
+                [.. from checkBox in document.CheckBoxes select checkBox.Tag],
+                "CheckBoxes.Select(it => it.Tag)")}}
+            {{RequiredItemsValidation(
+                [.. from datePicker in document.DatePickers select datePicker.Tag],
+                "DatePickers.Select(it => it.Tag)")}}
                 }
 
                 /// <summary>

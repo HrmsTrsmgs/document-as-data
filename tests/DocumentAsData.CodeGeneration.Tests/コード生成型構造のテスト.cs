@@ -208,6 +208,50 @@ public sealed class コード生成型構造のテスト
     }
 
     [Fact]
+    public void 生成されたDocument型は必要なCheckBoxが不足した文書をOpenすると例外になります()
+    {
+        var generatedType = GeneratedCodeInspection
+            .AssemblyFrom(
+                GeneratedCodeInspection.GenerateSources(
+                    CheckBoxDocumentFilePath))
+            .GeneratedType("チェック済みCheckBoxDocument");
+
+        // 生成元にはTagがAgreementのCheckBoxがあり、開く文書にはありません。
+        var tested = () =>
+        {
+            using var document = generatedType.InvokeStaticMethod<Document>(
+                "Open",
+                BasicStructureDocumentFilePath);
+        };
+
+        // リフレクションによる呼び出しでは、Openの例外がInnerExceptionに入ります。
+        tested.Should().Throw<TargetInvocationException>()
+            .WithInnerException<DocumentMappingException>();
+    }
+
+    [Fact]
+    public void 生成されたDocument型は必要なDatePickerが不足した文書をOpenすると例外になります()
+    {
+        var generatedType = GeneratedCodeInspection
+            .AssemblyFrom(
+                GeneratedCodeInspection.GenerateSources(
+                    DatePickerDocumentFilePath))
+            .GeneratedType("日付選択ContentControlDocument");
+
+        // 生成元にはTagがDeliveryDateのDatePickerがあり、開く文書にはありません。
+        var tested = () =>
+        {
+            using var document = generatedType.InvokeStaticMethod<Document>(
+                "Open",
+                BasicStructureDocumentFilePath);
+        };
+
+        // リフレクションによる呼び出しでは、Openの例外がInnerExceptionに入ります。
+        tested.Should().Throw<TargetInvocationException>()
+            .WithInnerException<DocumentMappingException>();
+    }
+
+    [Fact]
     public void 生成されたDocument型はStreamから開けます()
     {
         using var stream = new MemoryStream();
