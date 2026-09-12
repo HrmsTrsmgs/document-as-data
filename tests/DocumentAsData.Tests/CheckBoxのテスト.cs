@@ -47,6 +47,24 @@ public class CheckBoxのテスト
     }
 
     [Fact]
+    public void ToStringは種類と引用符で囲んだTagを返します()
+    {
+        var filePath =
+            TestDocument.CreateTemporaryCopy(CheckBoxContentControlPath);
+        try
+        {
+            using var document = Document.Open(filePath, true);
+
+            document.CheckBoxes.Single().ToString().Should().Be(
+                "CheckBox { Tag = \"Agreement\" }");
+        }
+        finally
+        {
+            File.Delete(filePath);
+        }
+    }
+
+    [Fact]
     public void IsCheckedプロパティはチェック状態を取得します()
     {
         var uncheckedFilePath =

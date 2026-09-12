@@ -21,6 +21,13 @@ public class CheckBox : ContentControl
     }
 
     /// <summary>
+    /// 種類と、引用符で囲んだTagを返します。
+    /// </summary>
+    /// <returns>種類とTagを確認できる表示文字列。</returns>
+    public override string ToString() =>
+        $"CheckBox {{ Tag = {QuoteName(Tag)} }}";
+
+    /// <summary>
     /// チェックボックスがチェックされているかを取得または設定します。
     /// </summary>
     /// <remarks>
