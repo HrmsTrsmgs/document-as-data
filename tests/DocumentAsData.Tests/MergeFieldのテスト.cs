@@ -55,6 +55,35 @@ public class MergeFieldのテスト
     }
 
     [Fact]
+    public void ToStringは種類と引用符で囲んだMERGEFIELD名を返します()
+    {
+        var filePath = TestDocument.CreateTemporaryCopy(TestFilePath);
+        try
+        {
+            using var document = Document.Open(filePath);
+
+            document.MergeFields["CustomerName"].ToString().Should().Be(
+                "MergeField { Name = \"CustomerName\" }");
+        }
+        finally
+        {
+            File.Delete(filePath);
+        }
+    }
+
+    [Fact(Skip = "引用符を含む名前の固定DOCXと読み取り可否を確認してから、表示のエスケープをレビューする。")]
+    public void ToStringは名前に含まれる引用符をエスケープします()
+    {
+        throw new NotImplementedException();
+    }
+
+    [Fact(Skip = "改行を含む名前の固定DOCXと読み取り可否を確認してから、表示のエスケープをレビューする。")]
+    public void ToStringは名前に含まれる改行をエスケープします()
+    {
+        throw new NotImplementedException();
+    }
+
+    [Fact]
     public void TextプロパティはMERGEFIELD文字列を取得します()
     {
         var filePath = TestDocument.CreateTemporaryCopy(TestFilePath);
