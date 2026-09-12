@@ -1,0 +1,6 @@
+<Project>
+  <!-- IDEへDocumentAsDataをビルドアクションの候補として公開します。 -->
+  <ItemGroup>
+    <AvailableItemName Include="DocumentAsData" />
+  </ItemGroup>
+</Project>

@@ -193,6 +193,7 @@ sealed class MSBuild連携テストプロジェクト : IDisposable
             Path.Combine(DirectoryPath, "DocumentAsData.SdkProject.csproj"),
             $$"""
             <Project Sdk="Microsoft.NET.Sdk">
+              <Import Project="{{SecurityElement.Escape(Path.ChangeExtension(TargetsPath, ".props"))}}" />
               <PropertyGroup>
                 <TargetFramework>net10.0</TargetFramework>
                 <DesignTimeBuild>{{designTimeBuild}}</DesignTimeBuild>
@@ -207,6 +208,8 @@ sealed class MSBuild連携テストプロジェクト : IDisposable
               </ItemGroup>
               <Import Project="{{SecurityElement.Escape(TargetsPath)}}" />
               <Target Name="WriteCompileItems">
+                <!-- AvailableItemNameは、IDEへ公開するビルドアクションの候補です。 -->
+                <WriteLinesToFile File="AvailableItemNames.txt" Lines="@(AvailableItemName)" Overwrite="true" />
                 <WriteLinesToFile File="None.txt" Lines="@(None->'%(FullPath)')" Overwrite="true" />
                 <WriteLinesToFile File="Content.txt" Lines="@(Content->'%(FullPath)')" Overwrite="true" />
                 <WriteLinesToFile File="Compile.txt" Lines="@(Compile->'%(FullPath)')" Overwrite="true" />

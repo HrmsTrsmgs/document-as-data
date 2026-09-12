@@ -6,6 +6,20 @@ namespace Marimo.DocumentAsData.CodeGeneration.Test;
 public sealed class MSBuild連携タスクのテスト
 {
     [Fact]
+    public void SDK形式プロジェクトのビルドアクション候補にDocumentAsDataを登録します()
+    {
+        using var project = MSBuild連携テストプロジェクト.Create();
+        Directory.CreateDirectory(project.DirectoryPath);
+        var scriptFilePath = project.AddPowerShellSdkProjectSample();
+
+        var tested = PowerShell実行結果.Run(scriptFilePath, project.DirectoryPath);
+
+        tested.ExitCode.Should().Be(0, tested.Output);
+        File.ReadAllLines(Path.Combine(project.DirectoryPath, "AvailableItemNames.txt"))
+            .Should().Contain("DocumentAsData");
+    }
+
+    [Fact]
     public void PowerShellからdotnet_msbuildでコード生成できます()
     {
         using var project = MSBuild連携テストプロジェクト.Create();
