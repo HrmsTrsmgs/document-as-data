@@ -41,7 +41,7 @@ static class DocumentWrapperComponents
                 /// <returns>開いた型付きWord文書。</returns>
                 /// <exception cref="DocumentMappingException">
                 /// 生成元の文書に対応する項目が不足している場合。
-                /// 文字列Content Controlは同名のMERGEFIELDでも代用できます。
+                /// 文字列項目は同名のMERGEFIELDまたは文字列Content Controlで読み取れます。
                 /// </exception>
                 public static new {{typeName}} Open(string filePath)
                 {
@@ -71,7 +71,7 @@ static class DocumentWrapperComponents
                 /// <returns>開いた型付きWord文書。</returns>
                 /// <exception cref="DocumentMappingException">
                 /// 生成元の文書に対応する項目が不足している場合。
-                /// 文字列Content Controlは同名のMERGEFIELDでも代用できます。
+                /// 文字列項目は同名のMERGEFIELDまたは文字列Content Controlで読み取れます。
                 /// </exception>
                 public static new {{typeName}} Open(System.IO.Stream stream)
                 {
@@ -91,7 +91,7 @@ static class DocumentWrapperComponents
 
                 /// <summary>
                 /// 生成元の文書にあったMERGEFIELD、文字列Content Control、CheckBox、DatePickerが存在することを検証します。
-                /// 文字列Content Controlについては同名のMERGEFIELDも読み取り先として認めます。
+                /// 文字列項目は同名のMERGEFIELDと文字列Content Controlを読み取り先として認めます。
                 /// 文書の生成、返却、解放は呼び出し元のOpenで行います。
                 /// </summary>
                 /// <exception cref="DocumentMappingException">
@@ -101,7 +101,7 @@ static class DocumentWrapperComponents
                 {
             {{RequiredItemsValidation(
                 [.. from mergeField in document.MergeFields select mergeField.Name],
-                "MergeFields.Select(it => it.Name)",
+                "[.. MergeFields.Select(it => it.Name), .. ContentControls.Select(it => it.Tag)]",
                 "MERGEFIELD")}}
             {{RequiredItemsValidation(
                 [.. from contentControl in document.ContentControls select contentControl.Tag],
@@ -317,9 +317,20 @@ static class DocumentWrapperComponents
             /// <summary>
             /// MERGEFIELD「{{mergeField.Name}}」の文字列を取得または設定します。
             /// </summary>
+            /// <remarks>
+            /// 読み取りでは同名の文字列Content Controlも対象にします。設定先はMERGEFIELDです。
+            /// </remarks>
             public string {{options.GeneratedName(mergeField.Name)}}
             {
-                get => MergeFields[{{StringLiteral(mergeField.Name)}}].Text;
+                get => Enumerable.Single<IDocumentTextItem>(
+                    [
+                        .. from item in ContentControls
+                           where item.Tag == {{StringLiteral(mergeField.Name)}}
+                           select item,
+                        .. from item in MergeFields
+                           where item.Name == {{StringLiteral(mergeField.Name)}}
+                           select item
+                    ]).Text;
                 set => MergeFields[{{StringLiteral(mergeField.Name)}}].Text = value;
             }
         """;

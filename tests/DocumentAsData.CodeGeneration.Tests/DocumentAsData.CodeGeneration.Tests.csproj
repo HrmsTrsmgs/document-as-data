@@ -41,6 +41,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Include="..\DocumentAsData.Tests\TestData\複合形式のMERGEFIELD.docx"
+          Link="TestData\コード生成\単一項目.docx"
+          CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\DocumentAsData.Tests\TestData\同名のMERGEFIELDとContent Control.docx"
+          Link="TestData\コード生成\同名のMERGEFIELDとContent Control.docx"
+          CopyToOutputDirectory="PreserveNewest" />
     <None Update="TestData\**\*">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

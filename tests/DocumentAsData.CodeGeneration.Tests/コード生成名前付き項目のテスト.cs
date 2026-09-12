@@ -49,6 +49,48 @@ public sealed class コード生成名前付き項目のテスト : IDisposable
     }
 
     [Fact]
+    public void MERGEFIELDから生成したプロパティは同名の文字列ContentControlから文字列を読み取れます()
+    {
+        // 生成元はCustomerNameだけを持つMERGEFIELD文書、開く文書は同名の文字列Content Controlです。
+        using var document = GeneratedCodeInspection
+            .AssemblyFrom(
+                GeneratedCodeInspection.GenerateSources(
+                    @"TestData\コード生成\単一項目.docx"))
+            .GeneratedType("単一項目Document")
+            .InvokeStaticMethod<Document>(
+                "Open",
+                TextContentControlDocumentFilePath);
+
+        dynamic documentAccessor = document;
+        string tested = documentAccessor.CustomerName;
+
+        tested.Should().Be("山田太郎");
+    }
+
+    [Fact]
+    public void MERGEFIELDから生成したプロパティは同名の両種類が存在すると読み取りで例外になります()
+    {
+        // 生成元はCustomerNameが1件、開く文書には同名のMERGEFIELDと文字列Content Controlが各1件あります。
+        using var document = GeneratedCodeInspection
+            .AssemblyFrom(
+                GeneratedCodeInspection.GenerateSources(
+                    @"TestData\コード生成\単一項目.docx"))
+            .GeneratedType("単一項目Document")
+            .InvokeStaticMethod<Document>(
+                "Open",
+                @"TestData\コード生成\同名のMERGEFIELDとContent Control.docx");
+
+        // Openは検証対象の外で行い、プロパティの読み取りによる例外だけを確認します。
+        dynamic documentAccessor = document;
+        var tested = () =>
+        {
+            string text = documentAccessor.CustomerName;
+        };
+
+        tested.Should().Throw<InvalidOperationException>();
+    }
+
+    [Fact]
     public void バックスラッシュを含む名前から生成したMERGEFIELDプロパティで文字列を読み取れます()
     {
         using var document = GeneratedCodeInspection
