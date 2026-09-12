@@ -19,6 +19,7 @@ static class DocumentWrapperComponents
 
         return
             $$"""
+            using System.Linq;
             using Marimo.DocumentAsData;
 
             namespace {{options.Namespace}};
@@ -38,8 +39,34 @@ static class DocumentWrapperComponents
                 /// </summary>
                 /// <param name="filePath">開くWord文書のファイルパス。</param>
                 /// <returns>開いた型付きWord文書。</returns>
-                public static new {{typeName}} Open(string filePath) =>
-                    new(filePath);
+                /// <exception cref="DocumentMappingException">
+                /// 生成元の文書にあったMERGEFIELDが不足している場合。
+                /// </exception>
+                public static new {{typeName}} Open(string filePath)
+                {
+                    var document = new {{typeName}}(filePath);
+
+                    try
+                    {
+                        string[] requiredMergeFieldNames = [{{string.Join(", ",
+                            from mergeField in document.MergeFields
+                            select StringLiteral(mergeField.Name))}}];
+
+                        if (requiredMergeFieldNames
+                            .Except(document.MergeFields.Select(it => it.Name))
+                            .Any())
+                        {
+                            throw new DocumentMappingException();
+                        }
+
+                        return document;
+                    }
+                    catch
+                    {
+                        document.Dispose();
+                        throw;
+                    }
+                }
 
                 {{typeName}}(System.IO.Stream stream)
                     : base(stream)
