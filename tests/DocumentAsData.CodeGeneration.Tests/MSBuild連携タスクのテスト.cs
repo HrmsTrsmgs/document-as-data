@@ -39,6 +39,17 @@ public sealed class MSBuild連携タスクのテスト
     }
 
     [Fact]
+    public void NuGet警告をエラー扱いにしても三パッケージを作成できます()
+    {
+        using var project = MSBuild連携テストプロジェクト.Create();
+        var scriptFilePath = project.AddPowerShellPackSample(includeProjectReferences: true, warningsAsErrors: true);
+
+        var tested = PowerShell実行結果.Run(scriptFilePath, project.DirectoryPath);
+
+        tested.ExitCode.Should().Be(0, tested.Output);
+    }
+
+    [Fact]
     public void NuGetパッケージにMSBuild連携のpropsとtargetsを含めます()
     {
         using var project = MSBuild連携テストプロジェクト.Create();

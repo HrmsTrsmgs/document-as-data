@@ -53,7 +53,8 @@ sealed class MSBuild連携テストプロジェクト : IDisposable
     /// </summary>
     /// <returns>パッケージを作成するPowerShellスクリプトのパス。</returns>
     /// <param name="includeProjectReferences">利用側のrestoreに必要な参照プロジェクトも梱包する場合はtrue。</param>
-    internal string AddPowerShellPackSample(bool includeProjectReferences = false)
+    /// <param name="warningsAsErrors">梱包時の警告も失敗として検証する場合はtrue。</param>
+    internal string AddPowerShellPackSample(bool includeProjectReferences = false, bool warningsAsErrors = false)
     {
         Directory.CreateDirectory(DirectoryPath);
         var projectFilePath = Path.GetFullPath(Path.Combine(
@@ -73,7 +74,7 @@ sealed class MSBuild連携テストプロジェクト : IDisposable
             [Console]::OutputEncoding = [System.Text.UTF8Encoding]::new($false)
             foreach ($projectName in @({{string.Join(", ", projectNames.Select(it => $"'{it}'"))}})) {
                 $projectPath = Join-Path '{{Path.GetFullPath(Path.Combine(projectFilePath, "..", "..")).Replace("'", "''")}}' "$projectName/$projectName.csproj"
-                dotnet pack $projectPath --no-build --no-restore --disable-build-servers --configuration '{{configuration.Replace("'", "''")}}' --output ./packages --nologo --verbosity minimal
+                dotnet pack $projectPath --no-build --no-restore --disable-build-servers --configuration '{{configuration.Replace("'", "''")}}' --output ./packages --nologo --verbosity minimal -p:TreatWarningsAsErrors={{warningsAsErrors}}
                 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
             }
             exit 0

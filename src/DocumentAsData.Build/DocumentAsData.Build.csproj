@@ -21,6 +21,8 @@
   <ItemGroup>
     <None Update="buildTransitive\Marimo.DocumentAsData.Build.props" Pack="true" PackagePath="buildTransitive\Marimo.DocumentAsData.Build.props" />
     <None Update="buildTransitive\Marimo.DocumentAsData.Build.targets" Pack="true" PackagePath="buildTransitive\Marimo.DocumentAsData.Build.targets" />
+    <!-- .NET 10向けですが、利用アプリへ追加する参照DLLはないことをNuGetへ示します。 -->
+    <None Update="PackagePlaceholder\_._" Pack="true" PackagePath="lib\net10.0\_._" />
   </ItemGroup>
 
   <ItemGroup>
