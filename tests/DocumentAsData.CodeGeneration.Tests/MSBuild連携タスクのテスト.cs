@@ -56,6 +56,24 @@ public sealed class MSBuild連携タスクのテスト
     }
 
     [Fact]
+    public void パッケージのビルド用タスクDLLを利用アプリの参照に含めません()
+    {
+        using var project = MSBuild連携テストプロジェクト.Create();
+        project.AddBasicStructureDocument("BasicStructure.docx");
+        var packScriptFilePath = project.AddPowerShellPackSample(includeProjectReferences: true);
+        var packed = PowerShell実行結果.Run(packScriptFilePath, project.DirectoryPath);
+        packed.ExitCode.Should().Be(0, packed.Output);
+        var scriptFilePath = project.AddPowerShellPackageReferenceSample(build: true);
+
+        var tested = PowerShell実行結果.Run(scriptFilePath, project.DirectoryPath);
+
+        tested.ExitCode.Should().Be(0, tested.Output);
+        File.ReadAllLines(Path.Combine(project.DirectoryPath, "References.txt"))
+            .Should().NotContain("DocumentAsData.Build.dll")
+            .And.Contain("DocumentAsData.dll");
+    }
+
+    [Fact]
     public void SDK形式プロジェクトのビルドアクション候補にDocumentAsDataを登録します()
     {
         using var project = MSBuild連携テストプロジェクト.Create();

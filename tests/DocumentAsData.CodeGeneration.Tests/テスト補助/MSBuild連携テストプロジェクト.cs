@@ -73,7 +73,7 @@ sealed class MSBuild連携テストプロジェクト : IDisposable
             [Console]::OutputEncoding = [System.Text.UTF8Encoding]::new($false)
             foreach ($projectName in @({{string.Join(", ", projectNames.Select(it => $"'{it}'"))}})) {
                 $projectPath = Join-Path '{{Path.GetFullPath(Path.Combine(projectFilePath, "..", "..")).Replace("'", "''")}}' "$projectName/$projectName.csproj"
-                dotnet pack $projectPath --no-build --no-restore --configuration '{{configuration.Replace("'", "''")}}' --output ./packages --nologo --verbosity minimal
+                dotnet pack $projectPath --no-build --no-restore --disable-build-servers --configuration '{{configuration.Replace("'", "''")}}' --output ./packages --nologo --verbosity minimal
                 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
             }
             exit 0
@@ -124,6 +124,10 @@ sealed class MSBuild連携テストプロジェクト : IDisposable
               </ItemGroup>
               <Target Name="WriteAvailableItems">
                 <WriteLinesToFile File="AvailableItemNames.txt" Lines="@(AvailableItemName)" Overwrite="true" />
+              </Target>
+              <!-- ReferencePathは、コンパイラへ渡すために解決済みのアセンブリ参照です。 -->
+              <Target Name="WriteResolvedReferences" AfterTargets="ResolveReferences">
+                <WriteLinesToFile File="References.txt" Lines="@(ReferencePath->'%(Filename)%(Extension)')" Overwrite="true" />
               </Target>
             </Project>
             """);
