@@ -1,4 +1,9 @@
 <Project>
+  <!-- 生成コードはSDKの自動収集から除外し、現在の生成対象に対応するものだけをtargetsで登録します。 -->
+  <PropertyGroup>
+    <DefaultItemExcludes>$(DefaultItemExcludes);**/*.DocumentAsData.g.cs</DefaultItemExcludes>
+  </PropertyGroup>
+
   <!-- IDEへDocumentAsDataをビルドアクションの候補として公開します。 -->
   <ItemGroup>
     <AvailableItemName Include="DocumentAsData" />

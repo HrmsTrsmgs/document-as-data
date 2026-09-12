@@ -138,6 +138,23 @@ public sealed class MSBuild連携タスクのテスト
     }
 
     [Fact]
+    public void 生成対象から外した文書の生成コードはコンパイル対象に含めません()
+    {
+        using var project = MSBuild連携テストプロジェクト.Create();
+        var documentFilePath = project.AddBasicStructureDocument(@"Schemas\BasicStructure.docx");
+        project.Generate(documentFilePath).Succeeded.Should().BeTrue();
+        var generatedFilePath = project.GeneratedFilePathFor(@"Schemas\BasicStructure.docx");
+        var scriptFilePath = project.AddPowerShellSdkProjectSample(includeDocument: false);
+
+        var tested = PowerShell実行結果.Run(scriptFilePath, project.DirectoryPath);
+
+        tested.ExitCode.Should().Be(0, tested.Output);
+        File.ReadAllLines(Path.Combine(project.DirectoryPath, "Compile.txt"))
+            .Should().NotContain(generatedFilePath);
+        File.Exists(generatedFilePath).Should().BeTrue();
+    }
+
+    [Fact]
     public void SDK形式プロジェクトのDesignTimeBuildでは生成コードを元Word文書へ紐づけます()
     {
         using var project = MSBuild連携テストプロジェクト.Create();

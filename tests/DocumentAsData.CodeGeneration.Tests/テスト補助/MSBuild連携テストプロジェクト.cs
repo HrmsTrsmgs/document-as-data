@@ -183,11 +183,13 @@ sealed class MSBuild連携テストプロジェクト : IDisposable
     /// <param name="includeGeneratedSourceAsNone">生成ソースをNoneにも明示登録し、重複除去を検証する場合はtrue。</param>
     /// <param name="includeGeneratedSourceAsContent">生成ソースと元文書をContentにも登録し、生成ソースだけの重複除去を検証する場合はtrue。</param>
     /// <param name="designTimeBuild">デザイン時の評価はtrue、通常の評価はfalse。</param>
+    /// <param name="includeDocument">文書をコード生成対象として登録する場合はtrue。</param>
     /// <returns>実行するPowerShellスクリプトのパス。</returns>
     internal string AddPowerShellSdkProjectSample(
         bool includeGeneratedSourceAsNone = false,
         bool includeGeneratedSourceAsContent = false,
-        bool designTimeBuild = true)
+        bool designTimeBuild = true,
+        bool includeDocument = true)
     {
         File.WriteAllText(
             Path.Combine(DirectoryPath, "DocumentAsData.SdkProject.csproj"),
@@ -204,7 +206,7 @@ sealed class MSBuild連携テストプロジェクト : IDisposable
                 <None Include="Schemas\BasicStructure.DocumentAsData.g.cs" Condition="'{{includeGeneratedSourceAsNone}}' == 'True'" />
                 <!-- 元文書もContentに登録し、生成ソース以外を除去しないことを確認します。 -->
                 <Content Include="Schemas\BasicStructure.DocumentAsData.g.cs;Schemas\BasicStructure.docx" Condition="'{{includeGeneratedSourceAsContent}}' == 'True'" />
-                <DocumentAsData Include="Schemas\BasicStructure.docx" />
+                <DocumentAsData Include="Schemas\BasicStructure.docx" Condition="'{{includeDocument}}' == 'True'" />
               </ItemGroup>
               <Import Project="{{SecurityElement.Escape(TargetsPath)}}" />
               <Target Name="WriteCompileItems">
