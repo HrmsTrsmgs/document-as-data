@@ -82,11 +82,12 @@ sealed class MSBuild連携テストプロジェクト : IDisposable
     }
 
     /// <summary>
-    /// 作成済みパッケージを参照し、明示的なImportなしでビルドアクション候補を評価します。
+    /// 作成済みパッケージを参照し、明示的なImportなしで項目評価または通常ビルドを実行します。
     /// 復元先をテスト内へ分離し、外部依存は本リポジトリの復元済みキャッシュから取得します。
     /// </summary>
-    /// <returns>restoreと項目評価を実行するPowerShellスクリプトのパス。</returns>
-    internal string AddPowerShellPackageReferenceSample()
+    /// <param name="build">生成型を使うコードを通常ビルドする場合はtrue、項目評価だけならfalse。</param>
+    /// <returns>restoreと指定した検証を実行するPowerShellスクリプトのパス。</returns>
+    internal string AddPowerShellPackageReferenceSample(bool build = false)
     {
         using var package = ZipFile.OpenRead(
             Directory.GetFiles(Path.Combine(DirectoryPath, "packages"), "*DocumentAsData.Build.*.nupkg").Single());
@@ -114,24 +115,40 @@ sealed class MSBuild連携テストプロジェクト : IDisposable
                 <TargetFramework>net10.0</TargetFramework>
                 <RestorePackagesPath>$(MSBuildProjectDirectory)/restored</RestorePackagesPath>
                 <NuGetAudit>false</NuGetAudit>
+                <RootNamespace>Generated</RootNamespace>
+                <UseSharedCompilation>false</UseSharedCompilation>
               </PropertyGroup>
               <ItemGroup>
                 <PackageReference Include="{{SecurityElement.Escape(packageId)}}" Version="{{SecurityElement.Escape(packageVersion)}}" />
+                <DocumentAsData Include="BasicStructure.docx" Condition="'{{build}}' == 'True'" />
               </ItemGroup>
               <Target Name="WriteAvailableItems">
                 <WriteLinesToFile File="AvailableItemNames.txt" Lines="@(AvailableItemName)" Overwrite="true" />
               </Target>
             </Project>
             """);
+        if (build)
+        {
+            File.WriteAllText(
+                Path.Combine(DirectoryPath, "Consumer.cs"),
+                """
+                public sealed class Consumer
+                {
+                    public Generated.BasicStructureDocument Document { get; set; }
+                }
+                """);
+        }
         var scriptFilePath = Path.Combine(DirectoryPath, "PackageReference.ps1");
         File.WriteAllText(
             scriptFilePath,
-            """
+            $$"""
             $ErrorActionPreference = 'Stop'
             [Console]::OutputEncoding = [System.Text.UTF8Encoding]::new($false)
             dotnet restore ./PackageReference.csproj --configfile ./NuGet.Config --nologo --verbosity minimal
             if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-            dotnet msbuild ./PackageReference.csproj /t:WriteAvailableItems /nologo /v:minimal
+            dotnet msbuild ./PackageReference.csproj /t:{{(build
+                ? "Build"
+                : "WriteAvailableItems")}} /nologo /v:minimal
             exit $LASTEXITCODE
             """);
         return scriptFilePath;

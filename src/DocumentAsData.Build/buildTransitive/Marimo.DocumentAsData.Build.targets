@@ -1,7 +1,7 @@
 <Project>
   <!-- 明示指定がない場合は、パッケージ内のタスクDLLを参照します。 -->
   <PropertyGroup>
-    <DocumentAsDataTaskAssembly Condition="'$(DocumentAsDataTaskAssembly)' == ''">$(MSBuildThisFileDirectory)..\lib\net10.0\DocumentAsData.Build.dll</DocumentAsDataTaskAssembly>
+    <DocumentAsDataTaskAssembly Condition="'$(DocumentAsDataTaskAssembly)' == ''">$(MSBuildThisFileDirectory)..\tools\net10.0\DocumentAsData.Build.dll</DocumentAsDataTaskAssembly>
   </PropertyGroup>
   <UsingTask
     TaskName="Marimo.DocumentAsData.Build.GenerateDocumentAsData"

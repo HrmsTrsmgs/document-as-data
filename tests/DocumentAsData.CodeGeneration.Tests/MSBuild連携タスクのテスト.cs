@@ -39,6 +39,23 @@ public sealed class MSBuild連携タスクのテスト
     }
 
     [Fact]
+    public void パッケージ参照による通常ビルドでコードを自動生成してコンパイルできます()
+    {
+        using var project = MSBuild連携テストプロジェクト.Create();
+        project.AddBasicStructureDocument("BasicStructure.docx");
+        var packScriptFilePath = project.AddPowerShellPackSample(includeProjectReferences: true);
+        var packed = PowerShell実行結果.Run(packScriptFilePath, project.DirectoryPath);
+        packed.ExitCode.Should().Be(0, packed.Output);
+        var scriptFilePath = project.AddPowerShellPackageReferenceSample(build: true);
+
+        var tested = PowerShell実行結果.Run(scriptFilePath, project.DirectoryPath);
+
+        tested.ExitCode.Should().Be(0, tested.Output);
+        File.ReadAllText(project.GeneratedFilePathFor("BasicStructure.docx"))
+            .Should().Contain("public partial class BasicStructureDocument : Document");
+    }
+
+    [Fact]
     public void SDK形式プロジェクトのビルドアクション候補にDocumentAsDataを登録します()
     {
         using var project = MSBuild連携テストプロジェクト.Create();
