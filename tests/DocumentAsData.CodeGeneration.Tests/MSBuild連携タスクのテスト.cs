@@ -99,6 +99,29 @@ public sealed class MSBuild連携タスクのテスト
     }
 
     [Fact]
+    public void パッケージ利用プロジェクトのCleanは生成ソースだけを削除して元文書を残します()
+    {
+        using var project = MSBuild連携テストプロジェクト.Create();
+        var documentPath = project.AddBasicStructureDocument("BasicStructure.docx");
+        var original = File.ReadAllBytes(documentPath);
+        var packScriptFilePath = project.AddPowerShellPackSample(includeProjectReferences: true);
+        var packed = PowerShell実行結果.Run(packScriptFilePath, project.DirectoryPath);
+        packed.ExitCode.Should().Be(0, packed.Output);
+        var buildScriptFilePath = project.AddPowerShellPackageReferenceSample(build: true);
+        var built = PowerShell実行結果.Run(buildScriptFilePath, project.DirectoryPath);
+        built.ExitCode.Should().Be(0, built.Output);
+        File.Exists(project.GeneratedFilePathFor("BasicStructure.docx")).Should().BeTrue();
+        var cleanScriptFilePath = project.AddPowerShellPackageReferenceSample(build: true, buildTarget: "Clean");
+
+        var tested = PowerShell実行結果.Run(cleanScriptFilePath, project.DirectoryPath);
+
+        tested.ExitCode.Should().Be(0, tested.Output);
+        File.Exists(project.GeneratedFilePathFor("BasicStructure.docx")).Should().BeFalse();
+        File.ReadAllBytes(documentPath).Should().Equal(original);
+        File.Exists(Path.Combine(project.DirectoryPath, "Consumer.cs")).Should().BeTrue();
+    }
+
+    [Fact]
     public void パッケージのビルド用タスクDLLを利用アプリの参照に含めません()
     {
         using var project = MSBuild連携テストプロジェクト.Create();

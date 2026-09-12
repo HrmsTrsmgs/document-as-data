@@ -88,8 +88,9 @@ sealed class MSBuild連携テストプロジェクト : IDisposable
     /// DOCUMENTASDATA_TEST_MSBUILDを指定すると、そのMSBuild.exeで同じ利用者テストを実行できます。
     /// </summary>
     /// <param name="build">生成型を使うコードを通常ビルドする場合はtrue、項目評価だけならfalse。</param>
+    /// <param name="buildTarget">buildがtrueの場合に実行するターゲット。Cleanも同じ利用者プロジェクトで検証します。</param>
     /// <returns>restoreと指定した検証を実行するPowerShellスクリプトのパス。</returns>
-    internal string AddPowerShellPackageReferenceSample(bool build = false)
+    internal string AddPowerShellPackageReferenceSample(bool build = false, string buildTarget = "Build")
     {
         using var package = ZipFile.OpenRead(
             Directory.GetFiles(Path.Combine(DirectoryPath, "packages"), "*DocumentAsData.Build.*.nupkg").Single());
@@ -153,7 +154,7 @@ sealed class MSBuild連携テストプロジェクト : IDisposable
             dotnet restore ./PackageReference.csproj --configfile ./NuGet.Config --nologo --verbosity minimal
             if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
             $buildArguments = @('./PackageReference.csproj', '/t:{{(build
-                ? "Build"
+                ? buildTarget
                 : "WriteAvailableItems")}}', '/nologo', '/v:minimal', '/nr:false')
             if ($env:DOCUMENTASDATA_TEST_MSBUILD) {
                 & $env:DOCUMENTASDATA_TEST_MSBUILD @buildArguments

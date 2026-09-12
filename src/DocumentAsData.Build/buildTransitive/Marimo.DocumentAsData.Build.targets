@@ -33,4 +33,9 @@
       RootNamespace="$(RootNamespace)"
       ProjectDirectory="$(MSBuildProjectDirectory)" />
   </Target>
+
+  <!-- 標準Cleanはbin/obj外を削除しないため、現在の対象文書に対応する生成ソースだけを削除します。 -->
+  <Target Name="CleanDocumentAsDataSources" AfterTargets="CoreClean">
+    <Delete Files="@(DocumentAsData->'%(RootDir)%(Directory)%(Filename).DocumentAsData.g.cs')" />
+  </Target>
 </Project>
