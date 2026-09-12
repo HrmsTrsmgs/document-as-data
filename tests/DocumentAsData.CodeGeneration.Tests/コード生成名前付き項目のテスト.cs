@@ -68,7 +68,7 @@ public sealed class コード生成名前付き項目のテスト : IDisposable
     }
 
     [Fact]
-    public void MERGEFIELDから生成したプロパティは同名の両種類が存在すると読み取りで例外になります()
+    public void MERGEFIELDから生成したプロパティは同名の文字列ContentControlよりMERGEFIELDを優先して読み取ります()
     {
         // 生成元はCustomerNameが1件、開く文書には同名のMERGEFIELDと文字列Content Controlが各1件あります。
         using var document = GeneratedCodeInspection
@@ -80,14 +80,10 @@ public sealed class コード生成名前付き項目のテスト : IDisposable
                 "Open",
                 @"TestData\コード生成\同名のMERGEFIELDとContent Control.docx");
 
-        // Openは検証対象の外で行い、プロパティの読み取りによる例外だけを確認します。
         dynamic documentAccessor = document;
-        var tested = () =>
-        {
-            string text = documentAccessor.CustomerName;
-        };
+        string tested = documentAccessor.CustomerName;
 
-        tested.Should().Throw<InvalidOperationException>();
+        tested.Should().Be("MERGEFIELDの値");
     }
 
     [Fact]

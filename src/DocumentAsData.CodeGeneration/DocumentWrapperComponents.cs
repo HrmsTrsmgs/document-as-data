@@ -319,18 +319,13 @@ static class DocumentWrapperComponents
             /// </summary>
             /// <remarks>
             /// 読み取りと書き込みでは同名の文字列Content Controlも対象にします。
+            /// 読み取りはMERGEFIELDを優先し、存在しない場合に同名の文字列Content Controlを使用します。
             /// </remarks>
             public string {{options.GeneratedName(mergeField.Name)}}
             {
-                get => Enumerable.Single<IDocumentTextItem>(
-                    [
-                        .. from item in ContentControls
-                           where item.Tag == {{StringLiteral(mergeField.Name)}}
-                           select item,
-                        .. from item in MergeFields
-                           where item.Name == {{StringLiteral(mergeField.Name)}}
-                           select item
-                    ]).Text;
+                get => MergeFields.SingleOrDefault(it => it.Name == {{StringLiteral(mergeField.Name)}}) is { } item
+                    ? item.Text
+                    : ContentControls[{{StringLiteral(mergeField.Name)}}].Text;
                 set => Enumerable.Single<IDocumentTextItem>(
                     [
                         .. from item in ContentControls
