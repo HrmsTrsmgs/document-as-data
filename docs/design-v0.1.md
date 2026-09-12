@@ -2,6 +2,7 @@
 
 > [!IMPORTANT]
 > この文書にある公開API案は初期検討時のラフ案であり、実装の参考または仕様として使用しない。
+> 対象範囲も初期案の記録です。現在の機能・配布構成はREADMEとbuild-and-release.mdを参照してください。
 > 公開APIはSpreadsheetAsDataの既存APIとテストを一つずつDocumentAsData向けに読み替えて決める。
 > Word固有の差異が必要な場合は、対象のRedごとに提示して確認する。
 
@@ -122,8 +123,8 @@ public sealed class ContentControl
 
 SpreadsheetAsData の「名前付き要素をコレクションとインデクサで扱う」「Open XML SDKを
 internalへ閉じる」「日本語のXMLドキュメントとテスト名を使う」という方針を引き継ぐ。
-名前空間も同系列の `Marimo.DocumentAsData` とする。一方、コード生成、型付きDTO、複合
-NuGetパッケージは今回の目的に不要なため移植しない。
+名前空間も同系列の `Marimo.DocumentAsData` とする。
+後続の決定により、コード生成、文書固有のデータ型の生成、NuGet配布も対象として実装している。
 
 ```text
 src/DocumentAsData/

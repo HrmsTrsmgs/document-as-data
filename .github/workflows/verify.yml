@@ -1,0 +1,33 @@
+name: Verify release packages
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-dotnet@v6
+        with:
+          global-json-file: global.json
+      - name: Verify and pack without publishing
+        shell: pwsh
+        run: ./scripts/Prepare-Release.ps1
+      - name: Store packages and verification results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: release-verification
+          path: artifacts/release/
+          if-no-files-found: error
+          retention-days: 14

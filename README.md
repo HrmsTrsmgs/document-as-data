@@ -9,9 +9,18 @@ Open XML SDKを内部で使用し、利用側は文書内の名前付き項目�
 ## 利用環境と参照
 
 現在のプロジェクトは `.NET 10`（`net10.0`）を対象にしています。
-このREADMEではNuGetへの公開済みバージョンを前提にせず、ソースからビルドする構成を説明します。
-利用側のプロジェクトから `src/DocumentAsData/DocumentAsData.csproj` を参照してください。
+初版候補は `0.1.0` です。現在は公開前のため、ローカルで作成したNuGetパッケージ、
+または `src/DocumentAsData/DocumentAsData.csproj` のプロジェクト参照で利用してください。
 名前空間は `Marimo.DocumentAsData` です。
+
+| パッケージ | 用途 |
+| --- | --- |
+| `Marimo.DocumentAsData.Core` | DOCXの読み書き。コード生成を使わない場合はこれだけを参照 |
+| `Marimo.DocumentAsData.CodeGeneration` | プログラムから生成器を呼ぶ場合。Coreを依存関係に含む |
+| `Marimo.DocumentAsData.Build` | ビルド時のコード自動生成。上記2パッケージを依存関係に含む |
+
+梱包・ローカルフィードでの導入・公開前チェックは [ビルドとリリースの手引き](https://github.com/HrmsTrsmgs/document-as-data/blob/main/docs/build-and-release.md) を参照してください。
+ソースを取得した場合は、リポジトリ内の `docs/build-and-release.md` でも読めます。
 
 | 文書内の項目 | コレクション | 識別方法 | 値のプロパティと型 |
 | --- | --- | --- | --- |
@@ -280,11 +289,34 @@ var sources = DocumentWrapperGenerator.GenerateSources(
 `GenerateSources` は診断を自動実行しません。また診断は、すべてのC#コンパイルエラーを検出する機能ではありません。
 生成後は利用側のプロジェクトでビルドしてください。
 
-## MSBuild連携の現在の範囲
+## MSBuildによるコード自動生成
+
+SDK形式の利用側プロジェクトで `Marimo.DocumentAsData.Build` を参照し、
+生成対象のDOCXを `DocumentAsData` 項目として指定します。
+ローカルパッケージの復元元を設定したうえで、例えば次のように記述します。
+
+```xml
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>MyDocuments</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Marimo.DocumentAsData.Build" Version="0.1.0" />
+    <DocumentAsData Include="template.docx" />
+  </ItemGroup>
+</Project>
+```
+
+通常ビルドすると、文書の隣に `template.DocumentAsData.g.cs` が生成されます。
+パッケージ内のprops/targetsは自動で読み込まれ、DLLパスの指定や手動importは不要です。
+`DocumentAsData` をビルドアクションの候補へ登録する設定も含みます。
+コード生成には.NET 10 SDKを使用します。Visual Studio版MSBuildの確認範囲は手引きに記載しています。
 
 `DocumentAsData.Build` には `Marimo.DocumentAsData.Build.GenerateDocumentAsData` タスクがあります。
-入力は `DocumentFiles`（`ITaskItem[]`）と `ProjectDirectory`、出力は `GeneratedFiles` です。
-文書の隣に `<文書ファイル名の拡張子を除いた部分>.DocumentAsData.g.cs` を作成し、再実行時には上書きします。
+入力は `DocumentFiles`（`ITaskItem[]`）と `ProjectDirectory`、`RootNamespace`、出力は `GeneratedFiles` です。
+文書の隣に `<文書ファイル名の拡張子を除いた部分>.DocumentAsData.g.cs` を作成します。
+生成内容が同じならファイルを書き直さず、更新日時を維持します。
 出力項目には `DependentUpon` と `DesignTimeSharedInput` メタデータを設定します。
 
 名前変換辞書は、例えば `template.docx` に対して `template.documentasdata.json` を置きます。
@@ -296,7 +328,7 @@ var sources = DocumentWrapperGenerator.GenerateSources(
 ```
 
 文書と同じディレクトリを優先し、見つからなければ `ProjectDirectory` 直下を探します。
-両方ある場合に辞書をマージする動作ではありません。タスクが生成する名前空間は現在 `Generated` です。
+両方ある場合に辞書をマージする動作ではありません。生成名の衝突や不正なJSONはビルドエラーとして報告します。
 
 `src/DocumentAsData.Build/buildTransitive/Marimo.DocumentAsData.Build.targets` を明示的にimportし、
 `DocumentAsDataTaskAssembly` にビルド済みタスクDLLのパスを指定すると、
@@ -308,7 +340,9 @@ PowerShellから `dotnet msbuild` でこのターゲットを呼び出す動作�
 生成コードの名前空間にはプロジェクトの `RootNamespace` を使用します。
 `DesignTimeBuild=true` ではコンパイル経路でも再生成せず、生成済みソースを使用します。辞書の変更を反映するには通常ビルドを実行してください。
 SDK形式プロジェクトでは、既定の `Compile` 項目との二重登録を避けて登録します。
-NuGet経由の自動importとビルドアクションの登録はまだ整備していません。
+Cleanでは、現在の `DocumentAsData` 項目に対応する生成ソースを削除します。元DOCXや手書きのソースは削除しません。
+生成対象から外した文書の古い `.DocumentAsData.g.cs` はコンパイル対象から除外されますが、自動削除はしません。
+生成ファイルへ手書きの変更を入れないでください。別のpartialクラスに記述してください。
 このテストはVisual Studio全体の操作を保証するものではありません。
 
 ## 現在対応していないもの
@@ -360,4 +394,4 @@ READMEのサンプルはそれぞれに記載した項目を持つ文書を必�
 
 ## ライセンス
 
-[MIT License](LICENSE)
+[MIT License](https://github.com/HrmsTrsmgs/document-as-data/blob/main/LICENSE)
