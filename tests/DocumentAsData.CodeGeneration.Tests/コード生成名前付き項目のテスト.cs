@@ -137,6 +137,49 @@ public sealed class コード生成名前付き項目のテスト : IDisposable
     }
 
     [Fact]
+    public void MERGEFIELDから生成したプロパティは同名の文字列ContentControlへ文字列を書き込めます()
+    {
+        // 生成元はMERGEFIELDですが、開く文書では同名の文字列Content Controlです。
+        using var document = GeneratedCodeInspection
+            .AssemblyFrom(
+                GeneratedCodeInspection.GenerateSources(
+                    @"TestData\コード生成\単一項目.docx"))
+            .GeneratedType("単一項目Document")
+            .InvokeStaticMethod<Document>(
+                "Open",
+                TextContentControlDocumentFilePath);
+
+        dynamic documentAccessor = document;
+        documentAccessor.CustomerName = "生成後";
+
+        document.ContentControls["CustomerName"].Text.Should().Be("生成後");
+    }
+
+    [Fact]
+    public void MERGEFIELDから生成したプロパティは同名の両種類が存在すると書き込まずに例外になります()
+    {
+        using var document = GeneratedCodeInspection
+            .AssemblyFrom(
+                GeneratedCodeInspection.GenerateSources(
+                    @"TestData\コード生成\単一項目.docx"))
+            .GeneratedType("単一項目Document")
+            .InvokeStaticMethod<Document>(
+                "Open",
+                @"TestData\コード生成\同名のMERGEFIELDとContent Control.docx");
+
+        // CustomerNameのMERGEFIELDと文字列Content Controlが各1件あるため、書き込み先を決められません。
+        dynamic documentAccessor = document;
+        var tested = () =>
+        {
+            documentAccessor.CustomerName = "変更後";
+        };
+
+        tested.Should().Throw<InvalidOperationException>();
+        document.MergeFields["CustomerName"].Text.Should().Be("MERGEFIELDの値");
+        document.ContentControls["CustomerName"].Text.Should().Be("Content Controlの値");
+    }
+
+    [Fact]
     public void 生成されたDocument型の文字列ContentControlプロパティから文字列を直接読み取れます()
     {
         using var document = GeneratedCodeInspection

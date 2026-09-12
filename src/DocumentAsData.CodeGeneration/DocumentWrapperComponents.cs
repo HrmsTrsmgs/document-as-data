@@ -318,7 +318,7 @@ static class DocumentWrapperComponents
             /// MERGEFIELD「{{mergeField.Name}}」の文字列を取得または設定します。
             /// </summary>
             /// <remarks>
-            /// 読み取りでは同名の文字列Content Controlも対象にします。設定先はMERGEFIELDです。
+            /// 読み取りと書き込みでは同名の文字列Content Controlも対象にします。
             /// </remarks>
             public string {{options.GeneratedName(mergeField.Name)}}
             {
@@ -331,7 +331,15 @@ static class DocumentWrapperComponents
                            where item.Name == {{StringLiteral(mergeField.Name)}}
                            select item
                     ]).Text;
-                set => MergeFields[{{StringLiteral(mergeField.Name)}}].Text = value;
+                set => Enumerable.Single<IDocumentTextItem>(
+                    [
+                        .. from item in ContentControls
+                           where item.Tag == {{StringLiteral(mergeField.Name)}}
+                           select item,
+                        .. from item in MergeFields
+                           where item.Name == {{StringLiteral(mergeField.Name)}}
+                           select item
+                    ]).Text = value;
             }
         """;
 
