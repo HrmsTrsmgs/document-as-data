@@ -96,27 +96,12 @@ static class DocumentWrapperComponents
                 /// </exception>
                 void ValidateRequiredItems()
                 {
-                    string[] requiredMergeFieldNames = [{{string.Join(", ",
-                        from mergeField in document.MergeFields
-                        select StringLiteral(mergeField.Name))}}];
-
-                    if (requiredMergeFieldNames
-                        .Except(MergeFields.Select(it => it.Name))
-                        .Any())
-                    {
-                        throw new DocumentMappingException();
-                    }
-
-                    string[] requiredContentControlTags = [{{string.Join(", ",
-                        from contentControl in document.ContentControls
-                        select StringLiteral(contentControl.Tag))}}];
-
-                    if (requiredContentControlTags
-                        .Except(ContentControls.Select(it => it.Tag))
-                        .Any())
-                    {
-                        throw new DocumentMappingException();
-                    }
+            {{RequiredItemsValidation(
+                [.. from mergeField in document.MergeFields select mergeField.Name],
+                "MergeFields.Select(it => it.Name)")}}
+            {{RequiredItemsValidation(
+                [.. from contentControl in document.ContentControls select contentControl.Tag],
+                "ContentControls.Select(it => it.Tag)")}}
                 }
 
                 /// <summary>
@@ -149,6 +134,24 @@ static class DocumentWrapperComponents
             {{DataDeclaration(filePath, options, document)}}
             """;
     }
+
+    /// <summary>
+    /// 必要な名前の不足を検出する検査コードを生成します。対象が0件なら生成しません。
+    /// </summary>
+    /// <param name="requiredNames">生成元の文書に存在する、その種類の項目名またはTag。</param>
+    /// <param name="actualNamesExpression">開いた文書から同じ種類の名前を列挙するC#式。</param>
+    /// <returns>不足時に例外を投げるC#コード。対象が0件なら空文字列。</returns>
+    static string RequiredItemsValidation(string[] requiredNames, string actualNamesExpression) =>
+        requiredNames.Length == 0
+            ? ""
+            : $$"""
+                      if (new[] { {{string.Join(", ", requiredNames.Select(StringLiteral))}} }
+                          .Except({{actualNamesExpression}})
+                          .Any())
+                      {
+                          throw new DocumentMappingException();
+                      }
+              """;
 
     /// <summary>
     /// Word文書全体のデータを表す型の宣言を生成します。
