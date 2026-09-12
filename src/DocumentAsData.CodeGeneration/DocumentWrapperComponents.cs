@@ -149,24 +149,6 @@ static class DocumentWrapperComponents
     }
 
     /// <summary>
-    /// 必要な名前の不足を検出する検査コードを生成します。対象が0件なら生成しません。
-    /// </summary>
-    /// <param name="requiredNames">生成元の文書に存在する、その種類の項目名またはTag。</param>
-    /// <param name="actualNamesExpression">開いた文書から同じ種類の名前を列挙するC#式。</param>
-    /// <returns>不足時に例外を投げるC#コード。対象が0件なら空文字列。</returns>
-    static string RequiredItemsValidation(string[] requiredNames, string actualNamesExpression) =>
-        requiredNames.Length == 0
-            ? ""
-            : $$"""
-                      if (new[] { {{string.Join(", ", requiredNames.Select(StringLiteral))}} }
-                          .Except({{actualNamesExpression}})
-                          .Any())
-                      {
-                          throw new DocumentMappingException();
-                      }
-              """;
-
-    /// <summary>
     /// 不足した名前と種類を例外メッセージへ含める検査コードを生成します。
     /// </summary>
     /// <param name="requiredNames">生成元の文書に存在する、その種類の項目名またはTag。</param>
