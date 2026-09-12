@@ -403,6 +403,21 @@ public sealed class MSBuild連携タスクのテスト
     }
 
     [Fact]
+    public void 存在しないWord文書を指定すると対象文書を示して失敗します()
+    {
+        using var project = MSBuild連携テストプロジェクト.Create();
+        Directory.CreateDirectory(project.DirectoryPath);
+        var documentFilePath = Path.Combine(project.DirectoryPath, "Missing.docx");
+
+        var tested = project.Generate(documentFilePath);
+
+        tested.Succeeded.Should().BeFalse();
+        tested.Errors.Should().ContainSingle();
+        tested.Errors.Single().File.Should().Be(documentFilePath);
+        tested.Errors.Single().Message.Should().NotBeNullOrEmpty();
+    }
+
+    [Fact]
     public void 不正な辞書JSONでは辞書ファイルを示して失敗します()
     {
         using var project = MSBuild連携テストプロジェクト.Create();

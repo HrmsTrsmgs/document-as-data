@@ -34,7 +34,7 @@ public sealed class GenerateDocumentAsData : Microsoft.Build.Utilities.Task
     public ITaskItem[] GeneratedFiles { get; set; } = [];
 
     /// <summary>
-    /// コード生成を実行し、診断エラーと報告済みの辞書JSONエラーはタスクの失敗として返します。
+    /// コード生成を実行し、診断エラー、ファイルの不在、報告済みの辞書JSONエラーはタスクの失敗として返します。
     /// </summary>
     /// <returns>コード生成に成功した場合は <see langword="true"/>。</returns>
     public override bool Execute()
@@ -52,6 +52,20 @@ public sealed class GenerateDocumentAsData : Microsoft.Build.Utilities.Task
         }
         catch (JsonException) when (Log.HasLoggedErrors)
         {
+            return false;
+        }
+        catch (FileNotFoundException exception)
+        {
+            Log.LogError(
+                subcategory: null,
+                errorCode: null,
+                helpKeyword: null,
+                file: exception.FileName,
+                lineNumber: 0,
+                columnNumber: 0,
+                endLineNumber: 0,
+                endColumnNumber: 0,
+                message: exception.Message);
             return false;
         }
     }
