@@ -23,6 +23,22 @@ public sealed class MSBuild連携タスクのテスト
     }
 
     [Fact]
+    public void パッケージ参照でDocumentAsDataをビルドアクション候補に登録します()
+    {
+        using var project = MSBuild連携テストプロジェクト.Create();
+        var packScriptFilePath = project.AddPowerShellPackSample(includeProjectReferences: true);
+        var packed = PowerShell実行結果.Run(packScriptFilePath, project.DirectoryPath);
+        packed.ExitCode.Should().Be(0, packed.Output);
+        var scriptFilePath = project.AddPowerShellPackageReferenceSample();
+
+        var tested = PowerShell実行結果.Run(scriptFilePath, project.DirectoryPath);
+
+        tested.ExitCode.Should().Be(0, tested.Output);
+        File.ReadAllLines(Path.Combine(project.DirectoryPath, "AvailableItemNames.txt"))
+            .Should().Contain("DocumentAsData");
+    }
+
+    [Fact]
     public void SDK形式プロジェクトのビルドアクション候補にDocumentAsDataを登録します()
     {
         using var project = MSBuild連携テストプロジェクト.Create();

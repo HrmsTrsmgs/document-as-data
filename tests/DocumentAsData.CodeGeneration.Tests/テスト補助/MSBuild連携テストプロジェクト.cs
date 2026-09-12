@@ -1,8 +1,11 @@
 ﻿using System.Collections;
 using System.Diagnostics;
+using System.IO.Compression;
 using System.Reflection;
 using System.Security;
 using System.Text;
+using System.Text.Json;
+using System.Xml.Linq;
 using Marimo.DocumentAsData.Build;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
@@ -49,7 +52,8 @@ sealed class MSBuild連携テストプロジェクト : IDisposable
     /// restoreと再ビルドは行わず、パッケージの公開もしません。
     /// </summary>
     /// <returns>パッケージを作成するPowerShellスクリプトのパス。</returns>
-    internal string AddPowerShellPackSample()
+    /// <param name="includeProjectReferences">利用側のrestoreに必要な参照プロジェクトも梱包する場合はtrue。</param>
+    internal string AddPowerShellPackSample(bool includeProjectReferences = false)
     {
         Directory.CreateDirectory(DirectoryPath);
         var projectFilePath = Path.GetFullPath(Path.Combine(
@@ -58,13 +62,76 @@ sealed class MSBuild連携テストプロジェクト : IDisposable
             "src", "DocumentAsData.Build", "DocumentAsData.Build.csproj"));
         var configuration = typeof(GenerateDocumentAsData).Assembly
             .GetCustomAttributes<AssemblyConfigurationAttribute>().Single().Configuration;
+        var projectNames = includeProjectReferences
+            ? new[] { "DocumentAsData", "DocumentAsData.CodeGeneration", "DocumentAsData.Build" }
+            : new[] { "DocumentAsData.Build" };
         var scriptFilePath = Path.Combine(DirectoryPath, "Pack.ps1");
         File.WriteAllText(
             scriptFilePath,
             $$"""
             $ErrorActionPreference = 'Stop'
             [Console]::OutputEncoding = [System.Text.UTF8Encoding]::new($false)
-            dotnet pack '{{projectFilePath.Replace("'", "''")}}' --no-build --no-restore --configuration '{{configuration.Replace("'", "''")}}' --output ./packages --nologo --verbosity minimal
+            foreach ($projectName in @({{string.Join(", ", projectNames.Select(it => $"'{it}'"))}})) {
+                $projectPath = Join-Path '{{Path.GetFullPath(Path.Combine(projectFilePath, "..", "..")).Replace("'", "''")}}' "$projectName/$projectName.csproj"
+                dotnet pack $projectPath --no-build --no-restore --configuration '{{configuration.Replace("'", "''")}}' --output ./packages --nologo --verbosity minimal
+                if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+            }
+            exit 0
+            """);
+        return scriptFilePath;
+    }
+
+    /// <summary>
+    /// 作成済みパッケージを参照し、明示的なImportなしでビルドアクション候補を評価します。
+    /// 復元先をテスト内へ分離し、外部依存は本リポジトリの復元済みキャッシュから取得します。
+    /// </summary>
+    /// <returns>restoreと項目評価を実行するPowerShellスクリプトのパス。</returns>
+    internal string AddPowerShellPackageReferenceSample()
+    {
+        using var package = ZipFile.OpenRead(
+            Directory.GetFiles(Path.Combine(DirectoryPath, "packages"), "*DocumentAsData.Build.*.nupkg").Single());
+        using var manifestStream = package.Entries.Single(it => it.FullName.EndsWith(".nuspec")).Open();
+        var manifest = XDocument.Load(manifestStream);
+        var packageId = manifest.Descendants().Single(it => it.Name.LocalName == "id").Value;
+        var packageVersion = manifest.Descendants().Single(it => it.Name.LocalName == "version").Value;
+        using var assets = JsonDocument.Parse(File.ReadAllText(Path.GetFullPath(Path.Combine(
+            AppContext.BaseDirectory, "..", "..", "..", "..", "..",
+            "src", "DocumentAsData.Build", "obj", "project.assets.json"))));
+        File.WriteAllText(
+            Path.Combine(DirectoryPath, "NuGet.Config"),
+            new XElement("configuration",
+                new XElement("packageSources",
+                    new XElement("clear"),
+                    new XElement("add", new XAttribute("key", "local"), new XAttribute("value", "packages")),
+                    assets.RootElement.GetProperty("packageFolders").EnumerateObject().Select((it, index) =>
+                        new XElement("add", new XAttribute("key", $"cache{index}"), new XAttribute("value", it.Name)))))
+                .ToString());
+        File.WriteAllText(
+            Path.Combine(DirectoryPath, "PackageReference.csproj"),
+            $$"""
+            <Project Sdk="Microsoft.NET.Sdk">
+              <PropertyGroup>
+                <TargetFramework>net10.0</TargetFramework>
+                <RestorePackagesPath>$(MSBuildProjectDirectory)/restored</RestorePackagesPath>
+                <NuGetAudit>false</NuGetAudit>
+              </PropertyGroup>
+              <ItemGroup>
+                <PackageReference Include="{{SecurityElement.Escape(packageId)}}" Version="{{SecurityElement.Escape(packageVersion)}}" />
+              </ItemGroup>
+              <Target Name="WriteAvailableItems">
+                <WriteLinesToFile File="AvailableItemNames.txt" Lines="@(AvailableItemName)" Overwrite="true" />
+              </Target>
+            </Project>
+            """);
+        var scriptFilePath = Path.Combine(DirectoryPath, "PackageReference.ps1");
+        File.WriteAllText(
+            scriptFilePath,
+            """
+            $ErrorActionPreference = 'Stop'
+            [Console]::OutputEncoding = [System.Text.UTF8Encoding]::new($false)
+            dotnet restore ./PackageReference.csproj --configfile ./NuGet.Config --nologo --verbosity minimal
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+            dotnet msbuild ./PackageReference.csproj /t:WriteAvailableItems /nologo /v:minimal
             exit $LASTEXITCODE
             """);
         return scriptFilePath;
