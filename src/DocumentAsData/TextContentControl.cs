@@ -5,7 +5,7 @@ namespace Marimo.DocumentAsData;
 /// <summary>
 /// 文書内の文字列Content Controlを表します。
 /// </summary>
-public class TextContentControl : ContentControl, DocumentTextItem
+public class TextContentControl : ContentControl, IDocumentTextItem
 {
     /// <summary>
     /// 文書内のOOXML要素への参照を保持し、Textの読み書きを同じ要素へ反映できるようにします。

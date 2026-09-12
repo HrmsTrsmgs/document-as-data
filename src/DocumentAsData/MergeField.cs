@@ -6,7 +6,7 @@ namespace Marimo.DocumentAsData;
 /// <summary>
 /// 文書内のMERGEFIELDを表します。
 /// </summary>
-public class MergeField : DocumentItem, DocumentTextItem
+public class MergeField : DocumentItem, IDocumentTextItem
 {
     /// <summary>
     /// 単純形式または複合形式のOOXML要素への値アクセスを保持します。

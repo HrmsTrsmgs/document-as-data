@@ -156,9 +156,9 @@ sealed class DocumentObjectMapper
     /// <param name="name">取得する名前。</param>
     /// <returns>取得した文字列データ項目。存在しない場合はnull。</returns>
     /// <exception cref="InvalidOperationException">同じ名前の対象が複数存在する場合。</exception>
-    DocumentTextItem? FindValueTarget(string name)
+    IDocumentTextItem? FindValueTarget(string name)
     {
-        IEnumerable<DocumentTextItem> targets =
+        IEnumerable<IDocumentTextItem> targets =
         [
             .. from contentControl in document.ContentControls
                where contentControl.Tag == name

@@ -381,20 +381,28 @@ static class DocumentWrapperComponents
             /// 文字列Content Control「{{contentControl.Tag}}」の文字列を取得または設定します。
             /// </summary>
             /// <remarks>
-            /// 読み取りでは同名のMERGEFIELDも対象にします。設定先は文字列Content Controlです。
+            /// 読み取りと書き込みでは同名のMERGEFIELDも対象にします。
             /// </remarks>
             public string {{options.GeneratedName(contentControl.Tag)}}
             {
-                get => Enumerable.Single<string>(
+                get => Enumerable.Single<IDocumentTextItem>(
                     [
                         .. from item in ContentControls
                            where item.Tag == {{StringLiteral(contentControl.Tag)}}
-                           select item.Text,
+                           select item,
                         .. from item in MergeFields
                            where item.Name == {{StringLiteral(contentControl.Tag)}}
-                           select item.Text
-                    ]);
-                set => ContentControls[{{StringLiteral(contentControl.Tag)}}].Text = value;
+                           select item
+                    ]).Text;
+                set => Enumerable.Single<IDocumentTextItem>(
+                    [
+                        .. from item in ContentControls
+                           where item.Tag == {{StringLiteral(contentControl.Tag)}}
+                           select item,
+                        .. from item in MergeFields
+                           where item.Name == {{StringLiteral(contentControl.Tag)}}
+                           select item
+                    ]).Text = value;
             }
         """;
 
