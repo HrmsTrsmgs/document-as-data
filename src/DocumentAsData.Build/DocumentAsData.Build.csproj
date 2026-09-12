@@ -12,6 +12,12 @@
     <ProjectReference Include="..\DocumentAsData.CodeGeneration\DocumentAsData.CodeGeneration.csproj" />
   </ItemGroup>
 
+  <!-- 利用側で読み込むMSBuild連携設定をパッケージへ含めます。 -->
+  <ItemGroup>
+    <None Update="buildTransitive\Marimo.DocumentAsData.Build.props" Pack="true" PackagePath="buildTransitive\Marimo.DocumentAsData.Build.props" />
+    <None Update="buildTransitive\Marimo.DocumentAsData.Build.targets" Pack="true" PackagePath="buildTransitive\Marimo.DocumentAsData.Build.targets" />
+  </ItemGroup>
+
   <ItemGroup>
     <Reference Include="Microsoft.Build.Framework">
       <HintPath>$(MSBuildToolsPath)\Microsoft.Build.Framework.dll</HintPath>

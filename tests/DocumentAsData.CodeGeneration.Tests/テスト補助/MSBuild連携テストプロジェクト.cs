@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Diagnostics;
+using System.Reflection;
 using System.Security;
 using System.Text;
 using Marimo.DocumentAsData.Build;
@@ -42,6 +43,32 @@ sealed class MSBuild連携テストプロジェクト : IDisposable
         "..", "..", "..", "..", "..",
         "src", "DocumentAsData.Build", "buildTransitive",
         "Marimo.DocumentAsData.Build.targets"));
+
+    /// <summary>
+    /// テストと同じ構成でビルド済みのタスクを、一時ディレクトリへパッケージ化します。
+    /// restoreと再ビルドは行わず、パッケージの公開もしません。
+    /// </summary>
+    /// <returns>パッケージを作成するPowerShellスクリプトのパス。</returns>
+    internal string AddPowerShellPackSample()
+    {
+        Directory.CreateDirectory(DirectoryPath);
+        var projectFilePath = Path.GetFullPath(Path.Combine(
+            AppContext.BaseDirectory,
+            "..", "..", "..", "..", "..",
+            "src", "DocumentAsData.Build", "DocumentAsData.Build.csproj"));
+        var configuration = typeof(GenerateDocumentAsData).Assembly
+            .GetCustomAttributes<AssemblyConfigurationAttribute>().Single().Configuration;
+        var scriptFilePath = Path.Combine(DirectoryPath, "Pack.ps1");
+        File.WriteAllText(
+            scriptFilePath,
+            $$"""
+            $ErrorActionPreference = 'Stop'
+            [Console]::OutputEncoding = [System.Text.UTF8Encoding]::new($false)
+            dotnet pack '{{projectFilePath.Replace("'", "''")}}' --no-build --no-restore --configuration '{{configuration.Replace("'", "''")}}' --output ./packages --nologo --verbosity minimal
+            exit $LASTEXITCODE
+            """);
+        return scriptFilePath;
+    }
 
     /// <summary>
     /// リポジトリのtargetsとビルド済みタスクを使う一時プロジェクトを作ります。パッケージの配置は対象外です。

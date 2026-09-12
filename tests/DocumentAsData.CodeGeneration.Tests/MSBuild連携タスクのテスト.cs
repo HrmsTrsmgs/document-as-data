@@ -1,10 +1,27 @@
-﻿using FluentAssertions;
+﻿using System.IO.Compression;
+using FluentAssertions;
 using Marimo.DocumentAsData.CodeGeneration.Test.テスト補助;
 
 namespace Marimo.DocumentAsData.CodeGeneration.Test;
 
 public sealed class MSBuild連携タスクのテスト
 {
+    [Fact]
+    public void NuGetパッケージにMSBuild連携のpropsとtargetsを含めます()
+    {
+        using var project = MSBuild連携テストプロジェクト.Create();
+        var scriptFilePath = project.AddPowerShellPackSample();
+
+        var tested = PowerShell実行結果.Run(scriptFilePath, project.DirectoryPath);
+
+        tested.ExitCode.Should().Be(0, tested.Output);
+        using var package = ZipFile.OpenRead(
+            Directory.GetFiles(Path.Combine(project.DirectoryPath, "packages"), "*.nupkg").Single());
+        package.Entries.Select(it => it.FullName).Should().Contain([
+            "buildTransitive/Marimo.DocumentAsData.Build.props",
+            "buildTransitive/Marimo.DocumentAsData.Build.targets"]);
+    }
+
     [Fact]
     public void SDK形式プロジェクトのビルドアクション候補にDocumentAsDataを登録します()
     {
