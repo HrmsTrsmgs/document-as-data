@@ -293,6 +293,26 @@ public sealed class コード生成名前付き項目のテスト : IDisposable
     }
 
     [Fact]
+    public void 文字列ContentControlから生成したプロパティは同名のMERGEFIELDを変更せず文字列ContentControlへ書き込みます()
+    {
+        using var document = GeneratedCodeInspection
+            .AssemblyFrom(
+                GeneratedCodeInspection.GenerateSources(
+                    TextContentControlDocumentFilePath))
+            .GeneratedType("文字列ContentControlDocument")
+            .InvokeStaticMethod<Document>(
+                "Open",
+                @"TestData\コード生成\同名のMERGEFIELDとContent Control.docx");
+
+        // CustomerNameの両種類が各1件ありますが、生成元と同じ文字列Content Controlだけを書き換えます。
+        dynamic documentAccessor = document;
+        documentAccessor.CustomerName = "変更後";
+
+        document.ContentControls["CustomerName"].Text.Should().Be("変更後");
+        document.MergeFields["CustomerName"].Text.Should().Be("MERGEFIELDの値");
+    }
+
+    [Fact]
     public void 生成されたDocument型のCheckBoxプロパティからチェック状態を直接読み取れます()
     {
         using var document = GeneratedCodeInspection
