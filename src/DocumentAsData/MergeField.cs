@@ -61,11 +61,11 @@ public class MergeField : DocumentItem, IDocumentTextItem
     public string Name { get; }
 
     /// <summary>
-    /// 種類と、JSON文字列として引用符で囲みエスケープしたMERGEFIELD名を返します。
+    /// 種類と、引用符で囲んだMERGEFIELD名を返します。
     /// </summary>
     /// <returns>種類と名前を確認できる表示文字列。</returns>
     public override string ToString() =>
-        $"MergeField {{ Name = {System.Text.Json.JsonSerializer.Serialize(Name)} }}";
+        $"MergeField {{ Name = {QuoteName(Name)} }}";
 
     /// <summary>
     /// MERGEFIELDの表示文字列を取得または設定します。

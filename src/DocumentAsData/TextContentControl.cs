@@ -20,6 +20,13 @@ public class TextContentControl : ContentControl, IDocumentTextItem
     }
 
     /// <summary>
+    /// 種類と、引用符で囲んだTagを返します。
+    /// </summary>
+    /// <returns>種類とTagを確認できる表示文字列。</returns>
+    public override string ToString() =>
+        $"TextContentControl {{ Tag = {QuoteName(Tag)} }}";
+
+    /// <summary>
     /// Content Controlの文字列を取得または設定します。
     /// </summary>
     /// <remarks>

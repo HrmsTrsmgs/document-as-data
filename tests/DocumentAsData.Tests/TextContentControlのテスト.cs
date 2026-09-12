@@ -51,6 +51,32 @@ public class TextContentControlのテスト
     }
 
     [Fact]
+    public void ToStringは種類と引用符で囲んだTagを返します()
+    {
+        var filePath = TestDocument.CreateTemporaryCopy(ContentControlPath);
+        try
+        {
+            using var document = Document.Open(filePath);
+
+            document.ContentControls.Single().ToString().Should().Be(
+                "TextContentControl { Tag = \"CustomerName\" }");
+        }
+        finally
+        {
+            File.Delete(filePath);
+        }
+    }
+
+    [Fact]
+    public void ToStringはTagのバックスラッシュに続く引用符をそれぞれエスケープします()
+    {
+        using var document = Document.Open(@"TestData\引用符とバックスラッシュを含むTag.docx");
+
+        document.ContentControls.Single().ToString().Should().Be(
+            """TextContentControl { Tag = "C:\\temp\\\"document" }""");
+    }
+
+    [Fact]
     public void Tagプロパティは不正なOOXMLでTagに値がない場合に失敗します()
     {
         var filePath = TestDocument.CreateTemporaryCopy(InvalidContentControlWithoutTagValuePath);

@@ -71,6 +71,25 @@ public class MergeFieldのテスト
         }
     }
 
+    [Fact]
+    public void ToStringは日本語の名前をそのまま表示します()
+    {
+        using var document = Document.Open(@"TestData\顧客.docx");
+
+        document.MergeFields.Single().ToString().Should().Be(
+            "MergeField { Name = \"顧客\" }");
+    }
+
+    [Fact]
+    public void ToStringは名前のバックスラッシュを二重にして表示します()
+    {
+        using var document = Document.Open(@"TestData\バックスラッシュを含むMERGEFIELD名.docx");
+
+        // 名前はC:\temp customerです。表示ではバックスラッシュを二つにします。
+        document.MergeFields.Single().ToString().Should().Be(
+            """MergeField { Name = "C:\\temp customer" }""");
+    }
+
     [Fact(Skip = "引用符を含む名前の固定DOCXと読み取り可否を確認してから、表示のエスケープをレビューする。")]
     public void ToStringは名前に含まれる引用符をエスケープします()
     {
