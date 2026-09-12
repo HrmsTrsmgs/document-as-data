@@ -45,18 +45,7 @@ static class DocumentWrapperComponents
                 /// </exception>
                 public static new {{typeName}} Open(string filePath)
                 {
-                    var document = new {{typeName}}(filePath);
-
-                    try
-                    {
-                        document.ValidateRequiredItems();
-                        return document;
-                    }
-                    catch
-                    {
-                        document.Dispose();
-                        throw;
-                    }
+            {{OpenMethodBody(typeName, "filePath")}}
                 }
 
                 {{typeName}}(System.IO.Stream stream)
@@ -75,18 +64,7 @@ static class DocumentWrapperComponents
                 /// </exception>
                 public static new {{typeName}} Open(System.IO.Stream stream)
                 {
-                    var document = new {{typeName}}(stream);
-
-                    try
-                    {
-                        document.ValidateRequiredItems();
-                        return document;
-                    }
-                    catch
-                    {
-                        document.Dispose();
-                        throw;
-                    }
+            {{OpenMethodBody(typeName, "stream")}}
                 }
 
                 /// <summary>
@@ -147,6 +125,29 @@ static class DocumentWrapperComponents
             {{DataDeclaration(filePath, options, document)}}
             """;
     }
+
+    /// <summary>
+    /// パス版とStream版に共通するOpenの本体を生成します。
+    /// 検証に失敗した文書は解放し、成功した文書だけを呼び出し元へ返します。
+    /// </summary>
+    /// <param name="typeName">生成するDocument型の名前。</param>
+    /// <param name="argumentName">文書を開くためのパスまたはStreamの引数名。</param>
+    /// <returns>生成メソッド内のインデントを含むC#コード。</returns>
+    static string OpenMethodBody(string typeName, string argumentName) =>
+        $$"""
+                var document = new {{typeName}}({{argumentName}});
+
+                try
+                {
+                    document.ValidateRequiredItems();
+                    return document;
+                }
+                catch
+                {
+                    document.Dispose();
+                    throw;
+                }
+        """;
 
     /// <summary>
     /// 不足した名前と種類を例外メッセージへ含める検査コードを生成します。
