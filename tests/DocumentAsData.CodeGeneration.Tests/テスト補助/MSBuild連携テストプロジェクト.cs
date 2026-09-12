@@ -85,6 +85,7 @@ sealed class MSBuild連携テストプロジェクト : IDisposable
     /// <summary>
     /// 作成済みパッケージを参照し、明示的なImportなしで項目評価または通常ビルドを実行します。
     /// 復元先をテスト内へ分離し、外部依存は本リポジトリの復元済みキャッシュから取得します。
+    /// DOCUMENTASDATA_TEST_MSBUILDを指定すると、そのMSBuild.exeで同じ利用者テストを実行できます。
     /// </summary>
     /// <param name="build">生成型を使うコードを通常ビルドする場合はtrue、項目評価だけならfalse。</param>
     /// <returns>restoreと指定した検証を実行するPowerShellスクリプトのパス。</returns>
@@ -151,9 +152,14 @@ sealed class MSBuild連携テストプロジェクト : IDisposable
             [Console]::OutputEncoding = [System.Text.UTF8Encoding]::new($false)
             dotnet restore ./PackageReference.csproj --configfile ./NuGet.Config --nologo --verbosity minimal
             if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-            dotnet msbuild ./PackageReference.csproj /t:{{(build
+            $buildArguments = @('./PackageReference.csproj', '/t:{{(build
                 ? "Build"
-                : "WriteAvailableItems")}} /nologo /v:minimal
+                : "WriteAvailableItems")}}', '/nologo', '/v:minimal', '/nr:false')
+            if ($env:DOCUMENTASDATA_TEST_MSBUILD) {
+                & $env:DOCUMENTASDATA_TEST_MSBUILD @buildArguments
+            } else {
+                dotnet msbuild @buildArguments
+            }
             exit $LASTEXITCODE
             """);
         return scriptFilePath;
