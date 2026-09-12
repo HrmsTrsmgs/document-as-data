@@ -217,6 +217,25 @@ public sealed class コード生成名前付き項目のテスト : IDisposable
     }
 
     [Fact]
+    public void 文字列ContentControlから生成したプロパティは同名のMERGEFIELDより文字列ContentControlを優先して読み取ります()
+    {
+        // 生成元はCustomerNameが1件、開く文書には同名のMERGEFIELDと文字列Content Controlが各1件あります。
+        using var document = GeneratedCodeInspection
+            .AssemblyFrom(
+                GeneratedCodeInspection.GenerateSources(
+                    TextContentControlDocumentFilePath))
+            .GeneratedType("文字列ContentControlDocument")
+            .InvokeStaticMethod<Document>(
+                "Open",
+                @"TestData\コード生成\同名のMERGEFIELDとContent Control.docx");
+
+        dynamic documentAccessor = document;
+        string tested = documentAccessor.CustomerName;
+
+        tested.Should().Be("Content Controlの値");
+    }
+
+    [Fact]
     public void 特殊文字を含むTagから生成したプロパティで文字列を読み取れます()
     {
         using var document = GeneratedCodeInspection
