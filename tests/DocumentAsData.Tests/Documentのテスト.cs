@@ -758,6 +758,21 @@ public class Documentのテスト
     }
 
     [Fact]
+    public void Replaceは自動変換したプロパティ名と一致するMERGEFIELDへオブジェクトを書き込みます()
+    {
+        using var document = Document.Open(@"TestData\customerData.docx");
+
+        // 対応属性なしのCustomerNameから、MERGEFIELD名customerNameへ書き込みます。
+        document.Replace(
+            new CustomerNameOnlyDocumentData
+            {
+                CustomerName = "変更後の氏名"
+            });
+
+        document.MergeFields["customerName"].Text.Should().Be("変更後の氏名");
+    }
+
+    [Fact]
     public void Replaceは同名のMERGEFIELDとContentControlがある場合に失敗します()
     {
         var filePath = TestDocument.CreateTemporaryCopy(AmbiguousCustomerNamePath);
