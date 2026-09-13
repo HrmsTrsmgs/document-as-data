@@ -8,7 +8,7 @@
 作業開始時は、このファイルに加えて、作業内容に応じた指示を読む。
 
 * 常に適用する共通指示: `docs/ai-instructions/common.md`
-* 振る舞い追加、仕様変更、不具合修正: `docs/ai-instructions/tdd.md`
+* 振る舞い追加、仕様変更、不具合修正、リファクタリング: `docs/ai-instructions/tdd.md`
 * C#、.NET、xUnit、FluentAssertions、NuGet、MSBuildを扱う作業: `docs/ai-instructions/csharp.md`
 * DocumentAsData固有の設計、README、公開準備: `docs/ai-instructions/document-as-data.md`
 
