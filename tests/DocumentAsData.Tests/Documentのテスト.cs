@@ -3,6 +3,7 @@ using Marimo.DocumentAsData.Test.TestDocuments;
 
 namespace Marimo.DocumentAsData.Test;
 
+[Collection(nameof(CurrentDirectoryCollection))]
 public class Documentのテスト
 {
     static readonly string EmptyDocumentPath =
@@ -925,6 +926,45 @@ public class Documentのテスト
         finally
         {
             File.Delete(filePath);
+        }
+    }
+
+    [Fact]
+    public void Saveは作業ディレクトリが変わっても相対パスで開いた元ファイルへ保存します()
+    {
+        var originalDirectory = Environment.CurrentDirectory;
+        var sourceDirectory = Directory.CreateTempSubdirectory("DocumentAsData-Source-");
+        var otherDirectory = Directory.CreateTempSubdirectory("DocumentAsData-Other-");
+        var sourcePath = Path.Combine(sourceDirectory.FullName, "文書.docx");
+        var otherPath = Path.Combine(otherDirectory.FullName, "文書.docx");
+
+        try
+        {
+            File.Copy(SimpleMergeFieldsPath, sourcePath);
+            File.Copy(EmptyDocumentPath, otherPath);
+            Environment.CurrentDirectory = sourceDirectory.FullName;
+
+            using (var document = Document.Open("文書.docx"))
+            {
+                document.MergeFields["CustomerName"].Text = "変更後";
+                Environment.CurrentDirectory = otherDirectory.FullName;
+
+                document.Save();
+            }
+
+            Environment.CurrentDirectory = originalDirectory;
+            using var saved = Document.Open(sourcePath);
+            saved.MergeFields["CustomerName"].Text.Should().Be("変更後");
+            // 新しい作業ディレクトリにある同名ファイルへ上書きしてはいけません。
+            File.ReadAllBytes(otherPath).Should().Equal(File.ReadAllBytes(EmptyDocumentPath));
+        }
+        finally
+        {
+            Environment.CurrentDirectory = originalDirectory;
+            File.Delete(sourcePath);
+            File.Delete(otherPath);
+            sourceDirectory.Delete();
+            otherDirectory.Delete();
         }
     }
 

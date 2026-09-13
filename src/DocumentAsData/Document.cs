@@ -28,7 +28,8 @@ public class Document : IDisposable
     Stream? sourceStream;
 
     /// <summary>
-    /// Saveで上書きする元ファイルのパスです。Stream版ではnullです。
+    /// Saveで上書きする元ファイルの絶対パスです。作業ディレクトリの変更に影響されません。
+    /// Stream版ではnullです。
     /// </summary>
     readonly string? filePath;
 
@@ -50,7 +51,7 @@ public class Document : IDisposable
     protected Document(string filePath)
         : this(OpenWorkingCopy(filePath))
     {
-        this.filePath = filePath;
+        this.filePath = Path.GetFullPath(filePath);
     }
 
     /// <summary>
