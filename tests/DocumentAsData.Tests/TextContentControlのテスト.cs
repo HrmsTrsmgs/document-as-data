@@ -130,6 +130,27 @@ public class TextContentControlのテスト
     }
 
     [Fact]
+    public void TextプロパティはContentControl内の段落を改行で区切って取得します()
+    {
+        var filePath = TestDocument.CreateTemporaryCopy(
+            Path.Combine("TestData", "二つの段落を持つContent Control.docx"));
+        try
+        {
+            // 一つのw:sdtContent内に「前半」と「後半」のw:pが一つずつあります。
+            // w:pは段落、w:rは文字のまとまり、w:tは文字列です。
+            // w:brによる段落内改行ではなく、段落の境界をCRLFとして読み取ります。
+            // 固定DOCXはこの構造を狙った最小OOXMLです。
+            using var document = Document.Open(filePath, validate: true);
+
+            document.ContentControls["CustomerName"].Text.Should().Be("前半\r\n後半");
+        }
+        finally
+        {
+            File.Delete(filePath);
+        }
+    }
+
+    [Fact]
     public void TextプロパティはContentControlの値を設定します()
     {
         var filePath = TestDocument.CreateTemporaryCopy(ContentControlPath);

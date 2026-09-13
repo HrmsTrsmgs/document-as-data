@@ -32,6 +32,7 @@ public class TextContentControl : ContentControl, IDocumentTextItem
     /// <remarks>
     /// プレースホルダー表示中は、表示用文字列ではなく空文字列を返します。
     /// 値を設定すると、プレースホルダー表示状態を解除します。
+    /// 読み取り時は、Content Control内の段落をCRLFで区切ります。
     /// </remarks>
     /// <exception cref="InvalidOperationException">
     /// 値の設定時に文字列要素が存在しない場合。
@@ -40,7 +41,7 @@ public class TextContentControl : ContentControl, IDocumentTextItem
     {
         get => IsShowingPlaceholder
             ? ""
-            : WordTextValue.Read(Element.Descendants());
+            : ReadText();
         set
         {
             var texts = Element.Descendants<Wordprocessing.Text>().ToArray();
@@ -54,6 +55,17 @@ public class TextContentControl : ContentControl, IDocumentTextItem
             }
         }
     }
+
+    /// <summary>
+    /// 段落を含む場合は各段落の値をCRLFで結合し、含まない場合は文字列を直接読み取ります。
+    /// </summary>
+    /// <returns>段落の区切りを保持した文字列。</returns>
+    string ReadText() =>
+        Element.Descendants<Wordprocessing.Paragraph>().Any()
+            ? string.Join("\r\n",
+                from paragraph in Element.Descendants<Wordprocessing.Paragraph>()
+                select WordTextValue.Read(paragraph.Descendants()))
+            : WordTextValue.Read(Element.Descendants());
 
     /// <summary>
     /// 前回の値を構成していたタブと改行が、再設定した値の前に残らないよう除去します。
