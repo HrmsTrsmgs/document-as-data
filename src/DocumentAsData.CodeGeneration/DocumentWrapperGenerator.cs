@@ -80,6 +80,7 @@ public static class DocumentWrapperGenerator
                group sourceName by options.GeneratedName(sourceName)
                into sourceNames
                where sourceNames.Count() > 1
+                   || sourceNames.Key.IsEmpty()
                    || reservedNames.Contains(sourceNames.Key)
                select new CodeGenerationDiagnostic(
                    true,

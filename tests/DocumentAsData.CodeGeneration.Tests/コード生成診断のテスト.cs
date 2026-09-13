@@ -226,4 +226,15 @@ public sealed class コード生成診断のテスト
                     "DataItem",
                     ["data_item", "data-item"]));
     }
+
+    [Fact]
+    public void NameMappingsで生成プロパティ名を空にした場合にエラーを診断します()
+    {
+        GeneratedCodeInspection
+            .GenerateDiagnostics(
+                @"TestData\コード生成\customerData.docx",
+                options => options.NameMappings["customerName"] = "")
+            .Should().ContainEquivalentOf(
+                new CodeGenerationDiagnostic(true, "", ["customerName"]));
+    }
 }
