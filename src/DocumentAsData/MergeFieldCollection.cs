@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Diagnostics.CodeAnalysis;
+using System.Text.RegularExpressions;
 using DocumentFormat.OpenXml;
 using Wordprocessing = DocumentFormat.OpenXml.Wordprocessing;
 
@@ -243,10 +244,10 @@ public class MergeFieldCollection : IEnumerable<MergeField>
                     return parameters[..nameLength];
                 }
 
-                var closingQuoteIndex = parameters.IndexOf('"', 1);
-                return closingQuoteIndex < 0
-                    ? parameters.Trim('"')
-                    : parameters[1..closingQuoteIndex];
+                // \"は名前中の引用符として読み進め、エスケープされていない引用符で止めます。
+                // フィールド命令で使うエスケープを外して、名前そのものを返します。
+                return Regex.Match(parameters[1..], """^(?:\\"|[^"])*""")
+                    .Value.Replace("\\\"", "\"");
             }
         }
 

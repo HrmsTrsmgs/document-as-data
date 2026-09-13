@@ -41,6 +41,16 @@ public class MergeFieldCollectionのテスト
     }
 
     [Fact]
+    public void MergeFieldsは引用符を含む名前を読み取ります()
+    {
+        using var document = Document.Open(@"TestData\名前に引用符を含むMERGEFIELD.docx", true);
+
+        // w:instrTextの命令は MERGEFIELD "Customer\"Name" です。
+        // 名前を囲む引用符と、バックスラッシュでエスケープした名前中の引用符を区別します。
+        document.MergeFields.Single().Name.Should().Be("Customer\"Name");
+    }
+
+    [Fact]
     public void MergeFieldsは名前からMERGEFIELDを取得します()
     {
         var filePath = TestDocument.CreateTemporaryCopy(TestFilePath);

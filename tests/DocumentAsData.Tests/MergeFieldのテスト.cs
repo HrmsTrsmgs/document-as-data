@@ -90,10 +90,14 @@ public class MergeFieldのテスト
             """MergeField { Name = "C:\\temp customer" }""");
     }
 
-    [Fact(Skip = "引用符を含む名前の固定DOCXと読み取り可否を確認してから、表示のエスケープをレビューする。")]
+    [Fact]
     public void ToStringは名前に含まれる引用符をエスケープします()
     {
-        throw new NotImplementedException();
+        using var document = Document.Open(@"TestData\名前に引用符を含むMERGEFIELD.docx");
+
+        // 名前はCustomer"Nameです。表示では名前中の引用符を\"にします。
+        document.MergeFields.Single().ToString().Should().Be(
+            """MergeField { Name = "Customer\"Name" }""");
     }
 
     [Fact(Skip = "改行を含む名前の固定DOCXと読み取り可否を確認してから、表示のエスケープをレビューする。")]
