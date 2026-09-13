@@ -399,6 +399,16 @@ public class Documentのテスト
     }
 
     [Fact]
+    public void Readは自動変換したプロパティ名と一致するCheckBoxのTagからオブジェクトを読み込みます()
+    {
+        using var document = Document.Open(@"TestData\acceptanceForm.docx");
+
+        // チェック済みのTagはtermsAcceptedです。対応属性なしのTermsAcceptedへ読み込みます。
+        document.Read<AcceptanceDocumentData>()
+            .TermsAccepted.Should().BeTrue();
+    }
+
+    [Fact]
     public void ReadはDocumentItemName属性で指定した名前からオブジェクトを読み込みます()
     {
         var filePath = TestDocument.CreateTemporaryCopy(ContentControlsPath);
@@ -1102,6 +1112,11 @@ public class Documentのテスト
     public sealed class CustomerNameOnlyDocumentData
     {
         public string CustomerName { get; set; } = "";
+    }
+
+    public sealed class AcceptanceDocumentData
+    {
+        public bool TermsAccepted { get; set; }
     }
 
     public sealed class AttributedDocumentData

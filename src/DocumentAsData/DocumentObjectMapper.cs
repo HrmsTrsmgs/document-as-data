@@ -25,7 +25,7 @@ sealed class DocumentObjectMapper
 
     /// <summary>
     /// 文書内のContent ControlまたはMERGEFIELDを、指定した型のプロパティへ対応付けて読み込みます。
-    /// 対応属性がない場合、文字列Content ControlのTagとMERGEFIELD名はC#識別子へ変換して照合します。
+    /// 対応属性がない場合、文字列Content ControlとCheckBoxのTag、およびMERGEFIELD名はC#識別子へ変換して照合します。
     /// </summary>
     /// <typeparam name="T">文書のデータを読み込む型。</typeparam>
     /// <returns>文書内のデータを読み込んだオブジェクト。</returns>
@@ -66,7 +66,7 @@ sealed class DocumentObjectMapper
 
     /// <summary>
     /// 指定したオブジェクトのプロパティを、同じ名前のContent ControlまたはMERGEFIELDへ書き込みます。
-    /// 対応属性がない場合、文字列Content ControlのTagとMERGEFIELD名はC#識別子へ変換して照合します。
+    /// 対応属性がない場合、文字列Content ControlとCheckBoxのTag、およびMERGEFIELD名はC#識別子へ変換して照合します。
     /// </summary>
     /// <typeparam name="T">文書へ書き込むデータの型。</typeparam>
     /// <param name="data">文書へ書き込むデータ。</param>
@@ -120,7 +120,7 @@ sealed class DocumentObjectMapper
 
     /// <summary>
     /// 属性で名前を指定していないプロパティに対応する、元の文書項目名を取得します。
-    /// 文字列Content ControlのTag、MERGEFIELD名の順にC#識別子へ変換して照合します。
+    /// 文字列Content ControlのTag、MERGEFIELD名、CheckBoxのTagの順にC#識別子へ変換して照合します。
     /// 該当しなければプロパティ名を使います。
     /// </summary>
     /// <param name="propertyName">読み書きするプロパティ名。</param>
@@ -134,6 +134,10 @@ sealed class DocumentObjectMapper
             from mergeField in document.MergeFields
             where mergeField.Name.ToCSharpIdentifier() == propertyName
             select mergeField.Name
+        ).SingleOrDefault() ?? (
+            from checkBox in document.CheckBoxes
+            where checkBox.Tag.ToCSharpIdentifier() == propertyName
+            select checkBox.Tag
         ).SingleOrDefault() ?? propertyName;
 
     /// <summary>
