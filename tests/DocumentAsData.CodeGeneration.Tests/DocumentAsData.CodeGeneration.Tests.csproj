@@ -50,6 +50,9 @@
     <None Update="TestData\**\*">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="..\DocumentAsData.Tests\TestData\名前に改行を含むMERGEFIELD.docx"
+          Link="TestData\コード生成\名前に改行を含むMERGEFIELD.docx"
+          CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>

@@ -108,6 +108,27 @@ public sealed class コード生成名前付き項目のテスト : IDisposable
     }
 
     [Fact]
+    public void 改行を含む名前から生成したMERGEFIELDプロパティで文字列を読み取れます()
+    {
+        // 既存の固定DOCXをリンクして使用します。名前中のLFは表示用の改行ではなく、
+        // w:instrText内で引用符に囲まれた名前Customer\nNameの一部です。
+        // 生成コードをコンパイルし、元の名前のまま文書を開いて読み取れることを確認します。
+        var filePath = @"TestData\コード生成\名前に改行を含むMERGEFIELD.docx";
+        using var document = GeneratedCodeInspection
+            .AssemblyFrom(
+                GeneratedCodeInspection.GenerateSources(
+                    filePath,
+                    options => options.NameMappings["Customer\nName"] = "CustomerName"))
+            .GeneratedType("名前に改行を含むMERGEFIELDDocument")
+            .InvokeStaticMethod<Document>("Open", filePath);
+
+        dynamic documentAccessor = document;
+        string tested = documentAccessor.CustomerName;
+
+        tested.Should().Be("株式会社○○");
+    }
+
+    [Fact]
     public void 生成されたDocument型のMERGEFIELDプロパティへ文字列を直接書き込めます()
     {
         var savedPath = temporaryFiles.NewFilePath();

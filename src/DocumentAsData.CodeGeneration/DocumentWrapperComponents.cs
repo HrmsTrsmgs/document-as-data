@@ -229,7 +229,7 @@ static class DocumentWrapperComponents
         return $$"""
 
             /// <summary>
-            /// 文書項目「{{itemName}}」の文字列を取得または設定します。
+            /// 文書項目「{{itemName.Replace("\n", "\\n")}}」の文字列を取得または設定します。
             /// </summary>
             {{DataItemNameAttributeDeclaration(itemName, propertyName)}}public string {{propertyName}} { get; set; } = "";
         """;
@@ -302,7 +302,7 @@ static class DocumentWrapperComponents
         $$"""
 
             /// <summary>
-            /// MERGEFIELD「{{mergeField.Name}}」の文字列を取得または設定します。
+            /// MERGEFIELD「{{mergeField.Name.Replace("\n", "\\n")}}」の文字列を取得または設定します。
             /// </summary>
             /// <remarks>
             /// 読み取りと書き込みはMERGEFIELDを優先し、存在しない場合に同名の文字列Content Controlを使用します。
@@ -394,5 +394,5 @@ static class DocumentWrapperComponents
     /// 生成コード内へ埋め込む文字列リテラルを作ります。
     /// </summary>
     internal static string StringLiteral(string value) =>
-        "\"" + value.Replace("\\", "\\\\").Replace("\"", "\\\"") + "\"";
+        "\"" + value.Replace("\\", "\\\\").Replace("\"", "\\\"").Replace("\n", "\\n") + "\"";
 }
