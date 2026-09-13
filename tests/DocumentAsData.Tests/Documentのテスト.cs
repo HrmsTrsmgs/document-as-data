@@ -536,6 +536,21 @@ public class Documentのテスト
     }
 
     [Fact]
+    public void Replaceは自動変換したプロパティ名と一致するCheckBoxのTagへオブジェクトを書き込みます()
+    {
+        using var document = Document.Open(@"TestData\acceptanceForm.docx");
+
+        // 対応属性なしのTermsAcceptedから、Tag termsAcceptedのチェック済み項目を解除します。
+        document.Replace(
+            new AcceptanceDocumentData
+            {
+                TermsAccepted = false
+            });
+
+        document.CheckBoxes["termsAccepted"].IsChecked.Should().BeFalse();
+    }
+
+    [Fact]
     public void ReplaceはDocumentItemName属性で指定した名前へオブジェクトを書き込みます()
     {
         var filePath = TestDocument.CreateTemporaryCopy(ContentControlsPath);
