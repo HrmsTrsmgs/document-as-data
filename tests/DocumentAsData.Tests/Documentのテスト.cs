@@ -969,6 +969,20 @@ public class Documentのテスト
     }
 
     [Fact]
+    public void Dispose後のSaveは例外を投げて元ファイルを再び束縛しません()
+    {
+        var filePath = TestDocument.CreateTemporaryCopy(EmptyDocumentPath);
+        using var tested = Document.Open(filePath);
+        tested.Dispose();
+
+        FluentActions.Invoking(tested.Save)
+            .Should().Throw<ObjectDisposedException>();
+
+        FluentActions.Invoking(() => File.Delete(filePath))
+            .Should().NotThrow();
+    }
+
+    [Fact]
     public void Saveは文書を閉じる前に元ファイルへ変更を反映します()
     {
         var filePath = TestDocument.CreateTemporaryCopy(SimpleMergeFieldsPath);

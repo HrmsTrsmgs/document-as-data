@@ -299,12 +299,15 @@ public class Document : IDisposable
     /// 開いた元のファイルへ変更を保存します。Streamから開いた文書には使用できません。
     /// </summary>
     /// <exception cref="NotSupportedException">Streamから開いた文書の場合。</exception>
+    /// <exception cref="ObjectDisposedException">ファイルから開いた文書が既に閉じられている場合。</exception>
     public void Save()
     {
         if (filePath is null)
         {
             throw new NotSupportedException();
         }
+
+        ObjectDisposedException.ThrowIf(closed, this);
 
         sourceStream?.Dispose();
         try
