@@ -501,6 +501,21 @@ public class Documentのテスト
     }
 
     [Fact]
+    public void Replaceは自動変換したプロパティ名と一致するTagへオブジェクトを書き込みます()
+    {
+        using var document = Document.Open(@"TestData\customerForm.docx");
+
+        // 対応属性なしのCustomerNameから、文書のTag customerNameへ書き込みます。
+        document.Replace(
+            new CustomerNameOnlyDocumentData
+            {
+                CustomerName = "変更後の氏名"
+            });
+
+        document.ContentControls["customerName"].Text.Should().Be("変更後の氏名");
+    }
+
+    [Fact]
     public void ReplaceはDocumentItemName属性で指定した名前へオブジェクトを書き込みます()
     {
         var filePath = TestDocument.CreateTemporaryCopy(ContentControlsPath);

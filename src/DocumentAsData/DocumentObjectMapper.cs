@@ -39,12 +39,7 @@ sealed class DocumentObjectMapper
         foreach (var property in typeof(T).GetProperties())
         {
             var name = property.GetCustomAttribute<DocumentItemNameAttribute>()?.Name
-                ?? (
-                    from contentControl in document.ContentControls
-                    where contentControl.Tag.ToCSharpIdentifier() == property.Name
-                    select contentControl.Tag
-                ).SingleOrDefault()
-                ?? property.Name;
+                ?? ResolveItemName(property.Name);
 
             property.SetValue(data, ReadValue(name, property.PropertyType));
         }
@@ -70,6 +65,7 @@ sealed class DocumentObjectMapper
 
     /// <summary>
     /// 指定したオブジェクトのプロパティを、同じ名前のContent ControlまたはMERGEFIELDへ書き込みます。
+    /// 対応属性がない場合、文字列Content ControlのTagはC#識別子へ変換して照合します。
     /// </summary>
     /// <typeparam name="T">文書へ書き込むデータの型。</typeparam>
     /// <param name="data">文書へ書き込むデータ。</param>
@@ -91,7 +87,7 @@ sealed class DocumentObjectMapper
             select new
             {
                 Property = property,
-                ItemName = attribute?.Name ?? property.Name,
+                ItemName = attribute?.Name ?? ResolveItemName(property.Name),
                 IsExplicitlyMapped = attribute is not null
             }
         ).ToArray();
@@ -120,6 +116,19 @@ sealed class DocumentObjectMapper
                 mapping.Property.GetValue(data)!);
         }
     }
+
+    /// <summary>
+    /// 属性で名前を指定していないプロパティに対応する、元の文書項目名を取得します。
+    /// 文字列Content ControlのTagをC#識別子へ変換して照合し、該当しなければプロパティ名を使います。
+    /// </summary>
+    /// <param name="propertyName">読み書きするプロパティ名。</param>
+    /// <returns>対応するTag、または元のプロパティ名。</returns>
+    string ResolveItemName(string propertyName) =>
+        (
+            from contentControl in document.ContentControls
+            where contentControl.Tag.ToCSharpIdentifier() == propertyName
+            select contentControl.Tag
+        ).SingleOrDefault() ?? propertyName;
 
     /// <summary>
     /// オブジェクトとの対応付けで扱えるプロパティ型かを取得します。
