@@ -929,6 +929,27 @@ public class Documentのテスト
     }
 
     [Fact]
+    public void Saveは文書を閉じる前に元ファイルへ変更を反映します()
+    {
+        var filePath = TestDocument.CreateTemporaryCopy(SimpleMergeFieldsPath);
+        try
+        {
+            using var document = Document.Open(filePath);
+            document.MergeFields["CustomerName"].Text = "変更後";
+
+            document.Save();
+
+            // documentをDisposeする前に別の文書として読み直し、Saveの完了時点を確認します。
+            using var saved = Document.Open(filePath);
+            saved.MergeFields["CustomerName"].Text.Should().Be("変更後");
+        }
+        finally
+        {
+            File.Delete(filePath);
+        }
+    }
+
+    [Fact]
     public void SaveAsは指定したパスへDOCXを作成します()
     {
         var sourcePath = TestDocument.CreateTemporaryCopy(EmptyDocumentPath);
