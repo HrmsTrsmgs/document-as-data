@@ -1094,6 +1094,35 @@ public class Documentのテスト
     }
 
     [Fact]
+    public void SaveAsは固定容量の元Streamを変更せずに編集結果を別ファイルへ保存します()
+    {
+        var original = File.ReadAllBytes(SimpleMergeFieldsPath);
+        // byte[]を渡して固定容量にします。比較用のoriginalとは別の配列を使います。
+        using var stream = new MemoryStream(File.ReadAllBytes(SimpleMergeFieldsPath));
+        var outputPath = TestDocument.CreateOutputPath();
+        try
+        {
+            using (var document = Document.Open(stream))
+            {
+                document.MergeFields["CustomerName"].Text = "保存先にだけ書き込む変更後の値";
+
+                document.SaveAs(outputPath);
+
+                // 元文書をDisposeする前でも、保存先は完成したDOCXとして読み取れます。
+                using var saved = Document.Open(outputPath, true);
+                saved.MergeFields["CustomerName"].Text.Should().Be("保存先にだけ書き込む変更後の値");
+                stream.ToArray().Should().Equal(original);
+            }
+
+            stream.ToArray().Should().Equal(original);
+        }
+        finally
+        {
+            File.Delete(outputPath);
+        }
+    }
+
+    [Fact]
     public void SaveAsは保存元ファイルを変更しません()
     {
         var sourcePath = TestDocument.CreateTemporaryCopy(SimpleMergeFieldsPath);
