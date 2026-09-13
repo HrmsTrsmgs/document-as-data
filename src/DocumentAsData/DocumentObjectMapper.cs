@@ -120,25 +120,26 @@ sealed class DocumentObjectMapper
 
     /// <summary>
     /// 属性で名前を指定していないプロパティに対応する、元の文書項目名を取得します。
-    /// 文字列Content ControlのTag、MERGEFIELD名、CheckBoxのTagの順にC#識別子へ変換して照合します。
+    /// 文字列Content ControlのTag、MERGEFIELD名、CheckBoxのTagをまとめてC#識別子へ変換して照合します。
     /// 該当しなければプロパティ名を使います。
     /// </summary>
     /// <param name="propertyName">読み書きするプロパティ名。</param>
     /// <returns>対応するTagまたはMERGEFIELD名、該当しなければ元のプロパティ名。</returns>
-    string ResolveItemName(string propertyName) =>
-        (
-            from contentControl in document.ContentControls
-            where contentControl.Tag.ToCSharpIdentifier() == propertyName
-            select contentControl.Tag
-        ).SingleOrDefault() ?? (
-            from mergeField in document.MergeFields
-            where mergeField.Name.ToCSharpIdentifier() == propertyName
-            select mergeField.Name
-        ).SingleOrDefault() ?? (
-            from checkBox in document.CheckBoxes
-            where checkBox.Tag.ToCSharpIdentifier() == propertyName
-            select checkBox.Tag
+    string ResolveItemName(string propertyName)
+    {
+        IEnumerable<string> names =
+        [
+            .. document.ContentControls.Select(it => it.Tag),
+            .. document.MergeFields.Select(it => it.Name),
+            .. document.CheckBoxes.Select(it => it.Tag)
+        ];
+
+        return (
+            from name in names
+            where name.ToCSharpIdentifier() == propertyName
+            select name
         ).SingleOrDefault() ?? propertyName;
+    }
 
     /// <summary>
     /// オブジェクトとの対応付けで扱えるプロパティ型かを取得します。
