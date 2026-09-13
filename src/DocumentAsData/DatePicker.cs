@@ -1,4 +1,5 @@
 ﻿using System.Globalization;
+using System.Text.RegularExpressions;
 using System.Xml;
 using Wordprocessing = DocumentFormat.OpenXml.Wordprocessing;
 
@@ -51,13 +52,22 @@ public class DatePicker : ContentControl
                 ?? throw new InvalidOperationException();
 
             fullDate.InnerText = XmlConvert.ToString(value);
-            // WordのMM-YYYYは四桁の年ですが、.NETではyyyyで指定します。
-            // 確認済みの書式だけを変換し、引用された文字列などを一括置換しません。
             DisplayText.Text = value.ToString(
-                format == "MM-YYYY" ? "MM-yyyy" : format,
+                ToDotNetDateFormat(format),
                 CultureInfo.GetCultureInfo(language));
         }
     }
+
+    /// <summary>
+    /// 単一引用符で囲まれた表示文字列を保持し、Wordの大文字の年指定を.NET用に変換します。
+    /// Wordの書式全体を.NETへ変換するものではありません。
+    /// </summary>
+    /// <param name="format">テンプレートの日付表示形式。</param>
+    /// <returns>引用部分以外の大文字の年指定を小文字にした表示形式。</returns>
+    static string ToDotNetDateFormat(string format) =>
+        // 引用部分を先に一まとまりとして読み、その内部のYを変換対象から外します。
+        Regex.Replace(format, "'[^']*'|Y+", it =>
+            it.Value.StartsWith('Y') ? it.Value.ToLowerInvariant() : it.Value);
 
     /// <summary>
     /// 日時と表示設定を保持するOOXML要素を取得します。

@@ -183,6 +183,38 @@ public class DatePickerのテスト
     }
 
     [Fact]
+    public void SelectedDateTimeプロパティは引用された文字列を残して大文字の年指定を表示します()
+    {
+        var sourcePath = TestDocument.CreateTemporaryCopy(
+            Path.Combine("TestData", "表示形式に大文字の年と引用文字列を含む日付選択Content Control.docx"));
+        var outputPath = TestDocument.CreateOutputPath();
+        try
+        {
+            using (var document = Document.Open(sourcePath, validate: true))
+            {
+                document.DatePickers.Single().SelectedDateTime =
+                    new DateTimeOffset(2026, 12, 31, 0, 0, 0, TimeSpan.FromHours(9));
+                document.SaveAs(outputPath);
+            }
+
+            using var saved = WordprocessingDocument.Open(outputPath, false);
+            // w:dateFormatの「'YYYY' YYYY/MM/dd」では、引用符の内側は文字列、
+            // 外側のYYYYは四桁の年です。w:tに保存した表示内容を検証します。
+            // .NETにそのまま渡しても、Yを一括で小文字にしても正しく表示できません。
+            // 固定DOCXはこの書式を指定したOOXMLであり、Word実機での確認資料ではありません。
+            // https://support.microsoft.com/en-us/word/format-field-results
+            saved.MainDocumentPart!.Document!
+                .Descendants<Wordprocessing.Text>()
+                .Single().Text.Should().Be("YYYY 2026/12/31");
+        }
+        finally
+        {
+            File.Delete(sourcePath);
+            File.Delete(outputPath);
+        }
+    }
+
+    [Fact]
     public void SelectedDateTimeプロパティは表示形式に従った日付文字列を設定します()
     {
         var sourcePath =
@@ -217,4 +249,142 @@ public class DatePickerのテスト
             File.Delete(outputPath);
         }
     }
+
+    // 以下は未レビューの保留メモです。書式の全組み合わせではなく解釈ルールごとに置きます。
+    // w:dateFormat（表示形式）、w:lid（言語）、w:calendar（暦）を持つ固定DOCXを使い、
+    // 公開APIで日時を設定・保存した後のw:t（表示文字列）を確認する予定です。
+    // 未確定のWordの挙動や例外契約は、この段階で断定しません。
+    [Fact(Skip = "日付書式の保留メモ。0.3.0への採用は未決定。仕様レビューと固定DOCX・検証コードの準備後に解除する。")]
+    public void SelectedDateTimeプロパティは二桁の年を表示します()
+    {
+        // yyとYYを確認する。2006年を06と表示する例で、四桁年の既存テストと区別する。
+        throw new NotImplementedException("保留メモのため、固定DOCXと検証コードを準備してから有効化する。");
+    }
+
+    [Fact(Skip = "日付書式の保留メモ。0.3.0への採用は未決定。仕様レビューと固定DOCX・検証コードの準備後に解除する。")]
+    public void SelectedDateTimeプロパティは大文字の日指定を日として表示します()
+    {
+        // DDを含む書式で、日を数値として表示する。既存の小文字ddの確認を繰り返さない。
+        throw new NotImplementedException("保留メモのため、固定DOCXと検証コードを準備してから有効化する。");
+    }
+
+    [Fact(Skip = "日付書式の保留メモ。0.3.0への採用は未決定。仕様レビューと固定DOCX・検証コードの準備後に解除する。")]
+    public void SelectedDateTimeプロパティは大文字の曜日指定を曜日として表示します()
+    {
+        // DDDとDDDDの略称・正式名称を確認する。数値の日指定とは分ける。
+        throw new NotImplementedException("保留メモのため、固定DOCXと検証コードを準備してから有効化する。");
+    }
+
+    [Fact(Skip = "日付書式の保留メモ。0.3.0への採用は未決定。仕様レビューと固定DOCX・検証コードの準備後に解除する。")]
+    public void SelectedDateTimeプロパティは月と日の桁数指定に従ってゼロ埋めします()
+    {
+        // 一桁の月日でMとMM、dとddの違いを確認する。既存の12月31日では区別できない。
+        throw new NotImplementedException("保留メモのため、固定DOCXと検証コードを準備してから有効化する。");
+    }
+
+    [Fact(Skip = "日付書式の保留メモ。0.3.0への採用は未決定。仕様レビューと固定DOCX・検証コードの準備後に解除する。")]
+    public void SelectedDateTimeプロパティは表示言語に従った月名を表示します()
+    {
+        // MMMとMMMMの略称・正式名称を、月名が区別できる言語で確認する。
+        throw new NotImplementedException("保留メモのため、固定DOCXと検証コードを準備してから有効化する。");
+    }
+
+    [Fact(Skip = "日付書式の保留メモ。0.3.0への採用は未決定。仕様レビューと固定DOCX・検証コードの準備後に解除する。")]
+    public void SelectedDateTimeプロパティは表示言語に従った曜日名を表示します()
+    {
+        // dddとddddの略称・正式名称を確認する。大文字からの変換ではなく表示言語が対象。
+        throw new NotImplementedException("保留メモのため、固定DOCXと検証コードを準備してから有効化する。");
+    }
+
+    [Fact(Skip = "日付書式の保留メモ。0.3.0への採用は未決定。仕様レビューと固定DOCX・検証コードの準備後に解除する。")]
+    public void SelectedDateTimeプロパティは時刻を十二時間制と二十四時間制で表示します()
+    {
+        // 午後の時刻でhとHの違いを確認し、hhとHHのゼロ埋めも同じ時刻表示の観点として扱う。
+        throw new NotImplementedException("保留メモのため、固定DOCXと検証コードを準備してから有効化する。");
+    }
+
+    [Fact(Skip = "日付書式の保留メモ。0.3.0への採用は未決定。仕様レビューと固定DOCX・検証コードの準備後に解除する。")]
+    public void SelectedDateTimeプロパティは分と秒の桁数指定に従って表示します()
+    {
+        // 一桁の分秒でmとmm、sとssを確認する。月のMと分のmを混同しない。
+        throw new NotImplementedException("保留メモのため、固定DOCXと検証コードを準備してから有効化する。");
+    }
+
+    [Fact(Skip = "日付書式の保留メモ。0.3.0への採用は未決定。仕様レビューと固定DOCX・検証コードの準備後に解除する。")]
+    public void SelectedDateTimeプロパティは表示言語に従って午前と午後を表示します()
+    {
+        // am/pmとAM/PMを確認する。午前・午後それぞれの代表値を使い、.NETのttとの対応を検証する。
+        throw new NotImplementedException("保留メモのため、固定DOCXと検証コードを準備してから有効化する。");
+    }
+
+    [Fact(Skip = "日付書式の保留メモ。0.3.0への採用は未決定。仕様レビューと固定DOCX・検証コードの準備後に解除する。")]
+    public void SelectedDateTimeプロパティは一文字の書式をその項目だけの表示として扱います()
+    {
+        // 日だけのd、月だけのM、時だけのhなどを確認する。.NETの標準書式への切替を防ぐ観点。
+        throw new NotImplementedException("保留メモのため、固定DOCXと検証コードを準備してから有効化する。");
+    }
+
+    [Fact(Skip = "日付書式の保留メモ。0.3.0への採用は未決定。仕様レビューと固定DOCX・検証コードの準備後に解除する。")]
+    public void SelectedDateTimeプロパティは日付書式のスラッシュを地域別の区切り文字へ変更しません()
+    {
+        // 地域設定の区切り文字がスラッシュでない言語を選び、書式で指定した文字が残ることを確認する。
+        throw new NotImplementedException("保留メモのため、固定DOCXと検証コードを準備してから有効化する。");
+    }
+
+    [Fact(Skip = "日付書式の保留メモ。0.3.0への採用は未決定。仕様レビューと固定DOCX・検証コードの準備後に解除する。")]
+    public void SelectedDateTimeプロパティは時刻書式のコロンを地域別の区切り文字へ変更しません()
+    {
+        // 地域設定の区切り文字がコロンでない言語を選び、書式で指定した文字が残ることを確認する。
+        throw new NotImplementedException("保留メモのため、固定DOCXと検証コードを準備してから有効化する。");
+    }
+
+    [Fact(Skip = "日付書式の保留メモ。0.3.0への採用は未決定。仕様レビューと固定DOCX・検証コードの準備後に解除する。")]
+    public void SelectedDateTimeプロパティは日付書式内の引用符とエスケープの扱いを確認します()
+    {
+        // 単一引用符内のYYYYを保持する基本例は既存テストで確認済み。引用符そのもの、二重引用符、バックスラッシュはWordで意味を確認してから期待値を決める。
+        throw new NotImplementedException("保留メモのため、固定DOCXと検証コードを準備してから有効化する。");
+    }
+
+    [Fact(Skip = "日付書式の保留メモ。0.3.0への採用は未決定。仕様レビューと固定DOCX・検証コードの準備後に解除する。")]
+    public void SelectedDateTimeプロパティは日付書式の記号の繰り返しの扱いを確認します()
+    {
+        // yyyなどの連続指定について、Wordが記号を区切る規則と.NETとの差を確認して期待値を決める。
+        throw new NotImplementedException("保留メモのため、固定DOCXと検証コードを準備してから有効化する。");
+    }
+
+    [Fact(Skip = "日付書式の保留メモ。0.3.0への採用は未決定。仕様レビューと固定DOCX・検証コードの準備後に解除する。")]
+    public void SelectedDateTimeプロパティは日付書式の通常文字をNET固有の書式として解釈しません()
+    {
+        // Wordで通常文字となるもののうち、.NETでは特別な意味を持つ文字を選ぶ。対象文字はWordでの確認後に決める。
+        throw new NotImplementedException("保留メモのため、固定DOCXと検証コードを準備してから有効化する。");
+    }
+
+    [Fact(Skip = "日付書式の保留メモ。0.3.0への採用は未決定。仕様レビューと固定DOCX・検証コードの準備後に解除する。")]
+    public void SelectedDateTimeプロパティは表示形式が省略された場合の表示を確認します()
+    {
+        // w:dateFormatがない場合の言語に基づく表示形式を確認する。欠落した属性値や不正形式とは分ける。
+        throw new NotImplementedException("保留メモのため、固定DOCXと検証コードを準備してから有効化する。");
+    }
+
+    [Fact(Skip = "日付書式の保留メモ。0.3.0への採用は未決定。仕様レビューと固定DOCX・検証コードの準備後に解除する。")]
+    public void SelectedDateTimeプロパティは表示言語が省略された場合の表示を確認します()
+    {
+        // w:lidがない場合に参照する内容のrunの言語を確認する。実行環境の現在カルチャーで勝手に補わない。
+        throw new NotImplementedException("保留メモのため、固定DOCXと検証コードを準備してから有効化する。");
+    }
+
+    [Fact(Skip = "日付書式の保留メモ。0.3.0への採用は未決定。仕様レビューと固定DOCX・検証コードの準備後に解除する。")]
+    public void SelectedDateTimeプロパティは暦指定と表示言語による表示の扱いを確認します()
+    {
+        // w:calendarは日付選択UIの暦指定でもある。保存表示への影響をWordで確認し、UI設定から表示の年を推測しない。
+        throw new NotImplementedException("保留メモのため、固定DOCXと検証コードを準備してから有効化する。");
+    }
+
+    [Fact(Skip = "日付書式の保留メモ。0.3.0への採用は未決定。仕様レビューと固定DOCX・検証コードの準備後に解除する。")]
+    public void SelectedDateTimeプロパティは非対応の日付書式を指定された場合の扱いを確認します()
+    {
+        // 対応範囲と、非対応時に例外・無変更などのどの契約を採るかを先にレビューする。現段階で例外型を固定しない。
+        throw new NotImplementedException("保留メモのため、固定DOCXと検証コードを準備してから有効化する。");
+    }
+
 }
