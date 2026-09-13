@@ -63,10 +63,9 @@ public class Documentのテスト
     {
         var copyPath = TestDocument.CreateTemporaryCopy(EmptyDocumentPath);
         var tested = Document.Open(copyPath);
-        var disposable = tested as IDisposable;
 
-        disposable.Should().NotBeNull();
-        disposable.Dispose();
+        tested.Should().NotBeNull();
+        tested.Dispose();
         FluentActions.Invoking(
             () => File.Delete(copyPath)
         ).Should().NotThrow();
@@ -1187,7 +1186,7 @@ public class Documentのテスト
     public sealed class AttributedPropertyWithoutPublicGetterData
     {
         [DocumentItemName("CustomerName")]
-        public string Value
+        public static string Value
         {
             set { }
         }
@@ -1197,7 +1196,7 @@ public class Documentのテスト
     {
         public string CustomerName { get; set; } = "";
 
-        public string Ignored
+        public static string Ignored
         {
             set { }
         }
