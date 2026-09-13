@@ -6,6 +6,18 @@
 public static class DocumentWrapperGenerator
 {
     /// <summary>
+    /// 生成メソッドとの重複や、生成コードが参照するコレクションの隠蔽を防ぐために予約する名前です。
+    /// </summary>
+    static readonly string[] ReservedMemberNames =
+    [
+        nameof(Document.Read),
+        nameof(Document.Open),
+        nameof(Document.Replace),
+        nameof(Document.MergeFields),
+        nameof(Document.ContentControls)
+    ];
+
+    /// <summary>
     /// 指定したWord文書からC#ソースコードを生成します。
     /// </summary>
     /// <param name="filePath">生成元のWord文書のパス。</param>
@@ -57,12 +69,8 @@ public static class DocumentWrapperGenerator
             .. from sourceName in propertySourceNames
                group sourceName by options.GeneratedName(sourceName)
                into sourceNames
-               // 生成するメソッドとの重複や、生成コードが参照するコレクションの隠蔽も診断します。
                where sourceNames.Count() > 1
-                   || sourceNames.Key is nameof(Document.Read)
-                       or nameof(Document.Open)
-                       or nameof(Document.Replace)
-                       or nameof(Document.MergeFields)
+                   || ReservedMemberNames.Contains(sourceNames.Key)
                select new CodeGenerationDiagnostic(
                    true,
                    sourceNames.Key,

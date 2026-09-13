@@ -105,6 +105,20 @@ public sealed class コード生成診断のテスト
     }
 
     [Fact]
+    public void 生成プロパティ名がDocumentのContentControlsコレクションと衝突した場合にエラーを診断します()
+    {
+        GeneratedCodeInspection
+            .GenerateDiagnostics(
+                @"TestData\コード生成\文字列ContentControl.docx",
+                options => options.NameMappings["CustomerName"] = "ContentControls")
+            .Should().ContainEquivalentOf(
+                new CodeGenerationDiagnostic(
+                    true,
+                    "ContentControls",
+                    ["CustomerName"]));
+    }
+
+    [Fact]
     public void 同じ生成Document型内の異なる種類のプロパティ名が衝突した場合にも診断します()
     {
         GeneratedCodeInspection
