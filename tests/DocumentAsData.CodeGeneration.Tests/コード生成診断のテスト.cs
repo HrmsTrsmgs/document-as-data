@@ -49,6 +49,20 @@ public sealed class コード生成診断のテスト
     }
 
     [Fact]
+    public void 生成プロパティ名が生成Document型のReadメソッドと衝突した場合にエラーを診断します()
+    {
+        GeneratedCodeInspection
+            .GenerateDiagnostics(
+                @"TestData\コード生成\customerData.docx",
+                options => options.NameMappings["customerName"] = "Read")
+            .Should().ContainEquivalentOf(
+                new CodeGenerationDiagnostic(
+                    true,
+                    "Read",
+                    ["customerName"]));
+    }
+
+    [Fact]
     public void 同じ生成Document型内の異なる種類のプロパティ名が衝突した場合にも診断します()
     {
         GeneratedCodeInspection
