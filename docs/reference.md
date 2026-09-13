@@ -320,6 +320,7 @@ document.DatePickers["DeliveryDate"].SelectedDateTime = new DateTimeOffset(
 ```
 
 表示文字列はテンプレートの表示形式と表示言語に従って更新します。
+日時が未入力でも、表示形式・表示言語・表示用の文字列要素があれば日時を設定できます。
 表示形式は、.NETと共通の `yyyy/MM/dd` と、OOXMLの仕様例の `MM-YYYY`、引用文字列を含む `'YYYY' YYYY/MM/dd` をテストしています。
 大文字の年指定を.NET用の小文字へ変換し、単一引用符内の文字列は保持します。
 Word独自の表示形式すべてとの互換性はありません。Word実機での表示確認ではなく、保存したOOXMLの表示文字列をテストしています。

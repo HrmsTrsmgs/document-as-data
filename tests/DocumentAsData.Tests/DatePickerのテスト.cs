@@ -151,6 +151,30 @@ public class DatePickerのテスト
     }
 
     [Fact]
+    public void SelectedDateTimeプロパティは未入力のコントロールに日時を設定できます()
+    {
+        var filePath = TestDocument.CreateTemporaryCopy(
+            Path.Combine("TestData", "日時が未入力の日付選択Content Control.docx"));
+        try
+        {
+            // w:dateはありますが、日時を保持するw:fullDate属性はなく、
+            // 表示文字列のw:tも空です。書式と表示言語は設定されています。
+            // 未入力状態を狙った最小OOXMLで、Wordのプレースホルダー表示は対象外です。
+            using var document = Document.Open(filePath, validate: true);
+            var tested = document.DatePickers.Single();
+            var value = new DateTimeOffset(2026, 12, 31, 0, 0, 0, TimeSpan.FromHours(9));
+
+            tested.SelectedDateTime = value;
+
+            tested.SelectedDateTime.Should().Be(value);
+        }
+        finally
+        {
+            File.Delete(filePath);
+        }
+    }
+
+    [Fact]
     public void SelectedDateTimeプロパティはMMYYYY形式の年を四桁で表示します()
     {
         var sourcePath = TestDocument.CreateTemporaryCopy(

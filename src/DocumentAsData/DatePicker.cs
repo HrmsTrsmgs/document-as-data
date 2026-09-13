@@ -32,9 +32,12 @@ public class DatePicker : ContentControl
     /// <summary>
     /// 日付選択Content Controlの日時を取得または設定します。
     /// </summary>
+    /// <remarks>
+    /// 日時が未入力でも設定できます。表示形式、表示言語、表示文字列は必要です。
+    /// </remarks>
     /// <exception cref="InvalidOperationException">
-    /// 日付選択のプロパティ、日時、表示形式、表示言語、表示文字列の
-    /// いずれかが欠落しているか、必要な要素が複数存在する場合。
+    /// 取得時に日時が欠落している場合。または日付選択のプロパティや、設定時に必要な
+    /// 表示形式、表示言語、表示文字列が欠落しているか、必要な要素が複数存在する場合。
     /// </exception>
     public DateTimeOffset SelectedDateTime
     {
@@ -44,14 +47,12 @@ public class DatePicker : ContentControl
         set
         {
             var properties = DateProperties;
-            var fullDate = properties.FullDate
-                ?? throw new InvalidOperationException();
             var format = properties.DateFormat?.Val?.Value
                 ?? throw new InvalidOperationException();
             var language = properties.LanguageId?.Val?.Value
                 ?? throw new InvalidOperationException();
 
-            fullDate.InnerText = XmlConvert.ToString(value);
+            properties.FullDate = new() { InnerText = XmlConvert.ToString(value) };
             DisplayText.Text = value.ToString(
                 ToDotNetDateFormat(format),
                 CultureInfo.GetCultureInfo(language));
