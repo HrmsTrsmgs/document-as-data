@@ -25,7 +25,7 @@ sealed class DocumentObjectMapper
 
     /// <summary>
     /// 文書内のContent ControlまたはMERGEFIELDを、指定した型のプロパティへ対応付けて読み込みます。
-    /// 対応属性がない場合、文字列Content ControlのTagはC#識別子へ変換して照合します。
+    /// 対応属性がない場合、文字列Content ControlのTagとMERGEFIELD名はC#識別子へ変換して照合します。
     /// </summary>
     /// <typeparam name="T">文書のデータを読み込む型。</typeparam>
     /// <returns>文書内のデータを読み込んだオブジェクト。</returns>
@@ -36,12 +36,13 @@ sealed class DocumentObjectMapper
     {
         var data = Activator.CreateInstance<T>();
 
-        foreach (var property in typeof(T).GetProperties())
+        foreach (var (property, value) in
+            from property in typeof(T).GetProperties()
+            let name = property.GetCustomAttribute<DocumentItemNameAttribute>()?.Name
+                ?? ResolveItemName(property.Name)
+            select (property, ReadValue(name, property.PropertyType)))
         {
-            var name = property.GetCustomAttribute<DocumentItemNameAttribute>()?.Name
-                ?? ResolveItemName(property.Name);
-
-            property.SetValue(data, ReadValue(name, property.PropertyType));
+            property.SetValue(data, value);
         }
 
         return data;
@@ -65,7 +66,7 @@ sealed class DocumentObjectMapper
 
     /// <summary>
     /// 指定したオブジェクトのプロパティを、同じ名前のContent ControlまたはMERGEFIELDへ書き込みます。
-    /// 対応属性がない場合、文字列Content ControlのTagはC#識別子へ変換して照合します。
+    /// 対応属性がない場合、文字列Content ControlのTagとMERGEFIELD名はC#識別子へ変換して照合します。
     /// </summary>
     /// <typeparam name="T">文書へ書き込むデータの型。</typeparam>
     /// <param name="data">文書へ書き込むデータ。</param>
@@ -119,15 +120,20 @@ sealed class DocumentObjectMapper
 
     /// <summary>
     /// 属性で名前を指定していないプロパティに対応する、元の文書項目名を取得します。
-    /// 文字列Content ControlのTagをC#識別子へ変換して照合し、該当しなければプロパティ名を使います。
+    /// 文字列Content ControlのTag、MERGEFIELD名の順にC#識別子へ変換して照合します。
+    /// 該当しなければプロパティ名を使います。
     /// </summary>
     /// <param name="propertyName">読み書きするプロパティ名。</param>
-    /// <returns>対応するTag、または元のプロパティ名。</returns>
+    /// <returns>対応するTagまたはMERGEFIELD名、該当しなければ元のプロパティ名。</returns>
     string ResolveItemName(string propertyName) =>
         (
             from contentControl in document.ContentControls
             where contentControl.Tag.ToCSharpIdentifier() == propertyName
             select contentControl.Tag
+        ).SingleOrDefault() ?? (
+            from mergeField in document.MergeFields
+            where mergeField.Name.ToCSharpIdentifier() == propertyName
+            select mergeField.Name
         ).SingleOrDefault() ?? propertyName;
 
     /// <summary>
