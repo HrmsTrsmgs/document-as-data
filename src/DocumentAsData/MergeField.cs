@@ -201,20 +201,42 @@ public class MergeField : DocumentItem, IDocumentTextItem
                 throw new InvalidOperationException();
             }
 
-            // OOXML要素を列挙しながら削除すると次の兄弟をたどれないため、削除対象を先に確定します。
-            foreach (var oldResultElement in
-                resultSeparatorRun.ElementsAfter()
-                    .TakeWhile(it => it != fieldEndRun)
-                    .ToArray())
-            {
-                oldResultElement.Remove();
-            }
-
             var newValueElements = WordTextValue.CreateElements(value)
                 .DefaultIfEmpty(new Wordprocessing.Text())
                 .ToArray();
-            fieldEndRun.InsertBeforeSelf(
-                new Wordprocessing.Run(newValueElements));
+            if (resultSeparatorRun == fieldEndRun)
+            {
+                // 境界が同じrunにある場合、結果はその子要素です。
+                // 兄弟runには本文があるため触らず、separateとendの間だけを置き換えます。
+                // 列挙中に要素を削除するので、削除対象は先に確定します。
+                foreach (var oldResultElement in
+                    resultSeparator.ElementsAfter()
+                        .TakeWhile(it => it != fieldEnd)
+                        .ToArray())
+                {
+                    oldResultElement.Remove();
+                }
+
+                foreach (var newValueElement in newValueElements)
+                {
+                    fieldEnd.InsertBeforeSelf(newValueElement);
+                }
+            }
+            else
+            {
+                // OOXML要素を列挙しながら削除すると次の兄弟をたどれないため、削除対象を先に確定します。
+                foreach (var oldResultElement in
+                    resultSeparatorRun.ElementsAfter()
+                        .TakeWhile(it => it != fieldEndRun)
+                        .ToArray())
+                {
+                    oldResultElement.Remove();
+                }
+
+                fieldEndRun.InsertBeforeSelf(
+                    new Wordprocessing.Run(newValueElements));
+            }
+
             valueElements.Clear();
             valueElements.AddRange(newValueElements);
             // 書き換えた表示結果をWordが古い結果として扱わないようにします。
