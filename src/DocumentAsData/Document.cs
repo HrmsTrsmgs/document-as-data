@@ -25,13 +25,23 @@ public class Document : IDisposable
     /// ファイルパス版で開いた保存元を、文書の生存期間中に束縛するストリームです。
     /// Stream版ではnullです。
     /// </summary>
-    readonly Stream? sourceStream;
+    Stream? sourceStream;
+
+    /// <summary>
+    /// Saveで上書きする元ファイルのパスです。Stream版ではnullです。
+    /// </summary>
+    readonly string? filePath;
 
     /// <summary>
     /// 保存元を変更せずに編集するための作業コピーです。
-    /// Stream版ではnullです。
+    /// Stream版では最初の書き込みでコピーを作るラッパーを保持します。
     /// </summary>
     readonly Stream? workingStream;
+
+    /// <summary>
+    /// 二重に解放をしないための終了状態です。
+    /// </summary>
+    bool closed;
 
     /// <summary>
     /// 派生した型付き文書から、指定したDOCXファイルを開きます。
@@ -40,6 +50,7 @@ public class Document : IDisposable
     protected Document(string filePath)
         : this(OpenWorkingCopy(filePath))
     {
+        this.filePath = filePath;
     }
 
     /// <summary>
@@ -47,20 +58,20 @@ public class Document : IDisposable
     /// </summary>
     /// <param name="stream">DOCX文書を格納したストリーム。</param>
     /// <remarks>
-    /// 文書への変更はストリームへ書き戻しますが、ストリーム自体は閉じません。
+    /// 元ストリームの内容は変更せず、ストリーム自体も閉じません。Saveは使用できません。
     /// </remarks>
     protected Document(Stream stream)
-        : this(Packaging.WordprocessingDocument.Open(stream, true))
+        : this(OpenBorrowedStream(stream))
     {
     }
 
     /// <summary>
-    /// ファイルパス版で開いた文書と、その保存元および作業コピーを所有します。
+    /// 開いた文書と作業領域を所有します。保存元の所有権はファイル版だけが保持します。
     /// </summary>
     /// <param name="workingCopy">開いた文書と、その生存期間中に保持するストリーム。</param>
     Document((
         Packaging.WordprocessingDocument Document,
-        Stream SourceStream,
+        Stream? SourceStream,
         Stream WorkingStream) workingCopy)
         : this(
             workingCopy.Document,
@@ -71,7 +82,7 @@ public class Document : IDisposable
 
     /// <summary>
     /// ファイルパス版で使う保存元と作業コピーを、Open XML文書と同じ生存期間で解放できるよう所有します。
-    /// Stream版ではストリームを所有しません。
+    /// Stream版ではラッパーだけを所有し、呼び出し側のストリームは所有しません。
     /// </summary>
     /// <param name="document">読み取り・書き込み対象のOpen XML文書。</param>
     /// <param name="sourceStream">保存元を束縛するストリーム。</param>
@@ -143,13 +154,38 @@ public class Document : IDisposable
             sourceStream.CopyTo(workingStream);
             workingStream.Position = 0;
             return (
-                Packaging.WordprocessingDocument.Open(workingStream, true),
+                Packaging.WordprocessingDocument.Open(workingStream, true, new OpenSettings { AutoSave = false }),
                 sourceStream,
                 workingStream);
         }
         catch
         {
             workingStream.Dispose();
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// 借りたStreamへのSDKの書き込みを、作業コピーへ隔離して開きます。
+    /// </summary>
+    /// <param name="source">呼び出し側が所有するStream。</param>
+    /// <returns>開いた文書と、この文書が所有するラッパー。</returns>
+    static (
+        Packaging.WordprocessingDocument Document,
+        Stream? SourceStream,
+        Stream WorkingStream) OpenBorrowedStream(Stream source)
+    {
+        var stream = new CopyOnWriteStream(source);
+        try
+        {
+            return (
+                Packaging.WordprocessingDocument.Open(stream, true, new OpenSettings { AutoSave = false }),
+                null,
+                stream);
+        }
+        catch
+        {
+            stream.Dispose();
             throw;
         }
     }
@@ -172,10 +208,10 @@ public class Document : IDisposable
     /// <param name="stream">DOCX文書を格納したストリーム。</param>
     /// <returns>開いた文書。</returns>
     /// <remarks>
-    /// 文書への変更はストリームへ書き戻しますが、ストリーム自体は閉じません。
+    /// 元ストリームの内容は変更せず、ストリーム自体も閉じません。Saveは使用できません。
     /// </remarks>
     public static Document Open(Stream stream) =>
-        new(Packaging.WordprocessingDocument.Open(stream, true));
+        new(stream);
 
     /// <summary>
     /// 指定したストリーム上のDOCX文書を開きます。
@@ -187,7 +223,7 @@ public class Document : IDisposable
     /// <paramref name="validate" />が<c>true</c>で、文書にOpen XML検証エラーがある場合。
     /// </exception>
     /// <remarks>
-    /// 文書への変更はストリームへ書き戻しますが、ストリーム自体は閉じません。
+    /// 元ストリームの内容は変更せず、ストリーム自体も閉じません。Saveは使用できません。
     /// </remarks>
     public static Document Open(Stream stream, bool validate) =>
         ValidateIfRequested(Open(stream), validate);
@@ -259,6 +295,28 @@ public class Document : IDisposable
     public DatePickerCollection DatePickers { get; }
 
     /// <summary>
+    /// 開いた元のファイルへ変更を保存します。Streamから開いた文書には使用できません。
+    /// </summary>
+    /// <exception cref="NotSupportedException">Streamから開いた文書の場合。</exception>
+    public void Save()
+    {
+        if (filePath is null)
+        {
+            throw new NotSupportedException();
+        }
+
+        sourceStream?.Dispose();
+        try
+        {
+            SaveAs(filePath);
+        }
+        finally
+        {
+            sourceStream = File.OpenRead(filePath);
+        }
+    }
+
+    /// <summary>
     /// 保存元を変更せず、文書を別のDOCXファイルとして保存します。
     /// </summary>
     /// <param name="filePath">保存先のファイルパス。</param>
@@ -268,18 +326,128 @@ public class Document : IDisposable
     }
 
     /// <summary>
-    /// 保存元を変更せず、文書が使用しているファイルを閉じます。
+    /// 未保存の変更を保存せずに文書を閉じます。呼び出し側のStreamは閉じません。
     /// </summary>
     public void Close()
     {
-        document.Dispose();
-        workingStream?.Dispose();
-        sourceStream?.Dispose();
+        if (closed)
+        {
+            return;
+        }
+
+        try
+        {
+            document.Dispose();
+        }
+        finally
+        {
+            workingStream?.Dispose();
+            sourceStream?.Dispose();
+            closed = true;
+        }
     }
 
     /// <summary>
-    /// 保存元を変更せず、文書が使用しているリソースを解放します。
+    /// 未保存の変更を保存せずに文書を閉じて所有リソースを解放します。
     /// </summary>
     public void Dispose() =>
         Close();
+
+    /// <summary>
+    /// SDKの最初の書き込みで拡張可能なコピーへ切り替え、元Streamの内容を保護します。
+    /// 元Streamは借りるだけで、このラッパーは閉じません。
+    /// </summary>
+    /// <param name="source">呼び出し側が所有する、読み取り・シーク可能な元Stream。</param>
+    sealed class CopyOnWriteStream(Stream source) : Stream
+    {
+        /// <summary>
+        /// SDKによる変更を保持する作業領域です。書き込み前は作成しません。
+        /// </summary>
+        MemoryStream? workingCopy;
+
+        /// <summary>
+        /// コピーへの切り替え前は元Stream、切り替え後は作業領域を読みます。
+        /// </summary>
+        Stream Current => workingCopy ?? source;
+
+        /// <inheritdoc />
+        public override bool CanRead => Current.CanRead;
+
+        /// <inheritdoc />
+        public override bool CanSeek => Current.CanSeek;
+
+        /// <summary>
+        /// 書き込み先には拡張可能なコピーを使います。
+        /// </summary>
+        public override bool CanWrite => true;
+
+        /// <inheritdoc />
+        public override long Length => Current.Length;
+
+        /// <inheritdoc />
+        public override long Position
+        {
+            get => Current.Position;
+            set => Current.Position = value;
+        }
+
+        /// <inheritdoc />
+        public override int Read(byte[] buffer, int offset, int count) =>
+            Current.Read(buffer, offset, count);
+
+        /// <inheritdoc />
+        public override long Seek(long offset, SeekOrigin origin) =>
+            Current.Seek(offset, origin);
+
+        /// <inheritdoc />
+        public override void Write(byte[] buffer, int offset, int count) =>
+            CreateWorkingCopy().Write(buffer, offset, count);
+
+        /// <inheritdoc />
+        public override void SetLength(long value) =>
+            CreateWorkingCopy().SetLength(value);
+
+        /// <inheritdoc />
+        public override void Flush() => workingCopy?.Flush();
+
+        /// <summary>
+        /// 読み書き位置を保ったまま元Streamをコピーし、以後は同じ作業領域を使います。
+        /// </summary>
+        /// <returns>このラッパーが所有する拡張可能な作業領域。</returns>
+        MemoryStream CreateWorkingCopy()
+        {
+            if (workingCopy is null)
+            {
+                var position = source.Position;
+                source.Position = 0;
+                var copy = new MemoryStream();
+                try
+                {
+                    source.CopyTo(copy);
+                    copy.Position = position;
+                    workingCopy = copy;
+                }
+                catch
+                {
+                    copy.Dispose();
+                    throw;
+                }
+            }
+
+            return workingCopy;
+        }
+
+        /// <summary>
+        /// 所有する作業コピーだけを解放し、呼び出し側のStreamは残します。
+        /// </summary>
+        /// <param name="disposing">マネージドリソースも解放する場合はtrue。</param>
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                workingCopy?.Dispose();
+            }
+            base.Dispose(disposing);
+        }
+    }
 }

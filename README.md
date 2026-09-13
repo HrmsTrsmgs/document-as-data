@@ -99,6 +99,9 @@ public sealed class CustomerData
 プロパティを変更した後は `Replace(data)` で文書へ反映し、`SaveAs` で別ファイルへ保存します。
 `Replace(data)` の型引数は、渡したオブジェクトから推論されます。
 
+開いた元のファイルへ保存する場合は `document.Save()` を使います。
+`SaveAs(path)` は別ファイルへの保存です。`Dispose()` だけでは未保存の変更を元データへ反映しません。
+
 ### 文書の名前とプロパティ名を変える
 
 プロパティ名とは別の名前で文書項目を指定するには、DTOのプロパティに `DocumentItemName` 属性を付けます。
@@ -176,35 +179,35 @@ document.SaveAs("output.docx");
 
 | 開き方 | 編集内容の反映先 | Dispose時の入力の扱い |
 | --- | --- | --- |
-| `Open(string)` | 作業コピー。`SaveAs` で別ファイルへ保存 | 元ファイルを変更せず解放 |
-| `Open(Stream)` | 渡したStreamへ書き戻す | 文書を閉じるがStream自体は閉じない |
+| `Open(string)` | `Save()` で元ファイル、`SaveAs(path)` で別ファイルへ保存 | 未保存の変更を反映せず解放 |
+| `Open(Stream)` | `SaveAs(path)` で別ファイルへ保存。`Save()` は使用不可 | 元Streamの内容を変更せず、Stream自体も閉じない |
+
+Streamから開いた文書で `Save()` を呼ぶと、書き込み前に `NotSupportedException` を投げます。
+固定容量・拡張可能かによらず、元Streamへの上書き保存は提供しません。
+編集結果は `SaveAs(path)` で別ファイルへ保存します。
 
 Streamは呼び出し側が所有し、使用後にDisposeします。
-入力を保持したい場合は、編集用の書き込み・シーク可能な `MemoryStream` へコピーします。
+次の例では、固定容量の `MemoryStream` を入力に使います。
 
 ```csharp
 using System.IO;
 using Marimo.DocumentAsData;
 
-using var source = File.OpenRead("template.docx");
-using var working = new MemoryStream();
-source.CopyTo(working);
-working.Position = 0;
+using var input = new MemoryStream(File.ReadAllBytes("template.docx"));
 
-using (var document = Document.Open(working))
+using (var document = Document.Open(input))
 {
     document.MergeFields["CustomerName"].Text = "株式会社○○";
+    document.SaveAs("output.docx");
 }
 
-// 文書をDisposeした後に、完成したDOCXのバイト列を取り出します。
-var bytes = working.ToArray();
-File.WriteAllBytes("output.docx", bytes);
 ```
 
-固定長のバッファで編集領域が不足しないよう、この例では拡張可能な `MemoryStream` を作成しています。
+固定容量の `MemoryStream` でも、元データを変更せず開いて閉じることができます。
 任意のStreamがそのまま使えることを保証するものではありません。
 ブラウザから取得した読み取り専用・非シーク可能なStreamも、呼び出し側で編集用Streamへコピーしてください。
 本体は `IBrowserFile` に依存しません。ブラウザでのダウンロードやHTTPレスポンスの生成は利用側の責務です。
+現在はStreamへの出力APIがないため、Streamだけで編集結果の出力まで完結するブラウザ用途には未対応です。
 Blazor WebAssembly上での実動作は、このリポジトリのテストでは確認していません。
 
 ## 開くときにOOXMLを検証する

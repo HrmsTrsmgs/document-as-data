@@ -106,6 +106,22 @@ public class Documentのテスト
     }
 
     [Fact]
+    public void Openは開閉でサイズが増える文書も固定容量のMemoryStreamで開いて閉じられます()
+    {
+        // byte[]を渡すMemoryStreamは拡張できません。共通補助の拡張可能Streamとは異なる条件です。
+        // 空の文書.docxは正常なOOXMLですが、SDK 3.5.1で開閉するとZIPが918から924バイトへ増えます。
+        // XMLの内容が同じでも再圧縮・再保存すると再現しなくなるため、原本のバイト列を保ちます。
+        using var stream = new MemoryStream(File.ReadAllBytes(EmptyDocumentPath));
+
+        var action = () =>
+        {
+            using var document = Document.Open(stream);
+        };
+
+        action.Should().NotThrow();
+    }
+
+    [Fact]
     public void Openは検証指定を省略した場合不正なOOXMLも開きます()
     {
         var filePath = TestDocument.CreateTemporaryCopy(InvalidContentControlWithoutTagValuePath);
@@ -308,18 +324,39 @@ public class Documentのテスト
     }
 
     [Fact]
-    public void Stream版でもMERGEFIELDの変更を文書へ書き込みます()
+    public void Stream版のSaveは元のStreamを変更せずにNotSupportedExceptionを投げます()
     {
+        var original = File.ReadAllBytes(SimpleMergeFieldsPath);
         using var stream = TestDocument.CreateMemoryStream(SimpleMergeFieldsPath);
+
         using (var document = Document.Open(stream))
         {
             document.MergeFields["CustomerName"].Text = "変更後";
+            var action = () => document.Save();
+
+            // 容量不足ではなく、Stream版では元へのSaveを提供しないという制約です。
+            // 拡張可能なStreamでも同じように拒否します。
+            action.Should().Throw<NotSupportedException>();
+            stream.ToArray().Should().Equal(original);
         }
 
-        stream.Position = 0;
-        using var saved = Document.Open(stream);
+        // 拒否した保存がDispose時に実行されることもありません。
+        stream.ToArray().Should().Equal(original);
+    }
 
-        saved.MergeFields["CustomerName"].Text.Should().Be("変更後");
+    [Fact]
+    public void DisposeはSaveしていない変更を元のStreamへ書き込みません()
+    {
+        var original = File.ReadAllBytes(SimpleMergeFieldsPath);
+        using var stream = TestDocument.CreateMemoryStream(SimpleMergeFieldsPath);
+
+        using (var document = Document.Open(stream))
+        {
+            document.MergeFields["CustomerName"].Text = "保存しない変更";
+        }
+
+        // 値だけでなく、SDKによるZIPの書き直しも元Streamへ漏らさないことを確認します。
+        stream.ToArray().Should().Equal(original);
     }
 
     [Fact]
@@ -863,6 +900,27 @@ public class Documentのテスト
                 .Should().Be("変更後の氏名");
             document.ContentControls["Address"].Text
                 .Should().Be("東京都");
+        }
+        finally
+        {
+            File.Delete(filePath);
+        }
+    }
+
+    [Fact]
+    public void Saveは開いているファイルへ変更を保存します()
+    {
+        var filePath = TestDocument.CreateTemporaryCopy(SimpleMergeFieldsPath);
+        try
+        {
+            using (var document = Document.Open(filePath))
+            {
+                document.MergeFields["CustomerName"].Text = "変更後";
+                document.Save();
+            }
+
+            using var saved = Document.Open(filePath);
+            saved.MergeFields["CustomerName"].Text.Should().Be("変更後");
         }
         finally
         {
