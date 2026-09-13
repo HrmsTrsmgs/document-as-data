@@ -25,7 +25,7 @@ sealed class DocumentObjectMapper
 
     /// <summary>
     /// 文書内のContent ControlまたはMERGEFIELDを、指定した型のプロパティへ対応付けて読み込みます。
-    /// 対応属性がない場合、文字列Content ControlとCheckBoxのTag、およびMERGEFIELD名はC#識別子へ変換して照合します。
+    /// 対応属性がない場合、文字列Content Control、CheckBox、日付選択のTagとMERGEFIELD名をC#識別子へ変換して照合します。
     /// </summary>
     /// <typeparam name="T">文書のデータを読み込む型。</typeparam>
     /// <returns>文書内のデータを読み込んだオブジェクト。</returns>
@@ -66,7 +66,7 @@ sealed class DocumentObjectMapper
 
     /// <summary>
     /// 指定したオブジェクトのプロパティを、同じ名前のContent ControlまたはMERGEFIELDへ書き込みます。
-    /// 対応属性がない場合、文字列Content ControlとCheckBoxのTag、およびMERGEFIELD名はC#識別子へ変換して照合します。
+    /// 対応属性がない場合、文字列Content Control、CheckBox、日付選択のTagとMERGEFIELD名をC#識別子へ変換して照合します。
     /// </summary>
     /// <typeparam name="T">文書へ書き込むデータの型。</typeparam>
     /// <param name="data">文書へ書き込むデータ。</param>
@@ -120,7 +120,7 @@ sealed class DocumentObjectMapper
 
     /// <summary>
     /// 属性で名前を指定していないプロパティに対応する、元の文書項目名を取得します。
-    /// 文字列Content ControlのTag、MERGEFIELD名、CheckBoxのTagをまとめてC#識別子へ変換して照合します。
+    /// 文字列Content Control、CheckBox、日付選択のTagとMERGEFIELD名をまとめてC#識別子へ変換して照合します。
     /// 該当しなければプロパティ名を使います。
     /// </summary>
     /// <param name="propertyName">読み書きするプロパティ名。</param>
@@ -131,7 +131,8 @@ sealed class DocumentObjectMapper
         [
             .. document.ContentControls.Select(it => it.Tag),
             .. document.MergeFields.Select(it => it.Name),
-            .. document.CheckBoxes.Select(it => it.Tag)
+            .. document.CheckBoxes.Select(it => it.Tag),
+            .. document.DatePickers.Select(it => it.Tag)
         ];
 
         return (

@@ -36,6 +36,7 @@
     <None Include="..\DocumentAsData.CodeGeneration.Tests\TestData\コード生成\customerForm.docx" Link="TestData\customerForm.docx" CopyToOutputDirectory="PreserveNewest" />
     <None Include="..\DocumentAsData.CodeGeneration.Tests\TestData\コード生成\customerData.docx" Link="TestData\customerData.docx" CopyToOutputDirectory="PreserveNewest" />
     <None Include="..\DocumentAsData.CodeGeneration.Tests\TestData\コード生成\acceptanceForm.docx" Link="TestData\acceptanceForm.docx" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\DocumentAsData.CodeGeneration.Tests\TestData\コード生成\deliveryForm.docx" Link="TestData\deliveryForm.docx" CopyToOutputDirectory="PreserveNewest" />
     <None Include="..\DocumentAsData.CodeGeneration.Tests\TestData\コード生成\バックスラッシュを含むMERGEFIELD名.docx" Link="TestData\バックスラッシュを含むMERGEFIELD名.docx" CopyToOutputDirectory="PreserveNewest" />
     <None Include="..\DocumentAsData.CodeGeneration.Tests\TestData\コード生成\引用符とバックスラッシュを含むTag.docx" Link="TestData\引用符とバックスラッシュを含むTag.docx" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>

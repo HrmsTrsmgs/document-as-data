@@ -409,6 +409,16 @@ public class Documentのテスト
     }
 
     [Fact]
+    public void Readは自動変換したプロパティ名と一致する日付選択ContentControlのTagからオブジェクトを読み込みます()
+    {
+        using var document = Document.Open(@"TestData\deliveryForm.docx");
+
+        // 文書のTagはdeliveryDateです。対応属性なしのDeliveryDateへ読み込みます。
+        document.Read<DateDocumentData>().DeliveryDate
+            .Should().Be(new DateTimeOffset(2026, 9, 4, 0, 0, 0, TimeSpan.Zero));
+    }
+
+    [Fact]
     public void ReadはDocumentItemName属性で指定した名前からオブジェクトを読み込みます()
     {
         var filePath = TestDocument.CreateTemporaryCopy(ContentControlsPath);
@@ -548,6 +558,22 @@ public class Documentのテスト
             });
 
         document.CheckBoxes["termsAccepted"].IsChecked.Should().BeFalse();
+    }
+
+    [Fact]
+    public void Replaceは自動変換したプロパティ名と一致する日付選択ContentControlのTagへオブジェクトを書き込みます()
+    {
+        using var document = Document.Open(@"TestData\deliveryForm.docx");
+
+        // 対応属性なしのDeliveryDateから、Tag deliveryDateの日付を変更します。
+        document.Replace(
+            new DateDocumentData
+            {
+                DeliveryDate = new DateTimeOffset(2026, 10, 1, 0, 0, 0, TimeSpan.Zero)
+            });
+
+        document.DatePickers["deliveryDate"].SelectedDateTime
+            .Should().Be(new DateTimeOffset(2026, 10, 1, 0, 0, 0, TimeSpan.Zero));
     }
 
     [Fact]
