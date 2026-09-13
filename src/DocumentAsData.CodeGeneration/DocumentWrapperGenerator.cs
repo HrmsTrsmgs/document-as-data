@@ -14,7 +14,10 @@ public static class DocumentWrapperGenerator
         nameof(Document.Open),
         nameof(Document.Replace),
         nameof(Document.MergeFields),
-        nameof(Document.ContentControls)
+        nameof(Document.ContentControls),
+        nameof(Document.CheckBoxes),
+        nameof(Document.DatePickers),
+        "ValidateRequiredItems"
     ];
 
     /// <summary>
@@ -62,6 +65,13 @@ public static class DocumentWrapperGenerator
             .. from datePicker in document.DatePickers
                select datePicker.Tag
         ];
+        var documentName = options.GeneratedName(Path.GetFileNameWithoutExtension(filePath));
+        string[] reservedNames =
+        [
+            .. ReservedMemberNames,
+            $"{documentName}Document",
+            $"{documentName}Data"
+        ];
 
         return
         [
@@ -70,7 +80,7 @@ public static class DocumentWrapperGenerator
                group sourceName by options.GeneratedName(sourceName)
                into sourceNames
                where sourceNames.Count() > 1
-                   || ReservedMemberNames.Contains(sourceNames.Key)
+                   || reservedNames.Contains(sourceNames.Key)
                select new CodeGenerationDiagnostic(
                    true,
                    sourceNames.Key,

@@ -119,6 +119,78 @@ public sealed class コード生成診断のテスト
     }
 
     [Fact]
+    public void 生成プロパティ名がDocumentのCheckBoxesコレクションと衝突した場合にエラーを診断します()
+    {
+        GeneratedCodeInspection
+            .GenerateDiagnostics(
+                @"TestData\コード生成\チェック済みCheckBox.docx",
+                options => options.NameMappings["Agreement"] = "CheckBoxes")
+            .Should().ContainEquivalentOf(
+                new CodeGenerationDiagnostic(true, "CheckBoxes", ["Agreement"]));
+    }
+
+    [Fact]
+    public void 生成プロパティ名がDocumentのDatePickersコレクションと衝突した場合にエラーを診断します()
+    {
+        GeneratedCodeInspection
+            .GenerateDiagnostics(
+                @"TestData\コード生成\日付選択ContentControl.docx",
+                options => options.NameMappings["DeliveryDate"] = "DatePickers")
+            .Should().ContainEquivalentOf(
+                new CodeGenerationDiagnostic(true, "DatePickers", ["DeliveryDate"]));
+    }
+
+    [Fact]
+    public void 生成プロパティ名が生成Document型の項目検証メソッドと衝突した場合にエラーを診断します()
+    {
+        GeneratedCodeInspection
+            .GenerateDiagnostics(
+                @"TestData\コード生成\customerData.docx",
+                options => options.NameMappings["customerName"] = "ValidateRequiredItems")
+            .Should().ContainEquivalentOf(
+                new CodeGenerationDiagnostic(true, "ValidateRequiredItems", ["customerName"]));
+    }
+
+    [Fact]
+    public void 生成プロパティ名が生成Document型名と同じ場合にエラーを診断します()
+    {
+        GeneratedCodeInspection
+            .GenerateDiagnostics(
+                @"TestData\コード生成\customerData.docx",
+                options => options.NameMappings["customerName"] = "CustomerDataDocument")
+            .Should().ContainEquivalentOf(
+                new CodeGenerationDiagnostic(true, "CustomerDataDocument", ["customerName"]));
+    }
+
+    [Fact]
+    public void 生成プロパティ名が生成Data型名と同じ場合にエラーを診断します()
+    {
+        GeneratedCodeInspection
+            .GenerateDiagnostics(
+                @"TestData\コード生成\customerData.docx",
+                options => options.NameMappings["customerName"] = "CustomerDataData")
+            .Should().ContainEquivalentOf(
+                new CodeGenerationDiagnostic(true, "CustomerDataData", ["customerName"]));
+    }
+
+    [Theory]
+    [InlineData("OrderDocument")]
+    [InlineData("OrderData")]
+    public void NameMappingsで変更した生成型名とプロパティ名が同じ場合にもエラーを診断します(string propertyName)
+    {
+        GeneratedCodeInspection
+            .GenerateDiagnostics(
+                @"TestData\コード生成\customerData.docx",
+                options => options.NameMappings = new()
+                {
+                    ["customerData"] = "Order",
+                    ["customerName"] = propertyName
+                })
+            .Should().ContainEquivalentOf(
+                new CodeGenerationDiagnostic(true, propertyName, ["customerName"]));
+    }
+
+    [Fact]
     public void 同じ生成Document型内の異なる種類のプロパティ名が衝突した場合にも診断します()
     {
         GeneratedCodeInspection
