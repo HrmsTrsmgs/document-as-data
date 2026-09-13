@@ -74,7 +74,7 @@ public class TextContentControl : ContentControl, IDocumentTextItem
 
     /// <summary>
     /// 最初の文字列要素を、Wordが表示できる文字列、タブ、改行要素へ置き換えます。
-    /// 空文字列では次回の設定先を失わないよう、文字列要素自体を残します。
+    /// 空文字列やタブ・改行だけの値では、次回の設定先として空の文字列要素を残します。
     /// </summary>
     /// <param name="text">置換対象の最初の文字列要素。</param>
     /// <param name="value">設定する値。</param>
@@ -87,9 +87,17 @@ public class TextContentControl : ContentControl, IDocumentTextItem
         }
 
         var parent = text.Parent ?? throw new InvalidOperationException();
+        var elements = WordTextValue.CreateElements(value).ToArray();
 
-        text.Remove();
-        parent.Append(WordTextValue.CreateElements(value));
+        if (elements.Any(it => it is Wordprocessing.Text))
+        {
+            text.Remove();
+        }
+        else
+        {
+            text.Text = "";
+        }
+        parent.Append(elements);
     }
 
     /// <summary>

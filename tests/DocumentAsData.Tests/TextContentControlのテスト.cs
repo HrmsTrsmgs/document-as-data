@@ -295,6 +295,31 @@ public class TextContentControlのテスト
         }
     }
 
+    [Theory]
+    [InlineData("\t")]
+    [InlineData("\r\n")]
+    [InlineData("\n")]
+    public void Textプロパティはタブまたは改行だけを設定したContentControlへ値を再設定します(string value)
+    {
+        var filePath = TestDocument.CreateTemporaryCopy(ContentControlPath);
+        try
+        {
+            using var document = Document.Open(filePath);
+            var tested = document.ContentControls["CustomerName"];
+            // タブと改行はOOXMLではw:tではなくw:tabとw:brになります。
+            // それらだけの値を書いた後も、次の文字列を書き込める必要があります。
+            tested.Text = value;
+
+            tested.Text = "再設定";
+
+            tested.Text.Should().Be("再設定");
+        }
+        finally
+        {
+            File.Delete(filePath);
+        }
+    }
+
     [Fact]
     public void 保存したContentControlは分割されていた古い値を残しません()
     {
