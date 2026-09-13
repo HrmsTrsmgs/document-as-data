@@ -20,11 +20,14 @@ public abstract class DocumentItem
     public Document Document { get; }
 
     /// <summary>
-    /// 名前やTagを引用符で囲み、引用符とバックスラッシュをエスケープして表示します。
+    /// 名前やTagを引用符で囲み、引用符、バックスラッシュ、改行（LF）をエスケープして表示します。
     /// 日本語などの通常の文字は、そのまま読める形で保持します。
     /// </summary>
     /// <param name="name">表示する名前またはTag。</param>
     /// <returns>引用符で囲んだ表示用文字列。</returns>
     private protected static string QuoteName(string name) =>
-        "\"" + name.Replace("\\", "\\\\").Replace("\"", "\\\"") + "\"";
+        "\"" + name
+            .Replace("\\", "\\\\")
+            .Replace("\"", "\\\"")
+            .Replace("\n", "\\n") + "\"";
 }

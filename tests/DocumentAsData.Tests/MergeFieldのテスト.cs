@@ -100,10 +100,17 @@ public class MergeFieldのテスト
             """MergeField { Name = "Customer\"Name" }""");
     }
 
-    [Fact(Skip = "改行を含む名前の固定DOCXと読み取り可否を確認してから、表示のエスケープをレビューする。")]
+    [Fact]
     public void ToStringは名前に含まれる改行をエスケープします()
     {
-        throw new NotImplementedException();
+        using var document = Document.Open(@"TestData\名前に改行を含むMERGEFIELD.docx", true);
+
+        // w:instrTextの引用符で囲まれた名前中に、実際のLFを保存しています。
+        // 表示結果のw:brではなく名前の一部です。名前は保持し、ToStringだけで\nにします。
+        var tested = document.MergeFields.Single();
+        tested.Name.Should().Be("Customer\nName");
+        tested.ToString().Should().Be(
+            """MergeField { Name = "Customer\nName" }""");
     }
 
     [Fact]
