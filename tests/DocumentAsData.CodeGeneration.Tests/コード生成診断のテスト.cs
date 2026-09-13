@@ -237,4 +237,21 @@ public sealed class コード生成診断のテスト
             .Should().ContainEquivalentOf(
                 new CodeGenerationDiagnostic(true, "", ["customerName"]));
     }
+
+    [Fact]
+    public void 書式文字だけが異なる生成プロパティ名も同じ識別子として診断します()
+    {
+        // U+200CはC#の識別子の比較では無視される書式文字です。
+        // 文字列としては異なる名前でも、生成した二つのプロパティは衝突します。
+        GeneratedCodeInspection
+            .GenerateDiagnostics(
+                MergeFieldNameCollisionDocumentFilePath,
+                options => options.NameMappings = new()
+                {
+                    ["customer_id"] = "Shared\u200CValue",
+                    ["customer-id"] = "SharedValue"
+                })
+            .Should().ContainEquivalentOf(
+                new CodeGenerationDiagnostic(true, "SharedValue", ["customer_id", "customer-id"]));
+    }
 }

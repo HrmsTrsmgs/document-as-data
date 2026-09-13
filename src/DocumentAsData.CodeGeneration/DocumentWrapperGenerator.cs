@@ -1,4 +1,6 @@
-﻿namespace Marimo.DocumentAsData.CodeGeneration;
+﻿using System.Globalization;
+
+namespace Marimo.DocumentAsData.CodeGeneration;
 
 /// <summary>
 /// Word文書から、DocumentAsDataの型付きラッパーコードを生成します。
@@ -77,7 +79,7 @@ public static class DocumentWrapperGenerator
         [
             .. InvalidDocumentNameDiagnostics(filePath, options),
             .. from sourceName in propertySourceNames
-               group sourceName by options.GeneratedName(sourceName)
+               group sourceName by WithoutFormatCharacters(options.GeneratedName(sourceName))
                into sourceNames
                where sourceNames.Count() > 1
                    || sourceNames.Key.IsEmpty()
@@ -88,6 +90,16 @@ public static class DocumentWrapperGenerator
                    [.. sourceNames])
         ];
     }
+
+    /// <summary>
+    /// C#の識別子比較で無視される書式文字を除き、衝突診断に使う名前を作ります。
+    /// 生成コードや文書内の元名自体は変更しません。
+    /// </summary>
+    static string WithoutFormatCharacters(string name) =>
+        string.Concat(
+            from character in name
+            where char.GetUnicodeCategory(character) != UnicodeCategory.Format
+            select character);
 
     /// <summary>
     /// 生成Document型の名前を作れない文書ファイル名を診断します。
