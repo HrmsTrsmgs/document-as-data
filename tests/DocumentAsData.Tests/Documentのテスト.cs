@@ -379,6 +379,16 @@ public class Documentのテスト
     }
 
     [Fact]
+    public void Readは自動変換したプロパティ名と一致するTagからオブジェクトを読み込みます()
+    {
+        using var document = Document.Open(@"TestData\customerForm.docx");
+
+        // 文書のTagはcustomerNameです。対応属性を付けずにCustomerNameへ読み込みます。
+        document.Read<CustomerNameOnlyDocumentData>()
+            .CustomerName.Should().Be("山田太郎");
+    }
+
+    [Fact]
     public void ReadはDocumentItemName属性で指定した名前からオブジェクトを読み込みます()
     {
         var filePath = TestDocument.CreateTemporaryCopy(ContentControlsPath);

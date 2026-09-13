@@ -15,4 +15,8 @@
     <PackageReference Include="System.Interactive" Version="7.0.1" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Include="..\DocumentAsData.CodeGeneration\CSharpIdentifier.cs" Link="CSharpIdentifier.cs" />
+  </ItemGroup>
+
 </Project>

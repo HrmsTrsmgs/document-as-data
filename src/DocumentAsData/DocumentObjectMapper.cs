@@ -1,5 +1,7 @@
 ﻿using System.Reflection;
 
+using Marimo.DocumentAsData.CodeGeneration;
+
 namespace Marimo.DocumentAsData;
 
 /// <summary>
@@ -23,6 +25,7 @@ sealed class DocumentObjectMapper
 
     /// <summary>
     /// 文書内のContent ControlまたはMERGEFIELDを、指定した型のプロパティへ対応付けて読み込みます。
+    /// 対応属性がない場合、文字列Content ControlのTagはC#識別子へ変換して照合します。
     /// </summary>
     /// <typeparam name="T">文書のデータを読み込む型。</typeparam>
     /// <returns>文書内のデータを読み込んだオブジェクト。</returns>
@@ -36,6 +39,11 @@ sealed class DocumentObjectMapper
         foreach (var property in typeof(T).GetProperties())
         {
             var name = property.GetCustomAttribute<DocumentItemNameAttribute>()?.Name
+                ?? (
+                    from contentControl in document.ContentControls
+                    where contentControl.Tag.ToCSharpIdentifier() == property.Name
+                    select contentControl.Tag
+                ).SingleOrDefault()
                 ?? property.Name;
 
             property.SetValue(data, ReadValue(name, property.PropertyType));
