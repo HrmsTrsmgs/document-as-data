@@ -51,8 +51,10 @@ public class DatePicker : ContentControl
                 ?? throw new InvalidOperationException();
 
             fullDate.InnerText = XmlConvert.ToString(value);
+            // WordのMM-YYYYは四桁の年ですが、.NETではyyyyで指定します。
+            // 確認済みの書式だけを変換し、引用された文字列などを一括置換しません。
             DisplayText.Text = value.ToString(
-                format,
+                format == "MM-YYYY" ? "MM-yyyy" : format,
                 CultureInfo.GetCultureInfo(language));
         }
     }

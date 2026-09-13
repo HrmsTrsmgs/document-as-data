@@ -320,6 +320,8 @@ document.DatePickers["DeliveryDate"].SelectedDateTime = new DateTimeOffset(
 ```
 
 表示文字列はテンプレートの表示形式と表示言語に従って更新します。
+表示形式は、.NETと共通の `yyyy/MM/dd` と、Wordの `MM-YYYY` をテストしています。
+`MM-YYYY` は.NETの対応形式へ変換しますが、Word独自の表示形式すべてとの互換性はありません。
 `DateOnly` へ自動変換したり、日本標準時へ一律に変換したりはしません。
 誕生日・期日などの業務上の意味付けは利用側で行ってください。
 

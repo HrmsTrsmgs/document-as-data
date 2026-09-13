@@ -151,6 +151,38 @@ public class DatePickerのテスト
     }
 
     [Fact]
+    public void SelectedDateTimeプロパティはMMYYYY形式の年を四桁で表示します()
+    {
+        var sourcePath = TestDocument.CreateTemporaryCopy(
+            Path.Combine("TestData", "表示形式がMM-YYYYの日付選択Content Control.docx"));
+        var outputPath = TestDocument.CreateOutputPath();
+        try
+        {
+            using (var document = Document.Open(sourcePath, validate: true))
+            {
+                document.DatePickers.Single().SelectedDateTime =
+                    new DateTimeOffset(2026, 12, 31, 0, 0, 0, TimeSpan.FromHours(9));
+                document.SaveAs(outputPath);
+            }
+
+            using var saved = WordprocessingDocument.Open(outputPath, false);
+            // w:date/@w:fullDateは日時そのもの、w:dateFormatはWord用の表示形式、
+            // w:tは実際に文書に表示する文字列です。
+            // OOXMLのMM-YYYYは月と四桁の年を表しますが、.NETの書式へそのまま
+            // 渡すとYYYYが文字のまま残るため、保存した表示文字列を確認します。
+            // https://learn.microsoft.com/en-us/dotnet/api/documentformat.openxml.wordprocessing.dateformat
+            saved.MainDocumentPart!.Document!
+                .Descendants<Wordprocessing.Text>()
+                .Single().Text.Should().Be("12-2026");
+        }
+        finally
+        {
+            File.Delete(sourcePath);
+            File.Delete(outputPath);
+        }
+    }
+
+    [Fact]
     public void SelectedDateTimeプロパティは表示形式に従った日付文字列を設定します()
     {
         var sourcePath =
