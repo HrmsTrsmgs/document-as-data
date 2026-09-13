@@ -17,6 +17,26 @@ public sealed class コード生成名前設定のテスト
         @"TestData\コード生成\日付選択ContentControl.docx";
 
     [Fact]
+    public void 書式文字を含むTagから生成したDataプロパティへ文字列を読み込みます()
+    {
+        // TagはCustomer\u200CNameです。U+200Cは不可視の書式文字で、
+        // C#ソースの識別子に含めてもコンパイル後の名前では無視されます。
+        // 見た目や生成ソースだけでなく、Readから元のTagへ対応できることを確認します。
+        const string filePath = @"TestData\コード生成\書式文字を含むTag.docx";
+        using var document = GeneratedCodeInspection
+            .AssemblyFrom(GeneratedCodeInspection.GenerateSources(filePath))
+            .GeneratedType("書式文字を含むTagDocument")
+            .InvokeStaticMethod<Document>("Open", filePath);
+        dynamic documentAccessor = document;
+
+        dynamic tested = documentAccessor.Read();
+
+        (tested.CustomerName as object)
+            .Should().BeOfType<string>()
+            .Which.Should().Be("山田太郎");
+    }
+
+    [Fact]
     public void NameMappingsは自動名前変換より優先されます()
     {
         GeneratedCodeInspection

@@ -1,4 +1,6 @@
-﻿namespace Marimo.DocumentAsData.CodeGeneration;
+﻿using System.Globalization;
+
+namespace Marimo.DocumentAsData.CodeGeneration;
 
 /// <summary>
 /// Documentラッパー生成で使用するテンプレート部品です。
@@ -277,12 +279,14 @@ static class DocumentWrapperComponents
 
     /// <summary>
     /// 生成Dataプロパティ名が文書項目名と異なる場合に、ReadとReplaceへ元名を伝える属性を生成します。
+    /// 書式文字はコンパイル後の識別子では無視されるため、ソース上で同名でも属性を付けます。
     /// </summary>
     /// <param name="itemName">文書内の項目名またはTag。</param>
     /// <param name="propertyName">生成するC#プロパティ名。</param>
-    /// <returns>属性と次行のインデント。同名の場合は空文字列。</returns>
+    /// <returns>属性と次行のインデント。元名を補う必要がない場合は空文字列。</returns>
     static string DataItemNameAttributeDeclaration(string itemName, string propertyName) =>
         itemName == propertyName
+            && !propertyName.Any(it => char.GetUnicodeCategory(it) == UnicodeCategory.Format)
             ? ""
             : $"[DocumentItemName({StringLiteral(itemName)})]{Environment.NewLine}    ";
 
