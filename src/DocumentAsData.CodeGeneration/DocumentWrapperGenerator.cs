@@ -57,11 +57,12 @@ public static class DocumentWrapperGenerator
             .. from sourceName in propertySourceNames
                group sourceName by options.GeneratedName(sourceName)
                into sourceNames
-               // これらのメソッドは生成Document型にも宣言するため、項目が1件でも同名プロパティを作れません。
+               // 生成するメソッドとの重複や、生成コードが参照するコレクションの隠蔽も診断します。
                where sourceNames.Count() > 1
                    || sourceNames.Key is nameof(Document.Read)
                        or nameof(Document.Open)
                        or nameof(Document.Replace)
+                       or nameof(Document.MergeFields)
                select new CodeGenerationDiagnostic(
                    true,
                    sourceNames.Key,
