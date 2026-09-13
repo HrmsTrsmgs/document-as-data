@@ -250,6 +250,10 @@ public class Document : IDisposable
     /// <summary>
     /// 文書内のContent ControlまたはMERGEFIELDを、指定した型のプロパティへ対応付けて読み込みます。
     /// </summary>
+    /// <remarks>
+    /// DocumentItemName属性に指定した元名を優先します。属性がない場合は文書内の名前・Tagを
+    /// C#識別子へ変換してプロパティ名と照合し、該当がなければプロパティ名をそのまま使います。
+    /// </remarks>
     /// <typeparam name="T">文書のデータを読み込む型。</typeparam>
     /// <returns>文書内のデータを読み込んだオブジェクト。</returns>
     /// <exception cref="DocumentMappingException">
@@ -259,8 +263,12 @@ public class Document : IDisposable
         objectMapper.Read<T>();
 
     /// <summary>
-    /// 指定したオブジェクトのプロパティを、同じ名前のContent ControlまたはMERGEFIELDへ書き込みます。
+    /// 指定したオブジェクトのプロパティを、対応するContent ControlまたはMERGEFIELDへ書き込みます。
     /// </summary>
+    /// <remarks>
+    /// DocumentItemName属性に指定した元名を優先します。属性がない場合は文書内の名前・Tagを
+    /// C#識別子へ変換してプロパティ名と照合し、該当がなければプロパティ名をそのまま使います。
+    /// </remarks>
     /// <typeparam name="T">文書へ書き込むデータの型。</typeparam>
     /// <param name="data">文書へ書き込むデータ。</param>
     /// <exception cref="DocumentMappingException">

@@ -65,7 +65,7 @@ sealed class DocumentObjectMapper
             .Text;
 
     /// <summary>
-    /// 指定したオブジェクトのプロパティを、同じ名前のContent ControlまたはMERGEFIELDへ書き込みます。
+    /// 指定したオブジェクトのプロパティを、対応するContent ControlまたはMERGEFIELDへ書き込みます。
     /// 対応属性がない場合、文字列Content Control、CheckBox、日付選択のTagとMERGEFIELD名をC#識別子へ変換して照合します。
     /// </summary>
     /// <typeparam name="T">文書へ書き込むデータの型。</typeparam>

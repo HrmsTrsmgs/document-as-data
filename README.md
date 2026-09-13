@@ -91,7 +91,10 @@ public sealed class CustomerData
 }
 ```
 
-文字列プロパティは、プロパティ名と同じ名前のMERGEFIELD、または同じTagの文字列Content Controlへ対応付けます。
+属性がない場合、文書内の名前・Tagをコード生成と同じ規則でC#識別子へ変換し、DTOのプロパティ名と照合します。
+例えば、文書の `customerName` はDTOの `CustomerName` に対応します。
+変換後の名前に該当がなければ、プロパティ名をそのまま文書内の名前・Tagとして使います。
+文字列プロパティの対応先は、MERGEFIELDまたは文字列Content Controlです。
 この例では `CustomerName` はMERGEFIELD、`Address` はContent Controlですが、DTO側で種類を指定する必要はありません。
 両方に同名の項目がある場合は、対応先を一つに決められないため例外になります。
 
@@ -104,7 +107,8 @@ public sealed class CustomerData
 
 ### 文書の名前とプロパティ名を変える
 
-プロパティ名とは別の名前で文書項目を指定するには、DTOのプロパティに `DocumentItemName` 属性を付けます。
+自動変換に任せず文書項目の元名を明示するには、DTOのプロパティに `DocumentItemName` 属性を付けます。
+属性に指定した名前は、自動変換より優先されます。
 前の例の `CustomerData` を次の定義に置き換えると、`Name` が文書内の `CustomerName` に対応します。
 呼び出し側の代入も `data.CustomerName = ...` から `data.Name = ...` へ変更します。
 
@@ -120,7 +124,7 @@ public sealed class CustomerData
 
 `Read<CustomerData>()` は `CustomerName` の値を `Name` へ読み込み、
 `Replace(data)` は `data.Name` の値を `CustomerName` へ書き込みます。
-属性のない `Address` は、引き続きプロパティ名で対応付けます。
+属性のない `Address` は、引き続き上記の自動名前対応を使います。
 文書内の名前やTag自体を変更する機能ではありません。
 
 ## チェックボックス
@@ -138,7 +142,8 @@ document.CheckBoxes["Agreement"].IsChecked = true;
 document.SaveAs("agreement-output.docx");
 ```
 
-`Read<T>()`・`Replace<T>()` では、DTOの `bool` プロパティを同名のTagを持つCheckBoxへ対応付けます。
+`Read<T>()`・`Replace<T>()` では、DTOの `bool` プロパティをCheckBoxへ対応付けます。
+Tagとプロパティ名の照合には、文字列プロパティと同じ自動名前対応を使います。
 `DocumentItemName` 属性で別のTagも指定できます。
 
 ## 日付選択Content Control
@@ -166,8 +171,9 @@ document.DatePickers["DeliveryDate"].SelectedDateTime = new DateTimeOffset(
 document.SaveAs("output.docx");
 ```
 
-`Read<T>()`と`Replace<T>()`では、`DateTimeOffset`プロパティを同じ名前の
-日付選択Content Controlに対応付けます。表示文字列はテンプレートの表示形式と
+`Read<T>()`と`Replace<T>()`では、`DateTimeOffset`プロパティを
+日付選択Content Controlに対応付けます。Tagの照合には同じ自動名前対応を使い、
+`DocumentItemName` 属性で元のTagを明示することもできます。表示文字列はテンプレートの表示形式と
 表示言語に従って更新します。
 
 `SelectedDateTime` はOOXMLに記録された日時を扱います。`DateOnly` へ自動変換したり、
@@ -281,6 +287,7 @@ var sources = DocumentWrapperGenerator.GenerateSources(
 `NameMappings` は自動変換より優先します。辞書には生成後の名前ではなく、文書内の元名を指定します。
 同じ元名への設定は、項目の種類を区別せず適用されます。
 生成Dataプロパティ名が元名と異なる場合は `DocumentItemName` 属性が生成され、読み書き先を保持します。
+書式文字を含む名前も、コンパイル後の識別子から書式文字が除かれるため、属性で元名を保持します。
 
 ### 名前の衝突を診断する
 
