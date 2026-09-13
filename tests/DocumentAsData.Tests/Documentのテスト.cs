@@ -107,6 +107,80 @@ public class Documentのテスト
     }
 
     [Fact]
+    public void Openは読み取り専用のStream上の文書を開きます()
+    {
+        using var stream = new MemoryStream(File.ReadAllBytes(SimpleMergeFieldsPath), writable: false);
+        using var tested = Document.Open(stream);
+
+        tested.MergeFields["CustomerName"].Text.Should().Be("株式会社○○");
+    }
+
+    [Fact]
+    public void OpenはシークできないStream上の文書を開きます()
+    {
+        using var stream = new NonSeekableReadStream(File.OpenRead(SimpleMergeFieldsPath));
+        using var tested = Document.Open(stream);
+
+        tested.MergeFields["CustomerName"].Text.Should().Be("株式会社○○");
+    }
+
+    [Theory]
+    [InlineData(1)]
+    [InlineData(17)]
+    public void OpenはStreamの現在位置を文書の先頭として読み込みます(int prefixLength)
+    {
+        using var stream = new MemoryStream(
+            [.. new byte[prefixLength], .. File.ReadAllBytes(SimpleMergeFieldsPath)]);
+        stream.Position = prefixLength;
+        using var tested = Document.Open(stream);
+
+        tested.MergeFields["CustomerName"].Text.Should().Be("株式会社○○");
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void Openは空のStreamで失敗しても呼び出し側のStreamを閉じません(bool seekable)
+    {
+        using var source = new MemoryStream();
+        using Stream stream = seekable ? source : new NonSeekableReadStream(source);
+        var tested = () =>
+        {
+            using var document = Document.Open(stream);
+        };
+
+        tested.Should().Throw<InvalidDataException>();
+        stream.CanRead.Should().BeTrue();
+        source.ToArray().Should().BeEmpty();
+    }
+
+    [Fact]
+    public void Openは読み取り不可のStreamを内容を変更せず閉じずに拒否します()
+    {
+        var filePath = TestDocument.CreateTemporaryCopy(SimpleMergeFieldsPath);
+        var original = File.ReadAllBytes(filePath);
+        try
+        {
+            using (var stream = File.Open(filePath, FileMode.Open, FileAccess.Write))
+            {
+                var tested = () =>
+                {
+                    using var document = Document.Open(stream);
+                };
+
+                tested.Should().Throw<Exception>();
+                stream.CanWrite.Should().BeTrue();
+            }
+
+            File.ReadAllBytes(filePath).Should().Equal(original);
+        }
+        finally
+        {
+            File.Delete(filePath);
+        }
+    }
+
+    [Fact]
     public void Openは開閉でサイズが増える文書も固定容量のMemoryStreamで開いて閉じられます()
     {
         // byte[]を渡すMemoryStreamは拡張できません。共通補助の拡張可能Streamとは異なる条件です。
@@ -324,11 +398,15 @@ public class Documentのテスト
         document.MergeFields["CustomerName"].Text.Should().Be("株式会社○○");
     }
 
-    [Fact]
-    public void Stream版のSaveは元のStreamを変更せずにNotSupportedExceptionを投げます()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void Stream版のSaveは元のStreamを変更せずにNotSupportedExceptionを投げます(bool expandable)
     {
         var original = File.ReadAllBytes(SimpleMergeFieldsPath);
-        using var stream = TestDocument.CreateMemoryStream(SimpleMergeFieldsPath);
+        using var stream = expandable
+            ? TestDocument.CreateMemoryStream(SimpleMergeFieldsPath)
+            : new MemoryStream(original.ToArray());
 
         using (var document = Document.Open(stream))
         {
@@ -1118,6 +1196,134 @@ public class Documentのテスト
         }
         finally
         {
+            File.Delete(outputPath);
+        }
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void SaveAsは書き込み不可のStreamからも元データを変更せず編集結果を保存します(bool seekable)
+    {
+        var original = File.ReadAllBytes(SimpleMergeFieldsPath);
+        using var source = new MemoryStream(original.ToArray(), writable: false);
+        using Stream stream = seekable ? source : new NonSeekableReadStream(source);
+        var outputPath = TestDocument.CreateOutputPath();
+        try
+        {
+            using (var document = Document.Open(stream))
+            {
+                document.MergeFields["CustomerName"].Text = "保存した文字列";
+                document.SaveAs(outputPath);
+
+                using var saved = Document.Open(outputPath, true);
+                saved.MergeFields["CustomerName"].Text.Should().Be("保存した文字列");
+                source.ToArray().Should().Equal(original);
+            }
+
+            source.ToArray().Should().Equal(original);
+            stream.CanRead.Should().BeTrue();
+        }
+        finally
+        {
+            File.Delete(outputPath);
+        }
+    }
+
+    [Fact]
+    public void SaveAsは途中位置から開いたStreamの前置データと元文書を変更せず編集結果を保存します()
+    {
+        byte[] prefix = [1, 2, 3, 4];
+        byte[] original = [.. prefix, .. File.ReadAllBytes(SimpleMergeFieldsPath)];
+        using var stream = new MemoryStream(original.ToArray());
+        stream.Position = prefix.Length;
+        var outputPath = TestDocument.CreateOutputPath();
+        try
+        {
+            using (var document = Document.Open(stream))
+            {
+                document.MergeFields["CustomerName"].Text = "保存した文字列";
+                document.SaveAs(outputPath);
+
+                using var saved = Document.Open(outputPath, true);
+                saved.MergeFields["CustomerName"].Text.Should().Be("保存した文字列");
+                stream.ToArray().Should().Equal(original);
+            }
+
+            stream.ToArray().Should().Equal(original);
+            stream.CanRead.Should().BeTrue();
+        }
+        finally
+        {
+            File.Delete(outputPath);
+        }
+    }
+
+    [Fact]
+    public void SaveAs後に編集して再びSaveAsすると各保存時点の内容を別々に保持します()
+    {
+        var original = File.ReadAllBytes(SimpleMergeFieldsPath);
+        using var stream = new MemoryStream(original.ToArray());
+        var firstPath = TestDocument.CreateOutputPath();
+        var secondPath = TestDocument.CreateOutputPath();
+        try
+        {
+            using (var document = Document.Open(stream))
+            {
+                document.MergeFields["CustomerName"].Text = "一回目";
+                document.SaveAs(firstPath);
+                document.MergeFields["CustomerName"].Text = "二回目";
+                document.SaveAs(secondPath);
+                document.MergeFields["CustomerName"].Text = "保存しない変更";
+            }
+
+            using var first = Document.Open(firstPath, true);
+            using var second = Document.Open(secondPath, true);
+            first.MergeFields["CustomerName"].Text.Should().Be("一回目");
+            second.MergeFields["CustomerName"].Text.Should().Be("二回目");
+            stream.ToArray().Should().Equal(original);
+        }
+        finally
+        {
+            File.Delete(firstPath);
+            File.Delete(secondPath);
+        }
+    }
+
+    [Fact]
+    public void SaveAsが保存先を開けず失敗しても元Streamと編集内容を保持して再保存できます()
+    {
+        var original = File.ReadAllBytes(SimpleMergeFieldsPath);
+        using var stream = new MemoryStream(original.ToArray());
+        var blockedPath = TestDocument.CreateOutputPath();
+        var outputPath = TestDocument.CreateOutputPath();
+        try
+        {
+            using (var document = Document.Open(stream))
+            {
+                document.MergeFields["CustomerName"].Text = "保存した文字列";
+
+                using (var blockedFile = File.Create(blockedPath))
+                {
+                    var tested = () => document.SaveAs(blockedPath);
+
+                    tested.Should().Throw<IOException>();
+                }
+
+                stream.CanRead.Should().BeTrue();
+                stream.ToArray().Should().Equal(original);
+                document.SaveAs(outputPath);
+
+                using var saved = Document.Open(outputPath, true);
+                saved.MergeFields["CustomerName"].Text.Should().Be("保存した文字列");
+            }
+
+            stream.ToArray().Should().Equal(original);
+            stream.CanRead.Should().BeTrue();
+        }
+        finally
+        {
+            File.Delete(blockedPath);
             File.Delete(outputPath);
         }
     }

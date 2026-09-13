@@ -33,9 +33,11 @@ public class Document : IDisposable
     /// <summary>
     /// 派生した型付き文書から、指定したストリーム上のDOCX文書を開きます。
     /// </summary>
-    /// <param name="stream">DOCX文書を格納したストリーム。</param>
+    /// <param name="stream">現在位置からDOCX文書を読み取れるストリーム。</param>
+    /// <exception cref="InvalidDataException">現在位置以降にデータがない場合。</exception>
     /// <remarks>
     /// 元ストリームの内容は変更せず、ストリーム自体も閉じません。Saveは使用できません。
+    /// 読み取り専用・非シークの入力も使用できます。現在位置を文書の先頭として扱います。
     /// </remarks>
     protected Document(Stream stream)
         : this(DocumentSession.Open(stream))
@@ -85,10 +87,12 @@ public class Document : IDisposable
     /// <summary>
     /// 指定したストリーム上のDOCX文書を開きます。
     /// </summary>
-    /// <param name="stream">DOCX文書を格納したストリーム。</param>
+    /// <param name="stream">現在位置からDOCX文書を読み取れるストリーム。</param>
     /// <returns>開いた文書。</returns>
+    /// <exception cref="InvalidDataException">現在位置以降にデータがない場合。</exception>
     /// <remarks>
     /// 元ストリームの内容は変更せず、ストリーム自体も閉じません。Saveは使用できません。
+    /// 読み取り専用・非シークの入力も使用できます。現在位置を文書の先頭として扱います。
     /// </remarks>
     public static Document Open(Stream stream) =>
         new(stream);
@@ -96,14 +100,15 @@ public class Document : IDisposable
     /// <summary>
     /// 指定したストリーム上のDOCX文書を開きます。
     /// </summary>
-    /// <param name="stream">DOCX文書を格納したストリーム。</param>
+    /// <param name="stream">現在位置からDOCX文書を読み取れるストリーム。</param>
     /// <param name="validate">開く文書をOpen XMLとして検証する場合は<c>true</c>。</param>
     /// <returns>開いた文書。</returns>
     /// <exception cref="InvalidDataException">
-    /// <paramref name="validate" />が<c>true</c>で、文書にOpen XML検証エラーがある場合。
+    /// 現在位置以降にデータがない、または<paramref name="validate" />が<c>true</c>で文書にOpen XML検証エラーがある場合。
     /// </exception>
     /// <remarks>
     /// 元ストリームの内容は変更せず、ストリーム自体も閉じません。Saveは使用できません。
+    /// 読み取り専用・非シークの入力も使用できます。現在位置を文書の先頭として扱います。
     /// </remarks>
     public static Document Open(Stream stream, bool validate) =>
         ValidateIfRequested(Open(stream), validate);
@@ -289,10 +294,22 @@ public class Document : IDisposable
         /// <summary>
         /// 借りたStreamへの書き込みをコピーへ隔離して開きます。元Streamは所有しません。
         /// </summary>
-        /// <param name="source">呼び出し側が所有する、読み取り・シーク可能なStream。</param>
+        /// <param name="source">呼び出し側が所有する、現在位置からDOCXを読み取れるStream。</param>
         /// <returns>SDK文書とコピー切り替え用のラッパーを所有するセッション。</returns>
-        internal static DocumentSession Open(Stream source) =>
-            new(new CopyOnWriteStream(source), null, null);
+        /// <exception cref="InvalidDataException">入力の現在位置以降に文書データがない場合。</exception>
+        internal static DocumentSession Open(Stream source)
+        {
+            var workingStream = new CopyOnWriteStream(source);
+            // SDKは空Streamも開けるため、文書がない入力はここで拒否します。
+            // 非シーク入力のために作成したコピーだけを解放し、借りた元Streamは閉じません。
+            if (workingStream.Length == 0)
+            {
+                workingStream.Dispose();
+                throw new InvalidDataException();
+            }
+
+            return new(workingStream, null, null);
+        }
 
         /// <summary>
         /// 保存元ファイルから独立した編集領域を作り、先頭から読み取れる状態にします。
@@ -372,16 +389,43 @@ public class Document : IDisposable
         }
 
         /// <summary>
-        /// SDKの最初の書き込みで拡張可能なコピーへ切り替え、元Streamの内容を保護します。
+        /// SDKの書き込みを拡張可能なコピーへ隔離し、元Streamの内容を保護します。
+        /// シーク可能な入力は最初の書き込み時、非シーク入力は読み取り前にコピーします。
         /// 元Streamは借りるだけで、このラッパーは閉じません。文書の保存やファイルの束縛は扱いません。
         /// </summary>
-        /// <param name="source">呼び出し側が所有する、読み取り・シーク可能な元Stream。</param>
-        sealed class CopyOnWriteStream(Stream source) : Stream
+        sealed class CopyOnWriteStream : Stream
         {
             /// <summary>
-            /// SDKによる変更を保持する作業領域です。書き込み前は作成しません。
+            /// コピーへの切り替え前の読み取り元です。所有権は呼び出し側に残します。
+            /// </summary>
+            readonly Stream source;
+
+            /// <summary>
+            /// Open時の位置を文書の先頭とし、前置データを読み書き対象から除きます。
+            /// </summary>
+            readonly long sourceOffset;
+
+            /// <summary>
+            /// SDKによる変更を保持する作業領域です。非シーク入力では読み取り前に作成します。
             /// </summary>
             MemoryStream? workingCopy;
+
+            /// <summary>
+            /// 入力の現在位置を記録します。シーク不可の入力は、SDKがランダムアクセスできるよう先にコピーします。
+            /// </summary>
+            /// <param name="source">呼び出し側が所有する、現在位置から文書を読み取れるStream。</param>
+            internal CopyOnWriteStream(Stream source)
+            {
+                this.source = source;
+                if (source.CanSeek)
+                {
+                    sourceOffset = source.Position;
+                }
+                else
+                {
+                    CreateWorkingCopy();
+                }
+            }
 
             /// <summary>
             /// コピーへの切り替え前は元Stream、切り替え後は作業領域を読みます。
@@ -400,13 +444,13 @@ public class Document : IDisposable
             public override bool CanWrite => true;
 
             /// <inheritdoc />
-            public override long Length => Current.Length;
+            public override long Length => workingCopy?.Length ?? source.Length - sourceOffset;
 
             /// <inheritdoc />
             public override long Position
             {
-                get => Current.Position;
-                set => Current.Position = value;
+                get => workingCopy?.Position ?? source.Position - sourceOffset;
+                set => Current.Position = workingCopy is null ? sourceOffset + value : value;
             }
 
             /// <inheritdoc />
@@ -415,7 +459,9 @@ public class Document : IDisposable
 
             /// <inheritdoc />
             public override long Seek(long offset, SeekOrigin origin) =>
-                Current.Seek(offset, origin);
+                workingCopy is not null
+                    ? workingCopy.Seek(offset, origin)
+                    : source.Seek(origin == SeekOrigin.Begin ? sourceOffset + offset : offset, origin) - sourceOffset;
 
             /// <inheritdoc />
             public override void Write(byte[] buffer, int offset, int count) =>
@@ -429,15 +475,19 @@ public class Document : IDisposable
             public override void Flush() => workingCopy?.Flush();
 
             /// <summary>
-            /// 読み書き位置を保ったまま元Streamをコピーし、以後は同じ作業領域を使います。
+            /// 文書先頭からの読み書き位置を保ってコピーします。非シーク入力の位置は参照しません。
+            /// 以後は同じ作業領域を使い、元Streamへ書き戻しません。
             /// </summary>
             /// <returns>このラッパーが所有する拡張可能な作業領域。</returns>
             MemoryStream CreateWorkingCopy()
             {
                 if (workingCopy is null)
                 {
-                    var position = source.Position;
-                    source.Position = 0;
+                    var position = source.CanSeek ? Position : 0;
+                    if (source.CanSeek)
+                    {
+                        source.Position = sourceOffset;
+                    }
                     var copy = new MemoryStream();
                     try
                     {
