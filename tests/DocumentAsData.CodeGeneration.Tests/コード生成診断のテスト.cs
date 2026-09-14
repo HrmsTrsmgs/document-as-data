@@ -277,7 +277,7 @@ public sealed class コード生成診断のテスト
     // 異種項目の集約は既存テストで確認済みで、Excel固有のSheet・Table・行データの区別はありません。
 
     // 1. 予約メンバーとの比較：予約名を全列挙せず、Readを代表にします。
-    [Theory(Skip = "識別子の同一性を予約メンバーとの比較にも適用する仕様をレビュー後に解除する。")]
+    [Theory]
     [InlineData("@Read")]
     [InlineData("Re\u200Cad")]
     public void 表記が異なってもReadと同じ識別子になる生成プロパティ名は診断します(string propertyName)
