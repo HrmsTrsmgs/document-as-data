@@ -1638,7 +1638,8 @@ public class Documentのテスト
     {
         public string CustomerName { get; set; } = "";
 
-        public static string Ignored
+        // staticの除外ではなく、getterのないインスタンスプロパティを無視することを検証します。
+        public string Ignored
         {
             set { }
         }
