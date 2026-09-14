@@ -750,18 +750,42 @@ public class DatePickerのテスト
         }
     }
 
+    [Fact]
+    public void SelectedDateTimeプロパティは日付書式の二重引用符を表示し内側の年も変換します()
+    {
+        var sourcePath = TestDocument.CreateTemporaryCopy(
+            Path.Combine("TestData", "年を二重引用符で囲んだ日付選択Content Control.docx"));
+        var outputPath = TestDocument.CreateOutputPath();
+        try
+        {
+            using (var document = Document.Open(sourcePath, validate: true))
+            {
+                document.DatePickers.Single().SelectedDateTime =
+                    new DateTimeOffset(2027, 12, 31, 0, 0, 0, TimeSpan.FromHours(9));
+                document.SaveAs(outputPath);
+            }
+
+            using var saved = WordprocessingDocument.Open(outputPath, false);
+            // w:dateFormatの値は"YYYY" yyyy、w:lidはen-US、w:calendarはgregorianです。
+            // XMLの属性内では二重引用符を&quot;で記録しますが、書式としての文字は二重引用符です。
+            // Wordで日付を選び直し、fullDateが2026-09-16T00:00:00Z、w:tが"2026" 2026となることを確認しました。
+            // 単一引用符とは異なり、二重引用符は表示に残り、内側のYYYYも年に変わります。
+            // 固定DOCXは同じ書式を持つ最小OOXMLです。年を変えて保存後の表示を確認します。
+            saved.MainDocumentPart!.Document!
+                .Descendants<Wordprocessing.Text>()
+                .Single().Text.Should().Be("\"2027\" 2027");
+        }
+        finally
+        {
+            File.Delete(sourcePath);
+            File.Delete(outputPath);
+        }
+    }
+
     // 以下は未レビューの保留メモです。書式の全組み合わせではなく解釈ルールごとに置きます。
     // w:dateFormat（表示形式）、w:lid（言語）、w:calendar（暦）を持つ固定DOCXを使い、
     // 公開APIで日時を設定・保存した後のw:t（表示文字列）を確認する予定です。
     // 未確定のWordの挙動や例外契約は、この段階で断定しません。
-    [Fact(Skip = "日付書式の保留メモ。0.3.0への採用は未決定。仕様レビューと固定DOCX・検証コードの準備後に解除する。")]
-    public void SelectedDateTimeプロパティは日付書式内の引用符とエスケープの扱いを確認します()
-    {
-        // 単一引用符内のYYYYと、閉じられていない単一引用符は確認済み。
-        // 単一引用符内と引用符外のバックスラッシュは確認済み。二重引用符は未確認。
-        throw new NotImplementedException("保留メモのため、固定DOCXと検証コードを準備してから有効化する。");
-    }
-
     [Fact(Skip = "日付書式の保留メモ。0.3.0への採用は未決定。仕様レビューと固定DOCX・検証コードの準備後に解除する。")]
     public void SelectedDateTimeプロパティは日付書式の記号の繰り返しの扱いを確認します()
     {

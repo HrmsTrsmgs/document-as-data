@@ -64,6 +64,7 @@ public partial class DatePicker : ContentControl
     /// 一文字の書式も、.NETの標準書式ではなく指定された一項目として扱います。
     /// スラッシュとコロンは地域別の区切り文字へ変更せず、そのまま表示します。
     /// 対にならない単一引用符は文字として表示します。
+    /// 二重引用符は文字として表示し、その内側も書式記号として扱います。
     /// バックスラッシュは.NET用にエスケープして表示に残します。
     /// Wordの書式全体を.NETへ変換するものではありません。
     /// </summary>
@@ -80,6 +81,7 @@ public partial class DatePicker : ContentControl
                 "/" => "'/'",
                 ":" => "':'",
                 "'" => "\\'",
+                "\"" => "\\\"",
                 "\\" => "\\\\",
                 var token => token.StartsWith('\'')
                     ? token.Replace("\\", "\\\\")
@@ -90,7 +92,7 @@ public partial class DatePicker : ContentControl
     /// 引用文字列と、.NET用に変換するWordの日付書式記号を識別します。
     /// </summary>
     /// <returns>コンパイル時に生成される、書式記号の検索用正規表現。</returns>
-    [GeneratedRegex("'[^']*'|am/pm|AM/PM|Y+|D+|/|:|'|\\\\")]
+    [GeneratedRegex("'[^']*'|am/pm|AM/PM|Y+|D+|/|:|'|\\\\|\"")]
     private static partial Regex DateFormatTokens();
 
     /// <summary>
