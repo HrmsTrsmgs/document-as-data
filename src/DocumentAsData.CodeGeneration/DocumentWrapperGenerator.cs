@@ -79,7 +79,7 @@ public static class DocumentWrapperGenerator
         [
             .. InvalidDocumentNameDiagnostics(filePath, options),
             .. from sourceName in propertySourceNames
-               group sourceName by WithoutFormatCharacters(options.GeneratedName(sourceName))
+               group sourceName by IdentifierComparisonKey(options.GeneratedName(sourceName))
                into sourceNames
                where sourceNames.Count() > 1
                    || sourceNames.Key.IsEmpty()
@@ -92,12 +92,12 @@ public static class DocumentWrapperGenerator
     }
 
     /// <summary>
-    /// C#の識別子比較で無視される書式文字を除き、衝突診断に使う名前を作ります。
+    /// C#の識別子比較で無視される先頭の@と書式文字を除き、衝突診断に使う名前を作ります。
     /// 生成コードや文書内の元名自体は変更しません。
     /// </summary>
-    static string WithoutFormatCharacters(string name) =>
+    static string IdentifierComparisonKey(string name) =>
         string.Concat(
-            from character in name
+            from character in name.StartsWith('@') ? name[1..] : name
             where char.GetUnicodeCategory(character) != UnicodeCategory.Format
             select character);
 

@@ -254,4 +254,88 @@ public sealed class コード生成診断のテスト
             .Should().ContainEquivalentOf(
                 new CodeGenerationDiagnostic(true, "SharedValue", ["customer_id", "customer-id"]));
     }
+
+    [Fact]
+    public void 先頭のアットマークだけが異なる生成プロパティ名も同じ識別子として診断します()
+    {
+        // C#の識別子の先頭に付ける@は、識別子名自体には含まれません。
+        GeneratedCodeInspection
+            .GenerateDiagnostics(
+                MergeFieldNameCollisionDocumentFilePath,
+                options => options.NameMappings = new()
+                {
+                    ["customer_id"] = "@SharedValue",
+                    ["customer-id"] = "SharedValue"
+                })
+            .Should().ContainEquivalentOf(
+                new CodeGenerationDiagnostic(true, "SharedValue", ["customer_id", "customer-id"]));
+    }
+
+    // 識別子の同一性に関する残りのレビュー用メモ。
+    // プロパティ同士の@・書式文字の比較は上の有効テストで確認済みです。
+    // 以下は比較相手と非衝突の境界で分類し、項目種別×表記の直積にはしません。
+    // 異種項目の集約は既存テストで確認済みで、Excel固有のSheet・Table・行データの区別はありません。
+
+    // 1. 予約メンバーとの比較：予約名を全列挙せず、Readを代表にします。
+    [Theory(Skip = "識別子の同一性を予約メンバーとの比較にも適用する仕様をレビュー後に解除する。")]
+    [InlineData("@Read")]
+    [InlineData("Re\u200Cad")]
+    public void 表記が異なってもReadと同じ識別子になる生成プロパティ名は診断します(string propertyName)
+    {
+        GeneratedCodeInspection
+            .GenerateDiagnostics(
+                @"TestData\コード生成\customerData.docx",
+                options => options.NameMappings["customerName"] = propertyName)
+            .Should().ContainEquivalentOf(
+                new CodeGenerationDiagnostic(true, "Read", ["customerName"]));
+    }
+
+    // 2. 生成型名との比較：型名側にも書式文字がある場合を確認します。
+    // DocumentとDataの両方へプロパティを生成するので、比較相手はこの二つです。
+    [Theory(Skip = "生成型名側も識別子として比較する仕様と、診断に表示する名前をレビュー後に解除する。")]
+    [InlineData("OrderDocument")]
+    [InlineData("OrderData")]
+    public void 書式文字を除くと生成型名と同じになるプロパティ名は診断します(string propertyName)
+    {
+        GeneratedCodeInspection
+            .GenerateDiagnostics(
+                @"TestData\コード生成\customerData.docx",
+                options => options.NameMappings = new()
+                {
+                    ["customerData"] = "Or\u200Cder",
+                    ["customerName"] = propertyName
+                })
+            .Should().ContainEquivalentOf(
+                new CodeGenerationDiagnostic(true, propertyName, ["customerName"]));
+    }
+
+    // 3. 非衝突の境界：文字の大小は区別し、利用者が衝突を解消できることを確認します。
+    [Fact(Skip = "識別子の比較で大文字小文字を同一視しない仕様をレビュー後に解除する。")]
+    public void 大文字小文字だけが異なる生成プロパティ名は衝突にはなりません()
+    {
+        GeneratedCodeInspection
+            .GenerateDiagnostics(
+                MergeFieldNameCollisionDocumentFilePath,
+                options => options.NameMappings = new()
+                {
+                    ["customer_id"] = "SharedValue",
+                    ["customer-id"] = "sharedValue"
+                })
+            .Should().BeEmpty();
+    }
+
+    [Fact(Skip = "表記違いの衝突をNameMappingsで解消できる仕様をレビュー後に解除する。")]
+    public void 書式文字を含む生成名との衝突をNameMappingsで解消できます()
+    {
+        // 書式文字入りの名前は残し、もう一方だけを別の識別子に変更します。
+        GeneratedCodeInspection
+            .GenerateDiagnostics(
+                MergeFieldNameCollisionDocumentFilePath,
+                options => options.NameMappings = new()
+                {
+                    ["customer_id"] = "Shared\u200CValue",
+                    ["customer-id"] = "OtherValue"
+                })
+            .Should().BeEmpty();
+    }
 }
