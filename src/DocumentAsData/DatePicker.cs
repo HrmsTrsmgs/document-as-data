@@ -60,15 +60,15 @@ public class DatePicker : ContentControl
     }
 
     /// <summary>
-    /// 単一引用符で囲まれた表示文字列を保持し、Wordの大文字の年指定を.NET用に変換します。
+    /// 単一引用符で囲まれた表示文字列を保持し、Wordの大文字の年・日指定を.NET用に変換します。
     /// Wordの書式全体を.NETへ変換するものではありません。
     /// </summary>
     /// <param name="format">テンプレートの日付表示形式。</param>
-    /// <returns>引用部分以外の大文字の年指定を小文字にした表示形式。</returns>
+    /// <returns>引用部分以外の大文字の年・日指定を小文字にした表示形式。</returns>
     static string ToDotNetDateFormat(string format) =>
-        // 引用部分を先に一まとまりとして読み、その内部のYを変換対象から外します。
-        Regex.Replace(format, "'[^']*'|Y+", it =>
-            it.Value.StartsWith('Y') ? it.Value.ToLowerInvariant() : it.Value);
+        // 引用部分を先に一まとまりとして読み、その内部のYやDを変換対象から外します。
+        Regex.Replace(format, "'[^']*'|Y+|D+", it =>
+            it.Value.StartsWith('\'') ? it.Value : it.Value.ToLowerInvariant());
 
     /// <summary>
     /// 日時と表示設定を保持するOOXML要素を取得します。
