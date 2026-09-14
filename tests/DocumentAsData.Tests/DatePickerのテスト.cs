@@ -789,7 +789,10 @@ public class DatePickerのテスト
     [Fact(Skip = "日付書式の保留メモ。0.3.0への採用は未決定。仕様レビューと固定DOCX・検証コードの準備後に解除する。")]
     public void SelectedDateTimeプロパティは日付書式の記号の繰り返しの扱いを確認します()
     {
-        // yyyなどの連続指定について、Wordが記号を区切る規則と.NETとの差を確認して期待値を決める。
+        // 長い連続指定について、Wordが記号を区切る規則と.NETとの差を確認して期待値を決める。
+        // yyy・en-US・gregorianの検証用DOCXをWordで開き、カレンダーで9月16日を選んでも、
+        // 保存後のfullDateは2026-09-04T00:00:00Z、表示文字列は元のprobeのままでした。
+        // yyyは対応対象から外し、専用の変換や拒否処理は追加しません。ほかの連続指定は未確認です。
         throw new NotImplementedException("保留メモのため、固定DOCXと検証コードを準備してから有効化する。");
     }
 

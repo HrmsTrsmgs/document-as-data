@@ -68,6 +68,11 @@ public partial class DatePicker : ContentControl
     /// バックスラッシュは.NET用にエスケープして表示に残します。
     /// Wordの書式全体を.NETへ変換するものではありません。
     /// </summary>
+    /// <remarks>
+    /// 年はyy・yyyy（大文字のYY・YYYYも含む）を確認済みです。
+    /// yyyはWordの日付選択で日時・表示が更新されなかったため、対応対象に含めません。
+    /// yyy専用の変換や拒否処理は設けていません。
+    /// </remarks>
     /// <param name="format">テンプレートの日付表示形式。</param>
     /// <returns>大文字の年・日指定と午前午後指定を.NETの記号へ置き換えた表示形式。</returns>
     static string ToDotNetDateFormat(string format) =>
