@@ -504,6 +504,20 @@ public class Documentのテスト
     }
 
     [Fact]
+    public void ReadはContentControlから構造体のプロパティへ読み込みます()
+    {
+        using var document = Document.Open(ContentControlsPath);
+
+        document.Read<StructDocumentData>()
+            .Should().BeEquivalentTo(
+                new StructDocumentData
+                {
+                    CustomerName = "山田太郎",
+                    Address = "東京都"
+                });
+    }
+
+    [Fact]
     public void Readは自動変換したプロパティ名と一致するMERGEFIELDからオブジェクトを読み込みます()
     {
         using var document = Document.Open(@"TestData\customerData.docx");
@@ -1515,6 +1529,18 @@ public class Documentのテスト
         public string CustomerName { get; set; } = "";
 
         public string Address { get; set; } = "";
+    }
+
+    /// <summary>
+    /// Readの戻り値が値型でも、複数のプロパティへ読み込んだ値が保持されることを確認します。
+    /// </summary>
+    public struct StructDocumentData
+    {
+        /// <summary>名前付き項目CustomerNameから読み込む文字列です。</summary>
+        public string CustomerName { get; set; }
+
+        /// <summary>名前付き項目Addressから読み込む文字列です。</summary>
+        public string Address { get; set; }
     }
 
     public sealed class CustomerNameOnlyDocumentData

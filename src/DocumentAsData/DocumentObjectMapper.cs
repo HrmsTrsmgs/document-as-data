@@ -34,7 +34,8 @@ sealed class DocumentObjectMapper
     /// </exception>
     internal T Read<T>()
     {
-        var data = Activator.CreateInstance<T>();
+        // 値型でも各SetValueが同じインスタンスを更新するよう、一度だけボックス化します。
+        object? data = Activator.CreateInstance<T>();
 
         foreach (var (property, value) in
             from property in typeof(T).GetProperties()
@@ -45,7 +46,8 @@ sealed class DocumentObjectMapper
             property.SetValue(data, value);
         }
 
-        return data;
+        // Tとして生成した値を戻します。nullの場合も、元のTが許すnullのまま返します。
+        return (T)data!;
     }
 
     /// <summary>
