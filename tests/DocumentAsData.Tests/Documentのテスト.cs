@@ -692,6 +692,24 @@ public class Documentのテスト
     }
 
     [Fact]
+    public void Replaceはstaticプロパティを使わずインスタンスのプロパティだけを文書へ書き込みます()
+    {
+        using var document = Document.Open(ContentControlsPath);
+        DocumentDataWithStaticProperty.CustomerName = "共有値";
+        try
+        {
+            document.Replace(new DocumentDataWithStaticProperty { Address = "大阪府" });
+
+            document.ContentControls["Address"].Text.Should().Be("大阪府");
+            document.ContentControls["CustomerName"].Text.Should().Be("山田太郎");
+        }
+        finally
+        {
+            DocumentDataWithStaticProperty.CustomerName = "";
+        }
+    }
+
+    [Fact]
     public void Replaceは自動変換したプロパティ名と一致するCheckBoxのTagへオブジェクトを書き込みます()
     {
         using var document = Document.Open(@"TestData\acceptanceForm.docx");
@@ -1566,7 +1584,7 @@ public class Documentのテスト
     }
 
     /// <summary>
-    /// Readがインスタンスの値だけを更新し、型全体の共有状態には触れないことを確認します。
+    /// ReadとReplaceがインスタンスの値だけを扱い、型全体の共有状態を対応付けないことを確認します。
     /// </summary>
     public sealed class DocumentDataWithStaticProperty
     {
@@ -1608,8 +1626,9 @@ public class Documentのテスト
 
     public sealed class AttributedPropertyWithoutPublicGetterData
     {
+        // staticの除外ではなく、属性で指定したインスタンスプロパティのgetter不足を検証します。
         [DocumentItemName("CustomerName")]
-        public static string Value
+        public string Value
         {
             set { }
         }

@@ -84,7 +84,7 @@ sealed class DocumentObjectMapper
     internal void Replace<T>(T data)
     {
         var mappings = (
-            from property in typeof(T).GetProperties()
+            from property in typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance)
             let attribute = property.GetCustomAttribute<DocumentItemNameAttribute>()
             where attribute is not null || property.GetMethod?.IsPublic == true
             select new

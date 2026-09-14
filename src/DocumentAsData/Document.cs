@@ -148,7 +148,8 @@ public class Document : IDisposable
         objectMapper.Read<T>();
 
     /// <summary>
-    /// 指定したオブジェクトのプロパティを、対応するContent ControlまたはMERGEFIELDへ書き込みます。
+    /// 指定したオブジェクトのpublicなインスタンスプロパティを、対応するContent ControlまたはMERGEFIELDへ書き込みます。
+    /// staticプロパティは書き込み元として使用しません。
     /// </summary>
     /// <remarks>
     /// DocumentItemName属性に指定した元名を優先します。属性がない場合は文書内の名前・Tagを
