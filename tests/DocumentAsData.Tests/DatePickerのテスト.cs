@@ -337,17 +337,42 @@ public class DatePickerのテスト
         }
     }
 
+    [Theory]
+    [InlineData("表示形式がDDDで英語の曜日を表示する日付選択Content Control.docx", "Thu")]
+    [InlineData("表示形式がDDDDで英語の曜日を表示する日付選択Content Control.docx", "Thursday")]
+    public void SelectedDateTimeプロパティは大文字の曜日指定を曜日として表示します(string fileName, string expectedText)
+    {
+        var sourcePath = TestDocument.CreateTemporaryCopy(Path.Combine("TestData", fileName));
+        var outputPath = TestDocument.CreateOutputPath();
+        try
+        {
+            using (var document = Document.Open(sourcePath, validate: true))
+            {
+                document.DatePickers.Single().SelectedDateTime =
+                    new DateTimeOffset(2026, 12, 31, 0, 0, 0, TimeSpan.FromHours(9));
+                document.SaveAs(outputPath);
+            }
+
+            using var saved = WordprocessingDocument.Open(outputPath, false);
+            // w:dateFormatはDDD（曜日の略称）またはDDDD（曜日の正式名称）、
+            // w:lidはen-US、w:calendarはgregorianです。日を数値で表示するDDと異なり、
+            // 木曜日をThuまたはThursdayとしてw:sdtContent内のw:tへ保存することを確認します。
+            // 固定DOCXは書式を指定した最小OOXMLで、Word実機による確認資料ではありません。
+            saved.MainDocumentPart!.Document!
+                .Descendants<Wordprocessing.Text>()
+                .Single().Text.Should().Be(expectedText);
+        }
+        finally
+        {
+            File.Delete(sourcePath);
+            File.Delete(outputPath);
+        }
+    }
+
     // 以下は未レビューの保留メモです。書式の全組み合わせではなく解釈ルールごとに置きます。
     // w:dateFormat（表示形式）、w:lid（言語）、w:calendar（暦）を持つ固定DOCXを使い、
     // 公開APIで日時を設定・保存した後のw:t（表示文字列）を確認する予定です。
     // 未確定のWordの挙動や例外契約は、この段階で断定しません。
-    [Fact(Skip = "日付書式の保留メモ。0.3.0への採用は未決定。仕様レビューと固定DOCX・検証コードの準備後に解除する。")]
-    public void SelectedDateTimeプロパティは大文字の曜日指定を曜日として表示します()
-    {
-        // DDDとDDDDの略称・正式名称を確認する。数値の日指定とは分ける。
-        throw new NotImplementedException("保留メモのため、固定DOCXと検証コードを準備してから有効化する。");
-    }
-
     [Fact(Skip = "日付書式の保留メモ。0.3.0への採用は未決定。仕様レビューと固定DOCX・検証コードの準備後に解除する。")]
     public void SelectedDateTimeプロパティは月と日の桁数指定に従ってゼロ埋めします()
     {
