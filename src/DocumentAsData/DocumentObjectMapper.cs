@@ -30,7 +30,7 @@ sealed class DocumentObjectMapper
     /// <typeparam name="T">文書のデータを読み込む型。</typeparam>
     /// <returns>文書内のデータを読み込んだオブジェクト。</returns>
     /// <exception cref="DocumentMappingException">
-    /// DateTimeOffsetプロパティに対応する日付選択Content Controlが存在しない場合。
+    /// プロパティの型に対応していないか、DateTimeOffsetプロパティに対応する日付選択Content Controlが存在しない場合。
     /// </exception>
     internal T Read<T>()
     {
@@ -63,8 +63,10 @@ sealed class DocumentObjectMapper
         : propertyType == typeof(bool)
             ? (FindCheckBox(name) ?? throw new DocumentMappingException())
                 .IsChecked
-        : (FindValueTarget(name) ?? throw new InvalidOperationException())
-            .Text;
+        : propertyType == typeof(string)
+            ? (FindValueTarget(name) ?? throw new InvalidOperationException())
+                .Text
+        : throw new DocumentMappingException();
 
     /// <summary>
     /// 指定したオブジェクトのプロパティを、対応するContent ControlまたはMERGEFIELDへ書き込みます。

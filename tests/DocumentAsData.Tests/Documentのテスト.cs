@@ -632,6 +632,16 @@ public class Documentのテスト
     }
 
     [Fact]
+    public void Readはobject型のプロパティへの読み込みに失敗します()
+    {
+        using var document = Document.Open(ContentControlsPath);
+
+        var action = () => document.Read<ObjectPropertyDocumentData>();
+
+        action.Should().Throw<DocumentMappingException>();
+    }
+
+    [Fact]
     public void Readは同名のMERGEFIELDとContentControlがある場合に失敗します()
     {
         var filePath = TestDocument.CreateTemporaryCopy(AmbiguousCustomerNamePath);
@@ -1649,6 +1659,15 @@ public class Documentのテスト
     {
         [DocumentItemName("CustomerName")]
         public DateTime Value { get; set; }
+    }
+
+    /// <summary>
+    /// 文字列を代入できるobject型でも、対応型として暗黙に受け入れないことを確認します。
+    /// </summary>
+    public sealed class ObjectPropertyDocumentData
+    {
+        /// <summary>文書項目と同名ですが、型が読み込み対象外のプロパティです。</summary>
+        public object CustomerName { get; set; } = "";
     }
 
     public sealed class DateDocumentData

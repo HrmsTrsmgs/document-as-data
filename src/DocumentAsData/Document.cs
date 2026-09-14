@@ -142,7 +142,7 @@ public class Document : IDisposable
     /// <typeparam name="T">文書のデータを読み込む型。</typeparam>
     /// <returns>文書内のデータを読み込んだオブジェクト。</returns>
     /// <exception cref="DocumentMappingException">
-    /// DateTimeOffsetプロパティに対応する日付選択Content Controlが存在しない場合。
+    /// プロパティの型に対応していないか、DateTimeOffsetプロパティに対応する日付選択Content Controlが存在しない場合。
     /// </exception>
     public T Read<T>() =>
         objectMapper.Read<T>();

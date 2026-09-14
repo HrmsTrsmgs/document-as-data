@@ -231,6 +231,9 @@ var sources = DocumentWrapperGenerator.GenerateSources(
 | `bool` | チェックボックスContent Control |
 | `DateTimeOffset` | 日付選択Content Control |
 
+対応付けの対象となるプロパティがこの表以外の型の場合、`Read<T>()`・`Replace(data)` ともに `DocumentMappingException` になります。
+例えば、文字列を代入できる `object` 型も読み込み対象にはしません。
+
 自分で用意する読み込み先のクラスは、引数なしで生成でき、対象プロパティへ値を設定できる形にしてください。
 例えば、引数なしのコンストラクターと `public` な `get; set;` を持つクラスを使用します。
 `Read<T>()` はpublicなインスタンスプロパティへ読み込み、staticプロパティは変更しません。
