@@ -655,6 +655,38 @@ public class DatePickerのテスト
         }
     }
 
+    [Fact]
+    public void SelectedDateTimeプロパティは日付書式内の閉じられていない単一引用符を表示します()
+    {
+        var sourcePath = TestDocument.CreateTemporaryCopy(
+            Path.Combine("TestData", "二桁年の前に単一引用符を表示する日付選択Content Control.docx"));
+        var outputPath = TestDocument.CreateOutputPath();
+        try
+        {
+            using (var document = Document.Open(sourcePath, validate: true))
+            {
+                document.DatePickers.Single().SelectedDateTime =
+                    new DateTimeOffset(2026, 12, 31, 17, 4, 5, TimeSpan.FromHours(9));
+                document.SaveAs(outputPath);
+            }
+
+            using var saved = WordprocessingDocument.Open(outputPath, false);
+            // w:dateFormatはHH:mm MMM-d, 'yy、w:lidはen-USです。
+            // Wordの公式例では、対にならない'は表示文字で、その後のyyは二桁年です。
+            // https://support.microsoft.com/en-us/word/format-field-results
+            // .NETの閉じられていない引用文字列として例外にせず、保存後のw:tで表示を確認します。
+            // 固定DOCXは最小OOXMLで、Word実機による確認資料ではありません。
+            saved.MainDocumentPart!.Document!
+                .Descendants<Wordprocessing.Text>()
+                .Single().Text.Should().Be("17:04 Dec-31, '26");
+        }
+        finally
+        {
+            File.Delete(sourcePath);
+            File.Delete(outputPath);
+        }
+    }
+
     // 以下は未レビューの保留メモです。書式の全組み合わせではなく解釈ルールごとに置きます。
     // w:dateFormat（表示形式）、w:lid（言語）、w:calendar（暦）を持つ固定DOCXを使い、
     // 公開APIで日時を設定・保存した後のw:t（表示文字列）を確認する予定です。
@@ -662,7 +694,8 @@ public class DatePickerのテスト
     [Fact(Skip = "日付書式の保留メモ。0.3.0への採用は未決定。仕様レビューと固定DOCX・検証コードの準備後に解除する。")]
     public void SelectedDateTimeプロパティは日付書式内の引用符とエスケープの扱いを確認します()
     {
-        // 単一引用符内のYYYYを保持する基本例は既存テストで確認済み。引用符そのもの、二重引用符、バックスラッシュはWordで意味を確認してから期待値を決める。
+        // 単一引用符内のYYYYと、閉じられていない単一引用符は確認済み。
+        // 二重引用符、バックスラッシュはWordで意味を確認してから期待値を決める。
         throw new NotImplementedException("保留メモのため、固定DOCXと検証コードを準備してから有効化する。");
     }
 
