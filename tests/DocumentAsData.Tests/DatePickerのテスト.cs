@@ -274,17 +274,42 @@ public class DatePickerのテスト
         }
     }
 
+    [Theory]
+    [InlineData("表示形式が小文字の二桁年の日付選択Content Control.docx")]
+    [InlineData("表示形式が大文字の二桁年の日付選択Content Control.docx")]
+    public void SelectedDateTimeプロパティは二桁の年を表示します(string fileName)
+    {
+        var sourcePath = TestDocument.CreateTemporaryCopy(Path.Combine("TestData", fileName));
+        var outputPath = TestDocument.CreateOutputPath();
+        try
+        {
+            using (var document = Document.Open(sourcePath, validate: true))
+            {
+                document.DatePickers.Single().SelectedDateTime =
+                    new DateTimeOffset(2006, 12, 31, 0, 0, 0, TimeSpan.FromHours(9));
+                document.SaveAs(outputPath);
+            }
+
+            using var saved = WordprocessingDocument.Open(outputPath, false);
+            // w:dateFormatは小文字のyyまたは大文字のYY、w:lidはja-JP、
+            // w:calendarはgregorianです。2006年を二桁の06で表示することを、
+            // 保存されたw:sdtContent内のw:t（表示文字列）で確認します。
+            // 固定DOCXは書式を指定した最小OOXMLで、Word実機による確認資料ではありません。
+            saved.MainDocumentPart!.Document!
+                .Descendants<Wordprocessing.Text>()
+                .Single().Text.Should().Be("06");
+        }
+        finally
+        {
+            File.Delete(sourcePath);
+            File.Delete(outputPath);
+        }
+    }
+
     // 以下は未レビューの保留メモです。書式の全組み合わせではなく解釈ルールごとに置きます。
     // w:dateFormat（表示形式）、w:lid（言語）、w:calendar（暦）を持つ固定DOCXを使い、
     // 公開APIで日時を設定・保存した後のw:t（表示文字列）を確認する予定です。
     // 未確定のWordの挙動や例外契約は、この段階で断定しません。
-    [Fact(Skip = "日付書式の保留メモ。0.3.0への採用は未決定。仕様レビューと固定DOCX・検証コードの準備後に解除する。")]
-    public void SelectedDateTimeプロパティは二桁の年を表示します()
-    {
-        // yyとYYを確認する。2006年を06と表示する例で、四桁年の既存テストと区別する。
-        throw new NotImplementedException("保留メモのため、固定DOCXと検証コードを準備してから有効化する。");
-    }
-
     [Fact(Skip = "日付書式の保留メモ。0.3.0への採用は未決定。仕様レビューと固定DOCX・検証コードの準備後に解除する。")]
     public void SelectedDateTimeプロパティは大文字の日指定を日として表示します()
     {
