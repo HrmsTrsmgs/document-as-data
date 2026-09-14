@@ -1,4 +1,5 @@
-﻿using FluentAssertions;
+﻿using System.Diagnostics.CodeAnalysis;
+using FluentAssertions;
 using Marimo.DocumentAsData.Test.TestDocuments;
 
 namespace Marimo.DocumentAsData.Test;
@@ -461,7 +462,7 @@ public class Documentのテスト
         var original = File.ReadAllBytes(SimpleMergeFieldsPath);
         using var stream = expandable
             ? TestDocument.CreateMemoryStream(SimpleMergeFieldsPath)
-            : new MemoryStream(original.ToArray());
+            : new MemoryStream([.. original]);
 
         using (var document = Document.Open(stream))
         {
@@ -1397,7 +1398,7 @@ public class Documentのテスト
     public void SaveAsは書き込み不可のStreamからも元データを変更せず編集結果を保存します(bool seekable)
     {
         var original = File.ReadAllBytes(SimpleMergeFieldsPath);
-        using var source = new MemoryStream(original.ToArray(), writable: false);
+        using var source = new MemoryStream([.. original], writable: false);
         using Stream stream = seekable ? source : new NonSeekableReadStream(source);
         var outputPath = TestDocument.CreateOutputPath();
         try
@@ -1426,7 +1427,7 @@ public class Documentのテスト
     {
         byte[] prefix = [1, 2, 3, 4];
         byte[] original = [.. prefix, .. File.ReadAllBytes(SimpleMergeFieldsPath)];
-        using var stream = new MemoryStream(original.ToArray());
+        using var stream = new MemoryStream([.. original]);
         stream.Position = prefix.Length;
         var outputPath = TestDocument.CreateOutputPath();
         try
@@ -1454,7 +1455,7 @@ public class Documentのテスト
     public void SaveAs後に編集して再びSaveAsすると各保存時点の内容を別々に保持します()
     {
         var original = File.ReadAllBytes(SimpleMergeFieldsPath);
-        using var stream = new MemoryStream(original.ToArray());
+        using var stream = new MemoryStream([.. original]);
         var firstPath = TestDocument.CreateOutputPath();
         var secondPath = TestDocument.CreateOutputPath();
         try
@@ -1485,7 +1486,7 @@ public class Documentのテスト
     public void SaveAsが保存先を開けず失敗しても元Streamと編集内容を保持して再保存できます()
     {
         var original = File.ReadAllBytes(SimpleMergeFieldsPath);
-        using var stream = new MemoryStream(original.ToArray());
+        using var stream = new MemoryStream([.. original]);
         var blockedPath = TestDocument.CreateOutputPath();
         var outputPath = TestDocument.CreateOutputPath();
         try
@@ -1770,6 +1771,7 @@ public class Documentのテスト
     {
         // staticの除外ではなく、属性で指定したインスタンスプロパティのgetter不足を検証します。
         [DocumentItemName("CustomerName")]
+        [SuppressMessage("Performance", "CA1822", Justification = "getterのないインスタンスプロパティを検証するため、staticにはしません。")]
         public string Value
         {
             set { }
@@ -1781,6 +1783,7 @@ public class Documentのテスト
         public string CustomerName { get; set; } = "";
 
         // staticの除外ではなく、getterのないインスタンスプロパティを無視することを検証します。
+        [SuppressMessage("Performance", "CA1822", Justification = "getterのないインスタンスプロパティを検証するため、staticにはしません。")]
         public string Ignored
         {
             set { }

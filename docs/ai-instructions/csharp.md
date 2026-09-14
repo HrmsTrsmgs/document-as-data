@@ -110,8 +110,12 @@
 * 存在しないパス、プロジェクト名、コマンドを推測しない。
 * パッケージの追加、更新、ダウングレードを、明示的な必要性なく行わない。
 * コード変更後は、対象テスト、関連テスト、可能であれば全テストとビルドを実行する。
-* 各Green・Refactorの完了時とコミット前には、`dotnet format DocumentAsData.slnx --no-restore --verify-no-changes --severity info` で、提案レベルを含む診断を確認する。警告以上だけの検査で、Visual Studioの指摘まで確認できたと扱わない。
+* 各Green・Refactorの完了時とコミット前には、`dotnet build DocumentAsData.slnx --no-restore --no-incremental -p:UseSharedCompilation=false -p:EnforceCodeStyleInBuild=true -p:RunAnalyzersDuringBuild=true -p:ErrorLog=obj/ide-diagnostics.sarif` を実行する。増分ビルドで解析が省略されることを避け、スタイル解析も有効にする。所要時間を測定し、診断確認のためだけに全テストを実行しない。
+* ビルドの終了コードと警告・エラー件数だけで判断せず、各プロジェクトの `obj/ide-diagnostics.sarif` を読み、通常のビルド表示に出ない提案も確認する。診断ファイルはビルド出力として扱い、コミットしない。
+* あわせて `dotnet format DocumentAsData.slnx --no-restore --verify-no-changes --severity info` を実行する。これは整形・コード修正の検査であり、成功してもVisual Studioの全診断がないとは判断しない。ビルド解析との併用でも、VSの解析器のバージョン、拡張機能、解析対象や未保存の編集状態との一致を確認せず、VSと完全に同じ検査だと報告しない。
 * 診断は今回の変更箇所と既存箇所を区別し、変更箇所の指摘は対処するか、残す理由を報告する。既存箇所を無断で一括修正しない。Visual Studio固有の指摘を再現できない場合は、診断コードや表示内容を確認する。
+* ユーザーがVisual Studioの指摘を報告した場合、対象を直近の変更ファイルだと決めつけない。既存箇所を含む検出済みの診断コード・ファイル・行・内容と照合し、候補を提示してから追加情報を求める。検出済みの指摘を修正対象外と判断したことと、検査で再現できなかったことを混同しない。
+* 診断の修正でもテストの意図を維持する。static化などで検証対象が変わる場合は機械的に修正せず、必要なメンバーだけに理由付きの抑制を検討する。診断を消すためだけの無意味な処理は追加しない。
 * C#の調査やリファクタリングでは、まず `dotnet build`、`dotnet test`、`dotnet format`、アナライザ診断などの機械的な結果を利用し、必要な箇所へ検索を絞る。
 * コンパイルエラーやテスト失敗が示す型、メンバー、ファイルを起点に確認し、無関係なファイル読み取りでトークンを消費しない。
 * ビルド警告が今回の変更によるものか、既存のものか区別する。
