@@ -1184,6 +1184,33 @@ public class Documentのテスト
     }
 
     [Fact]
+    public void Saveに失敗した後も他のStreamから元ファイルへ書き込めません()
+    {
+        var filePath = TestDocument.CreateTemporaryCopy(EmptyDocumentPath);
+        try
+        {
+            using var document = Document.Open(filePath);
+            // 別の読み取り用Streamが書き込みを拒否することで、Saveを失敗させます。
+            using (var reader = File.OpenRead(filePath))
+            {
+                FluentActions.Invoking(document.Save).Should().Throw<IOException>();
+            }
+
+            var action = () =>
+            {
+                // readerを閉じた後なので、ここでの書き込み禁止はDocument自身によるものです。
+                using var writer = File.Open(filePath, FileMode.Open, FileAccess.Write, FileShare.ReadWrite);
+            };
+
+            action.Should().Throw<IOException>();
+        }
+        finally
+        {
+            File.Delete(filePath);
+        }
+    }
+
+    [Fact]
     public void Dispose後のSaveは例外を投げて元ファイルを再び束縛しません()
     {
         var filePath = TestDocument.CreateTemporaryCopy(EmptyDocumentPath);
