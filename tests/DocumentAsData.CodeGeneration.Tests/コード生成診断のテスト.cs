@@ -324,7 +324,7 @@ public sealed class コード生成診断のテスト
             .Should().BeEmpty();
     }
 
-    [Fact(Skip = "表記違いの衝突をNameMappingsで解消できる仕様をレビュー後に解除する。")]
+    [Fact]
     public void 書式文字を含む生成名との衝突をNameMappingsで解消できます()
     {
         // 書式文字入りの名前は残し、もう一方だけを別の識別子に変更します。
