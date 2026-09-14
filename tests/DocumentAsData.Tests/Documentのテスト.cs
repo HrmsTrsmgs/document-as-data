@@ -60,6 +60,28 @@ public class Documentのテスト
     }
 
     [Fact]
+    public void Open中は他のStreamから元ファイルへ書き込めません()
+    {
+        var filePath = TestDocument.CreateTemporaryCopy(EmptyDocumentPath);
+        try
+        {
+            using var document = Document.Open(filePath);
+            var action = () =>
+            {
+                // 相手側は読み書き共有を許可し、Document側が書き込みを拒むことを確認します。
+                // 削除禁止だけでは、Open後の外部更新をSaveで上書きする事故を防げません。
+                using var writer = File.Open(filePath, FileMode.Open, FileAccess.Write, FileShare.ReadWrite);
+            };
+
+            action.Should().Throw<IOException>();
+        }
+        finally
+        {
+            File.Delete(filePath);
+        }
+    }
+
+    [Fact]
     public void Disposeはファイルの束縛を解除します()
     {
         var copyPath = TestDocument.CreateTemporaryCopy(EmptyDocumentPath);
