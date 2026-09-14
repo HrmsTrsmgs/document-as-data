@@ -8,7 +8,7 @@ namespace Marimo.DocumentAsData;
 /// <summary>
 /// 文書内の日付選択Content Controlを表します。
 /// </summary>
-public class DatePicker : ContentControl
+public partial class DatePicker : ContentControl
 {
     /// <summary>
     /// 日付選択Content Controlを初期化します。
@@ -69,15 +69,22 @@ public class DatePicker : ContentControl
     /// <returns>大文字の年・日指定と午前午後指定を.NETの記号へ置き換えた表示形式。</returns>
     static string ToDotNetDateFormat(string format) =>
         // 引用部分を先に読み、その内部を変換しません。午前午後指定はmやMへ分割しません。
-        Regex.Replace(
+        DateFormatTokens().Replace(
             format.Length == 1 ? $"%{format}" : format,
-            "'[^']*'|am/pm|AM/PM|Y+|D+|/", it =>
+            it =>
             it.Value switch
             {
                 "am/pm" or "AM/PM" => "tt",
                 "/" => "'/'",
                 var token => token.StartsWith('\'') ? token : token.ToLowerInvariant(),
             });
+
+    /// <summary>
+    /// 引用文字列と、.NET用に変換するWordの日付書式記号を識別します。
+    /// </summary>
+    /// <returns>コンパイル時に生成される、書式記号の検索用正規表現。</returns>
+    [GeneratedRegex("'[^']*'|am/pm|AM/PM|Y+|D+|/")]
+    private static partial Regex DateFormatTokens();
 
     /// <summary>
     /// 日時と表示設定を保持するOOXML要素を取得します。
