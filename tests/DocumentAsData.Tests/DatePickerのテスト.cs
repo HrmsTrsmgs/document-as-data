@@ -593,17 +593,41 @@ public class DatePickerのテスト
         }
     }
 
+    [Fact]
+    public void SelectedDateTimeプロパティは日付書式のスラッシュを地域別の区切り文字へ変更しません()
+    {
+        var sourcePath = TestDocument.CreateTemporaryCopy(
+            Path.Combine("TestData", "ドイツ語設定で日付をスラッシュ区切りにする日付選択Content Control.docx"));
+        var outputPath = TestDocument.CreateOutputPath();
+        try
+        {
+            using (var document = Document.Open(sourcePath, validate: true))
+            {
+                document.DatePickers.Single().SelectedDateTime =
+                    new DateTimeOffset(2026, 12, 31, 0, 0, 0, TimeSpan.FromHours(9));
+                document.SaveAs(outputPath);
+            }
+
+            using var saved = WordprocessingDocument.Open(outputPath, false);
+            // w:dateFormatはyyyy/MM/dd、w:lidはde-DE、w:calendarはgregorianです。
+            // .NETでは/が地域別の日付区切り文字になりますが、ここでは書式の/を保持します。
+            // w:sdtContent内のw:t（保存された表示文字列）を検証します。
+            // 固定DOCXは最小OOXMLで、Word実機による確認資料ではありません。
+            saved.MainDocumentPart!.Document!
+                .Descendants<Wordprocessing.Text>()
+                .Single().Text.Should().Be("2026/12/31");
+        }
+        finally
+        {
+            File.Delete(sourcePath);
+            File.Delete(outputPath);
+        }
+    }
+
     // 以下は未レビューの保留メモです。書式の全組み合わせではなく解釈ルールごとに置きます。
     // w:dateFormat（表示形式）、w:lid（言語）、w:calendar（暦）を持つ固定DOCXを使い、
     // 公開APIで日時を設定・保存した後のw:t（表示文字列）を確認する予定です。
     // 未確定のWordの挙動や例外契約は、この段階で断定しません。
-    [Fact(Skip = "日付書式の保留メモ。0.3.0への採用は未決定。仕様レビューと固定DOCX・検証コードの準備後に解除する。")]
-    public void SelectedDateTimeプロパティは日付書式のスラッシュを地域別の区切り文字へ変更しません()
-    {
-        // 地域設定の区切り文字がスラッシュでない言語を選び、書式で指定した文字が残ることを確認する。
-        throw new NotImplementedException("保留メモのため、固定DOCXと検証コードを準備してから有効化する。");
-    }
-
     [Fact(Skip = "日付書式の保留メモ。0.3.0への採用は未決定。仕様レビューと固定DOCX・検証コードの準備後に解除する。")]
     public void SelectedDateTimeプロパティは時刻書式のコロンを地域別の区切り文字へ変更しません()
     {

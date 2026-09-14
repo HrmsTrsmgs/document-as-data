@@ -62,6 +62,7 @@ public class DatePicker : ContentControl
     /// <summary>
     /// 単一引用符で囲まれた表示文字列を保持し、Wordの年・日・午前午後指定を.NET用に変換します。
     /// 一文字の書式も、.NETの標準書式ではなく指定された一項目として扱います。
+    /// スラッシュは地域別の区切り文字へ変更せず、そのまま表示します。
     /// Wordの書式全体を.NETへ変換するものではありません。
     /// </summary>
     /// <param name="format">テンプレートの日付表示形式。</param>
@@ -70,10 +71,11 @@ public class DatePicker : ContentControl
         // 引用部分を先に読み、その内部を変換しません。午前午後指定はmやMへ分割しません。
         Regex.Replace(
             format.Length == 1 ? $"%{format}" : format,
-            "'[^']*'|am/pm|AM/PM|Y+|D+", it =>
+            "'[^']*'|am/pm|AM/PM|Y+|D+|/", it =>
             it.Value switch
             {
                 "am/pm" or "AM/PM" => "tt",
+                "/" => "'/'",
                 var token => token.StartsWith('\'') ? token : token.ToLowerInvariant(),
             });
 
