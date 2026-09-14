@@ -400,45 +400,170 @@ public class DatePickerのテスト
         }
     }
 
+    [Fact]
+    public void SelectedDateTimeプロパティは表示言語に従った月名を表示します()
+    {
+        var sourcePath = TestDocument.CreateTemporaryCopy(
+            Path.Combine("TestData", "英語の月名を略称と正式名称で表示する日付選択Content Control.docx"));
+        var outputPath = TestDocument.CreateOutputPath();
+        try
+        {
+            using (var document = Document.Open(sourcePath, validate: true))
+            {
+                document.DatePickers.Single().SelectedDateTime =
+                    new DateTimeOffset(2026, 2, 3, 0, 0, 0, TimeSpan.FromHours(9));
+                document.SaveAs(outputPath);
+            }
+
+            using var saved = WordprocessingDocument.Open(outputPath, false);
+            // w:dateFormatはMMM MMMM、w:lidはen-US、w:calendarはgregorianです。
+            // MMMは月名の略称、MMMMは正式名称で、2月はFeb Februaryとなります。
+            // w:sdtContent内のw:t（保存された表示文字列）を検証します。
+            // 固定DOCXは最小OOXMLで、Word実機による確認資料ではありません。
+            saved.MainDocumentPart!.Document!
+                .Descendants<Wordprocessing.Text>()
+                .Single().Text.Should().Be("Feb February");
+        }
+        finally
+        {
+            File.Delete(sourcePath);
+            File.Delete(outputPath);
+        }
+    }
+
+    [Fact]
+    public void SelectedDateTimeプロパティは表示言語に従った曜日名を表示します()
+    {
+        var sourcePath = TestDocument.CreateTemporaryCopy(
+            Path.Combine("TestData", "日本語の曜日を略称と正式名称で表示する日付選択Content Control.docx"));
+        var outputPath = TestDocument.CreateOutputPath();
+        try
+        {
+            using (var document = Document.Open(sourcePath, validate: true))
+            {
+                document.DatePickers.Single().SelectedDateTime =
+                    new DateTimeOffset(2026, 12, 31, 0, 0, 0, TimeSpan.FromHours(9));
+                document.SaveAs(outputPath);
+            }
+
+            using var saved = WordprocessingDocument.Open(outputPath, false);
+            // w:dateFormatはddd dddd、w:lidはja-JP、w:calendarはgregorianです。
+            // dddは曜日の略称、ddddは正式名称で、日本語の木曜日は木 木曜日となります。
+            // w:sdtContent内のw:t（保存された表示文字列）を検証します。
+            // 固定DOCXは最小OOXMLで、Word実機による確認資料ではありません。
+            saved.MainDocumentPart!.Document!
+                .Descendants<Wordprocessing.Text>()
+                .Single().Text.Should().Be("木 木曜日");
+        }
+        finally
+        {
+            File.Delete(sourcePath);
+            File.Delete(outputPath);
+        }
+    }
+
+    [Theory]
+    [InlineData(5, "5 05 5 05")]
+    [InlineData(17, "5 05 17 17")]
+    public void SelectedDateTimeプロパティは時刻を十二時間制と二十四時間制で表示します(int hour, string expectedText)
+    {
+        var sourcePath = TestDocument.CreateTemporaryCopy(
+            Path.Combine("TestData", "時刻を十二時間制と二十四時間制で表示する日付選択Content Control.docx"));
+        var outputPath = TestDocument.CreateOutputPath();
+        try
+        {
+            using (var document = Document.Open(sourcePath, validate: true))
+            {
+                document.DatePickers.Single().SelectedDateTime =
+                    new DateTimeOffset(2026, 2, 3, hour, 0, 0, TimeSpan.FromHours(9));
+                document.SaveAs(outputPath);
+            }
+
+            using var saved = WordprocessingDocument.Open(outputPath, false);
+            // w:dateFormatはh hh H HH、w:lidはja-JP、w:calendarはgregorianです。
+            // hは十二時間制、Hは二十四時間制で、二文字指定は二桁にゼロ埋めします。
+            // w:sdtContent内のw:t（保存された表示文字列）を検証します。
+            // 固定DOCXは最小OOXMLで、Word実機による確認資料ではありません。
+            saved.MainDocumentPart!.Document!
+                .Descendants<Wordprocessing.Text>()
+                .Single().Text.Should().Be(expectedText);
+        }
+        finally
+        {
+            File.Delete(sourcePath);
+            File.Delete(outputPath);
+        }
+    }
+
+    [Fact]
+    public void SelectedDateTimeプロパティは分と秒の桁数指定に従って表示します()
+    {
+        var sourcePath = TestDocument.CreateTemporaryCopy(
+            Path.Combine("TestData", "月と分を区別して分秒の桁数を指定する日付選択Content Control.docx"));
+        var outputPath = TestDocument.CreateOutputPath();
+        try
+        {
+            using (var document = Document.Open(sourcePath, validate: true))
+            {
+                document.DatePickers.Single().SelectedDateTime =
+                    new DateTimeOffset(2026, 2, 3, 17, 4, 5, TimeSpan.FromHours(9));
+                document.SaveAs(outputPath);
+            }
+
+            using var saved = WordprocessingDocument.Open(outputPath, false);
+            // w:dateFormatはM m mm s ss、w:lidはja-JP、w:calendarはgregorianです。
+            // Mは月、mは分、sは秒です。mmとssだけ二桁へゼロ埋めします。
+            // w:sdtContent内のw:t（保存された表示文字列）を検証します。
+            // 固定DOCXは最小OOXMLで、Word実機による確認資料ではありません。
+            saved.MainDocumentPart!.Document!
+                .Descendants<Wordprocessing.Text>()
+                .Single().Text.Should().Be("2 4 04 5 05");
+        }
+        finally
+        {
+            File.Delete(sourcePath);
+            File.Delete(outputPath);
+        }
+    }
+
+    [Theory]
+    [InlineData(5, "午前 午前")]
+    [InlineData(17, "午後 午後")]
+    public void SelectedDateTimeプロパティは表示言語に従って午前と午後を表示します(int hour, string expectedText)
+    {
+        var sourcePath = TestDocument.CreateTemporaryCopy(
+            Path.Combine("TestData", "日本語の午前午後を大小文字の指定で表示する日付選択Content Control.docx"));
+        var outputPath = TestDocument.CreateOutputPath();
+        try
+        {
+            using (var document = Document.Open(sourcePath, validate: true))
+            {
+                document.DatePickers.Single().SelectedDateTime =
+                    new DateTimeOffset(2026, 2, 3, hour, 0, 0, TimeSpan.FromHours(9));
+                document.SaveAs(outputPath);
+            }
+
+            using var saved = WordprocessingDocument.Open(outputPath, false);
+            // w:dateFormatはam/pm AM/PM、w:lidはja-JP、w:calendarはgregorianです。
+            // am/pmとAM/PMはいずれも午前午後の指定です。表示言語に従って午前・午後を表示し、
+            // 個々のmを分、Mを月、スラッシュを区切り文字として扱いません。
+            // w:sdtContent内のw:t（保存された表示文字列）を検証します。
+            // 固定DOCXは最小OOXMLで、Word実機による確認資料ではありません。
+            saved.MainDocumentPart!.Document!
+                .Descendants<Wordprocessing.Text>()
+                .Single().Text.Should().Be(expectedText);
+        }
+        finally
+        {
+            File.Delete(sourcePath);
+            File.Delete(outputPath);
+        }
+    }
+
     // 以下は未レビューの保留メモです。書式の全組み合わせではなく解釈ルールごとに置きます。
     // w:dateFormat（表示形式）、w:lid（言語）、w:calendar（暦）を持つ固定DOCXを使い、
     // 公開APIで日時を設定・保存した後のw:t（表示文字列）を確認する予定です。
     // 未確定のWordの挙動や例外契約は、この段階で断定しません。
-    [Fact(Skip = "日付書式の保留メモ。0.3.0への採用は未決定。仕様レビューと固定DOCX・検証コードの準備後に解除する。")]
-    public void SelectedDateTimeプロパティは表示言語に従った月名を表示します()
-    {
-        // MMMとMMMMの略称・正式名称を、月名が区別できる言語で確認する。
-        throw new NotImplementedException("保留メモのため、固定DOCXと検証コードを準備してから有効化する。");
-    }
-
-    [Fact(Skip = "日付書式の保留メモ。0.3.0への採用は未決定。仕様レビューと固定DOCX・検証コードの準備後に解除する。")]
-    public void SelectedDateTimeプロパティは表示言語に従った曜日名を表示します()
-    {
-        // dddとddddの略称・正式名称を確認する。大文字からの変換ではなく表示言語が対象。
-        throw new NotImplementedException("保留メモのため、固定DOCXと検証コードを準備してから有効化する。");
-    }
-
-    [Fact(Skip = "日付書式の保留メモ。0.3.0への採用は未決定。仕様レビューと固定DOCX・検証コードの準備後に解除する。")]
-    public void SelectedDateTimeプロパティは時刻を十二時間制と二十四時間制で表示します()
-    {
-        // 午後の時刻でhとHの違いを確認し、hhとHHのゼロ埋めも同じ時刻表示の観点として扱う。
-        throw new NotImplementedException("保留メモのため、固定DOCXと検証コードを準備してから有効化する。");
-    }
-
-    [Fact(Skip = "日付書式の保留メモ。0.3.0への採用は未決定。仕様レビューと固定DOCX・検証コードの準備後に解除する。")]
-    public void SelectedDateTimeプロパティは分と秒の桁数指定に従って表示します()
-    {
-        // 一桁の分秒でmとmm、sとssを確認する。月のMと分のmを混同しない。
-        throw new NotImplementedException("保留メモのため、固定DOCXと検証コードを準備してから有効化する。");
-    }
-
-    [Fact(Skip = "日付書式の保留メモ。0.3.0への採用は未決定。仕様レビューと固定DOCX・検証コードの準備後に解除する。")]
-    public void SelectedDateTimeプロパティは表示言語に従って午前と午後を表示します()
-    {
-        // am/pmとAM/PMを確認する。午前・午後それぞれの代表値を使い、.NETのttとの対応を検証する。
-        throw new NotImplementedException("保留メモのため、固定DOCXと検証コードを準備してから有効化する。");
-    }
-
     [Fact(Skip = "日付書式の保留メモ。0.3.0への採用は未決定。仕様レビューと固定DOCX・検証コードの準備後に解除する。")]
     public void SelectedDateTimeプロパティは一文字の書式をその項目だけの表示として扱います()
     {
