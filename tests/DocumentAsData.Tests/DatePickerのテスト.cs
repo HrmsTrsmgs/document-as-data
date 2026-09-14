@@ -560,17 +560,43 @@ public class DatePickerのテスト
         }
     }
 
+    [Theory]
+    [InlineData("日だけを一文字の書式で表示する日付選択Content Control.docx", "3")]
+    [InlineData("月だけを一文字の書式で表示する日付選択Content Control.docx", "2")]
+    [InlineData("時だけを一文字の書式で表示する日付選択Content Control.docx", "5")]
+    public void SelectedDateTimeプロパティは一文字の書式をその項目だけの表示として扱います(string fileName, string expectedText)
+    {
+        var sourcePath = TestDocument.CreateTemporaryCopy(Path.Combine("TestData", fileName));
+        var outputPath = TestDocument.CreateOutputPath();
+        try
+        {
+            using (var document = Document.Open(sourcePath, validate: true))
+            {
+                document.DatePickers.Single().SelectedDateTime =
+                    new DateTimeOffset(2026, 2, 3, 17, 0, 0, TimeSpan.FromHours(9));
+                document.SaveAs(outputPath);
+            }
+
+            using var saved = WordprocessingDocument.Open(outputPath, false);
+            // w:dateFormat全体がd（日）、M（月）、h（十二時間制の時）の一文字です。
+            // w:lidはja-JP、w:calendarはgregorianです。.NETの標準書式には切り替えず、
+            // 指定された一項目だけをw:sdtContent内のw:t（表示文字列）へ保存します。
+            // 固定DOCXは最小OOXMLで、Word実機による確認資料ではありません。
+            saved.MainDocumentPart!.Document!
+                .Descendants<Wordprocessing.Text>()
+                .Single().Text.Should().Be(expectedText);
+        }
+        finally
+        {
+            File.Delete(sourcePath);
+            File.Delete(outputPath);
+        }
+    }
+
     // 以下は未レビューの保留メモです。書式の全組み合わせではなく解釈ルールごとに置きます。
     // w:dateFormat（表示形式）、w:lid（言語）、w:calendar（暦）を持つ固定DOCXを使い、
     // 公開APIで日時を設定・保存した後のw:t（表示文字列）を確認する予定です。
     // 未確定のWordの挙動や例外契約は、この段階で断定しません。
-    [Fact(Skip = "日付書式の保留メモ。0.3.0への採用は未決定。仕様レビューと固定DOCX・検証コードの準備後に解除する。")]
-    public void SelectedDateTimeプロパティは一文字の書式をその項目だけの表示として扱います()
-    {
-        // 日だけのd、月だけのM、時だけのhなどを確認する。.NETの標準書式への切替を防ぐ観点。
-        throw new NotImplementedException("保留メモのため、固定DOCXと検証コードを準備してから有効化する。");
-    }
-
     [Fact(Skip = "日付書式の保留メモ。0.3.0への採用は未決定。仕様レビューと固定DOCX・検証コードの準備後に解除する。")]
     public void SelectedDateTimeプロパティは日付書式のスラッシュを地域別の区切り文字へ変更しません()
     {
