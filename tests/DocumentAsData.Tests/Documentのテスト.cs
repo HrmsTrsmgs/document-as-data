@@ -1211,6 +1211,33 @@ public class Documentのテスト
     }
 
     [Fact]
+    public void Saveが元ファイルへの書き込みに失敗しても編集内容を保持して再保存できます()
+    {
+        var filePath = TestDocument.CreateTemporaryCopy(SimpleMergeFieldsPath);
+        try
+        {
+            using (var document = Document.Open(filePath))
+            {
+                document.MergeFields["CustomerName"].Text = "変更後";
+                // 別の読み取り用Streamで保存を妨げます。原因を取り除いた後、同じDocumentで再試行します。
+                using (var reader = File.OpenRead(filePath))
+                {
+                    FluentActions.Invoking(document.Save).Should().Throw<IOException>();
+                }
+
+                document.Save();
+            }
+
+            using var saved = Document.Open(filePath);
+            saved.MergeFields["CustomerName"].Text.Should().Be("変更後");
+        }
+        finally
+        {
+            File.Delete(filePath);
+        }
+    }
+
+    [Fact]
     public void Dispose後のSaveは例外を投げて元ファイルを再び束縛しません()
     {
         var filePath = TestDocument.CreateTemporaryCopy(EmptyDocumentPath);
