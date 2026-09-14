@@ -155,6 +155,18 @@ public class Documentのテスト
     }
 
     [Fact]
+    public void Openは内容が0バイトのファイルを文書として開きません()
+    {
+        // 空白のページを持つ正常なDOCXではなく、ZIPパッケージ自体がない0バイトの固定データです。
+        var action = () =>
+        {
+            using var document = Document.Open(@"TestData\内容が0バイトの不正文書.docx");
+        };
+
+        action.Should().Throw<InvalidDataException>();
+    }
+
+    [Fact]
     public void Openは読み取り不可のStreamを内容を変更せず閉じずに拒否します()
     {
         var filePath = TestDocument.CreateTemporaryCopy(SimpleMergeFieldsPath);

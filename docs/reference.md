@@ -335,6 +335,9 @@ Word独自の表示形式すべてとの互換性はありません。Word実機
 
 ## 開く・保存する・閉じる
 
+`Open` は既存のDOCXを開くAPIです。0バイトのファイルや、現在位置以降にデータがないStreamは `InvalidDataException` になります。
+これは空白ページを持つ正常なDOCXとは異なります。
+
 変更は作業領域に保持されます。`Close()`・`Dispose()`・`using` の終了だけでは元データへ保存しません。
 
 | 開き方 | `Save()` | `SaveAs(path)` | Close・Dispose時 |

@@ -25,6 +25,7 @@ public class Document : IDisposable
     /// 派生した型付き文書から、指定したDOCXファイルを開きます。
     /// </summary>
     /// <param name="filePath">開くDOCXファイルのパス。</param>
+    /// <exception cref="InvalidDataException">ファイルの内容が0バイトの場合。</exception>
     protected Document(string filePath)
         : this(DocumentSession.Open(filePath))
     {
@@ -69,6 +70,7 @@ public class Document : IDisposable
     /// </summary>
     /// <param name="filePath">開くDOCXファイルのパス。</param>
     /// <returns>開いた文書。</returns>
+    /// <exception cref="InvalidDataException">ファイルの内容が0バイトの場合。</exception>
     public static Document Open(string filePath) =>
         new(filePath);
 
@@ -79,7 +81,7 @@ public class Document : IDisposable
     /// <param name="validate">開く文書をOpen XMLとして検証する場合は<c>true</c>。</param>
     /// <returns>開いた文書。</returns>
     /// <exception cref="InvalidDataException">
-    /// <paramref name="validate" />が<c>true</c>で、文書にOpen XML検証エラーがある場合。
+    /// ファイルの内容が0バイト、または<paramref name="validate" />が<c>true</c>で文書にOpen XML検証エラーがある場合。
     /// </exception>
     public static Document Open(string filePath, bool validate) =>
         ValidateIfRequested(Open(filePath), validate);
@@ -258,6 +260,11 @@ public class Document : IDisposable
             this.filePath = filePath;
             try
             {
+                // SDKは空Streamも開けるため、パス指定・Stream指定とも文書がない入力を拒否します。
+                if (workingStream.Length == 0)
+                {
+                    throw new InvalidDataException();
+                }
                 Document = Packaging.WordprocessingDocument.Open(workingStream, true, new OpenSettings { AutoSave = false });
             }
             catch
@@ -299,19 +306,8 @@ public class Document : IDisposable
         /// <param name="source">呼び出し側が所有する、現在位置からDOCXを読み取れるStream。</param>
         /// <returns>SDK文書とコピー切り替え用のラッパーを所有するセッション。</returns>
         /// <exception cref="InvalidDataException">入力の現在位置以降に文書データがない場合。</exception>
-        internal static DocumentSession Open(Stream source)
-        {
-            var workingStream = new CopyOnWriteStream(source);
-            // SDKは空Streamも開けるため、文書がない入力はここで拒否します。
-            // 非シーク入力のために作成したコピーだけを解放し、借りた元Streamは閉じません。
-            if (workingStream.Length == 0)
-            {
-                workingStream.Dispose();
-                throw new InvalidDataException();
-            }
-
-            return new(workingStream, null, null);
-        }
+        internal static DocumentSession Open(Stream source) =>
+            new(new CopyOnWriteStream(source), null, null);
 
         /// <summary>
         /// 保存元ファイルから独立した編集領域を作り、先頭から読み取れる状態にします。
