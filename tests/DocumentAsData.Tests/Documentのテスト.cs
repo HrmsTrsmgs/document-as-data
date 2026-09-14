@@ -518,6 +518,23 @@ public class Documentのテスト
     }
 
     [Fact]
+    public void Readはstaticプロパティを変更せずインスタンスのプロパティへ読み込みます()
+    {
+        using var document = Document.Open(ContentControlsPath);
+        DocumentDataWithStaticProperty.CustomerName = "共有値";
+        try
+        {
+            document.Read<DocumentDataWithStaticProperty>()
+                .Address.Should().Be("東京都");
+            DocumentDataWithStaticProperty.CustomerName.Should().Be("共有値");
+        }
+        finally
+        {
+            DocumentDataWithStaticProperty.CustomerName = "";
+        }
+    }
+
+    [Fact]
     public void Readは自動変換したプロパティ名と一致するMERGEFIELDからオブジェクトを読み込みます()
     {
         using var document = Document.Open(@"TestData\customerData.docx");
@@ -1546,6 +1563,18 @@ public class Documentのテスト
     public sealed class CustomerNameOnlyDocumentData
     {
         public string CustomerName { get; set; } = "";
+    }
+
+    /// <summary>
+    /// Readがインスタンスの値だけを更新し、型全体の共有状態には触れないことを確認します。
+    /// </summary>
+    public sealed class DocumentDataWithStaticProperty
+    {
+        /// <summary>文書項目と同名でも読み込み対象にしない共有状態です。</summary>
+        public static string CustomerName { get; set; } = "";
+
+        /// <summary>通常の読み込み対象となるインスタンスの値です。</summary>
+        public string Address { get; set; } = "";
     }
 
     public sealed class AcceptanceDocumentData

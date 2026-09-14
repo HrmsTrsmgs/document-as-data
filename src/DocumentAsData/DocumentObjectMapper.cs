@@ -24,7 +24,7 @@ sealed class DocumentObjectMapper
     }
 
     /// <summary>
-    /// 文書内のContent ControlまたはMERGEFIELDを、指定した型のプロパティへ対応付けて読み込みます。
+    /// 文書内のContent ControlまたはMERGEFIELDを、指定した型のpublicなインスタンスプロパティへ対応付けて読み込みます。
     /// 対応属性がない場合、文字列Content Control、CheckBox、日付選択のTagとMERGEFIELD名をC#識別子へ変換して照合します。
     /// </summary>
     /// <typeparam name="T">文書のデータを読み込む型。</typeparam>
@@ -38,7 +38,7 @@ sealed class DocumentObjectMapper
         object? data = Activator.CreateInstance<T>();
 
         foreach (var (property, value) in
-            from property in typeof(T).GetProperties()
+            from property in typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance)
             let name = property.GetCustomAttribute<DocumentItemNameAttribute>()?.Name
                 ?? ResolveItemName(property.Name)
             select (property, ReadValue(name, property.PropertyType)))

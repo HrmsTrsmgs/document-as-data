@@ -137,6 +137,7 @@ public class Document : IDisposable
     /// <remarks>
     /// DocumentItemName属性に指定した元名を優先します。属性がない場合は文書内の名前・Tagを
     /// C#識別子へ変換してプロパティ名と照合し、該当がなければプロパティ名をそのまま使います。
+    /// 読み込み先はpublicなインスタンスプロパティに限定し、staticプロパティは変更しません。
     /// </remarks>
     /// <typeparam name="T">文書のデータを読み込む型。</typeparam>
     /// <returns>文書内のデータを読み込んだオブジェクト。</returns>

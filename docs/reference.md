@@ -233,6 +233,7 @@ var sources = DocumentWrapperGenerator.GenerateSources(
 
 自分で用意する読み込み先のクラスは、引数なしで生成でき、対象プロパティへ値を設定できる形にしてください。
 例えば、引数なしのコンストラクターと `public` な `get; set;` を持つクラスを使用します。
+`Read<T>()` はpublicなインスタンスプロパティへ読み込み、staticプロパティは変更しません。
 読み取ったオブジェクトは文書と連動しません。変更後は `Replace(data)`、その後 `Save()` または `SaveAs(path)` が必要です。
 
 ### 名前を解決する順序
