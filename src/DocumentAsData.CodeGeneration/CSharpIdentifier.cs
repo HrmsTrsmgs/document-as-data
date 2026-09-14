@@ -7,6 +7,19 @@ namespace Marimo.DocumentAsData.CodeGeneration;
 /// </summary>
 static class CSharpIdentifier
 {
+    extension(string self)
+    {
+        /// <summary>
+        /// C#の識別子比較で無視される先頭の@と書式文字を除き、衝突診断に使う名前を取得します。
+        /// 生成コードや文書内の元名自体は変更しません。
+        /// </summary>
+        internal string IdentifierComparisonKey =>
+            string.Concat(
+                from character in self.StartsWith('@') ? self[1..] : self
+                where char.GetUnicodeCategory(character) != UnicodeCategory.Format
+                select character);
+    }
+
     /// <summary>
     /// 文書内で使用されている名前を、生成コードで使用するC#識別子へ変換します。
     /// </summary>

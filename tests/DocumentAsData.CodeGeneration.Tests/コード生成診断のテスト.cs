@@ -292,7 +292,7 @@ public sealed class コード生成診断のテスト
 
     // 2. 生成型名との比較：型名側にも書式文字がある場合を確認します。
     // DocumentとDataの両方へプロパティを生成するので、比較相手はこの二つです。
-    [Theory(Skip = "生成型名側も識別子として比較する仕様と、診断に表示する名前をレビュー後に解除する。")]
+    [Theory]
     [InlineData("OrderDocument")]
     [InlineData("OrderData")]
     public void 書式文字を除くと生成型名と同じになるプロパティ名は診断します(string propertyName)
