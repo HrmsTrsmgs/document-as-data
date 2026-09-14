@@ -1161,6 +1161,29 @@ public class Documentのテスト
     }
 
     [Fact]
+    public void Save後も他のStreamから元ファイルへ書き込めません()
+    {
+        var filePath = TestDocument.CreateTemporaryCopy(EmptyDocumentPath);
+        try
+        {
+            using var document = Document.Open(filePath);
+            document.Save();
+
+            var action = () =>
+            {
+                // Saveは保存中だけ元ファイルの束縛を解除するため、戻った後に書き込み禁止が復元されることを確認します。
+                using var writer = File.Open(filePath, FileMode.Open, FileAccess.Write, FileShare.ReadWrite);
+            };
+
+            action.Should().Throw<IOException>();
+        }
+        finally
+        {
+            File.Delete(filePath);
+        }
+    }
+
+    [Fact]
     public void Dispose後のSaveは例外を投げて元ファイルを再び束縛しません()
     {
         var filePath = TestDocument.CreateTemporaryCopy(EmptyDocumentPath);
