@@ -687,6 +687,38 @@ public class DatePickerのテスト
         }
     }
 
+    [Fact]
+    public void SelectedDateTimeプロパティは日付書式の単一引用符内のバックスラッシュを表示します()
+    {
+        var sourcePath = TestDocument.CreateTemporaryCopy(
+            Path.Combine("TestData", "引用文字列にバックスラッシュを含む日付選択Content Control.docx"));
+        var outputPath = TestDocument.CreateOutputPath();
+        try
+        {
+            using (var document = Document.Open(sourcePath, validate: true))
+            {
+                document.DatePickers.Single().SelectedDateTime =
+                    new DateTimeOffset(2027, 12, 31, 0, 0, 0, TimeSpan.FromHours(9));
+                document.SaveAs(outputPath);
+            }
+
+            using var saved = WordprocessingDocument.Open(outputPath, false);
+            // w:dateFormatは'C:\Temp' yyyy、w:lidはen-US、w:calendarはgregorianです。
+            // 単一引用符は表示文字列を囲み、外側のyyyyだけが年へ置き換わります。
+            // Wordでカレンダーから日付を選び直し、保存後のw:tがC:\Temp 2026となることを確認済みです。
+            // .NETは引用符内でもバックスラッシュをエスケープとして扱うため、そのまま渡すと消えてしまいます。
+            // 固定DOCXは最小OOXMLで作成し、ここでは年も変えて既存の表示文字列のままでないことを確認します。
+            saved.MainDocumentPart!.Document!
+                .Descendants<Wordprocessing.Text>()
+                .Single().Text.Should().Be(@"C:\Temp 2027");
+        }
+        finally
+        {
+            File.Delete(sourcePath);
+            File.Delete(outputPath);
+        }
+    }
+
     // 以下は未レビューの保留メモです。書式の全組み合わせではなく解釈ルールごとに置きます。
     // w:dateFormat（表示形式）、w:lid（言語）、w:calendar（暦）を持つ固定DOCXを使い、
     // 公開APIで日時を設定・保存した後のw:t（表示文字列）を確認する予定です。
@@ -695,7 +727,7 @@ public class DatePickerのテスト
     public void SelectedDateTimeプロパティは日付書式内の引用符とエスケープの扱いを確認します()
     {
         // 単一引用符内のYYYYと、閉じられていない単一引用符は確認済み。
-        // 二重引用符、バックスラッシュはWordで意味を確認してから期待値を決める。
+        // 単一引用符内のバックスラッシュは確認済み。二重引用符と引用符の外のバックスラッシュは未確認。
         throw new NotImplementedException("保留メモのため、固定DOCXと検証コードを準備してから有効化する。");
     }
 

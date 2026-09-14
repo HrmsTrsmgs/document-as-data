@@ -64,12 +64,13 @@ public partial class DatePicker : ContentControl
     /// 一文字の書式も、.NETの標準書式ではなく指定された一項目として扱います。
     /// スラッシュとコロンは地域別の区切り文字へ変更せず、そのまま表示します。
     /// 対にならない単一引用符は文字として表示します。
+    /// 単一引用符内のバックスラッシュは.NET用にエスケープして表示に残します。
     /// Wordの書式全体を.NETへ変換するものではありません。
     /// </summary>
     /// <param name="format">テンプレートの日付表示形式。</param>
     /// <returns>大文字の年・日指定と午前午後指定を.NETの記号へ置き換えた表示形式。</returns>
     static string ToDotNetDateFormat(string format) =>
-        // 引用部分を先に読み、その内部を変換しません。午前午後指定はmやMへ分割しません。
+        // 引用部分を先に読み、その内部を書式記号として変換しません。午前午後指定はmやMへ分割しません。
         DateFormatTokens().Replace(
             format.Length == 1 ? $"%{format}" : format,
             it =>
@@ -79,7 +80,9 @@ public partial class DatePicker : ContentControl
                 "/" => "'/'",
                 ":" => "':'",
                 "'" => "\\'",
-                var token => token.StartsWith('\'') ? token : token.ToLowerInvariant(),
+                var token => token.StartsWith('\'')
+                    ? token.Replace("\\", "\\\\")
+                    : token.ToLowerInvariant(),
             });
 
     /// <summary>
