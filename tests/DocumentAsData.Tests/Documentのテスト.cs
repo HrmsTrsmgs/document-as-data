@@ -167,6 +167,27 @@ public class Documentのテスト
     }
 
     [Fact]
+    public void Openは0バイトのファイルで失敗してもファイルを束縛しません()
+    {
+        var filePath = TestDocument.CreateTemporaryCopy(@"TestData\内容が0バイトの不正文書.docx");
+        try
+        {
+            // Documentを取得できない失敗でも、利用側が元ファイルを削除できることを確認します。
+            FluentActions.Invoking(
+                () => Document.Open(filePath)
+            ).Should().Throw<InvalidDataException>();
+
+            FluentActions.Invoking(
+                () => File.Delete(filePath)
+            ).Should().NotThrow();
+        }
+        finally
+        {
+            File.Delete(filePath);
+        }
+    }
+
+    [Fact]
     public void Openは読み取り不可のStreamを内容を変更せず閉じずに拒否します()
     {
         var filePath = TestDocument.CreateTemporaryCopy(SimpleMergeFieldsPath);
