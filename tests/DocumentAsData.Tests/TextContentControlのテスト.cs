@@ -174,6 +174,36 @@ public class TextContentControlのテスト
     }
 
     [Fact]
+    public void Textプロパティは後続段落にある画像を保存後も保持します()
+    {
+        var outputPath = TestDocument.CreateOutputPath();
+        try
+        {
+            using (var document = Document.Open(
+                @"TestData\後続段落に画像を持つ文字列Content Control.docx", validate: true))
+            {
+                document.ContentControls["CustomerName"].Text = "変更後";
+                document.SaveAs(outputPath);
+            }
+
+            using var saved = WordprocessingDocument.Open(outputPath, false);
+            // 二つ目のw:pには文字列ではなくw:drawing（画像）があります。
+            // 段落ごと消すと画像への参照も失われるため、保存された要素を確認します。
+            saved.MainDocumentPart.Should().NotBeNull();
+            saved.MainDocumentPart.Document.Should().NotBeNull();
+            saved.MainDocumentPart.Document.Descendants<Wordprocessing.Drawing>()
+                .Should().ContainSingle();
+            new DocumentFormat.OpenXml.Validation.OpenXmlValidator(
+                DocumentFormat.OpenXml.FileFormatVersions.Office2010)
+                .Validate(saved).Should().BeEmpty();
+        }
+        finally
+        {
+            File.Delete(outputPath);
+        }
+    }
+
+    [Fact]
     public void TextプロパティはContentControlの値を設定します()
     {
         var filePath = TestDocument.CreateTemporaryCopy(ContentControlPath);

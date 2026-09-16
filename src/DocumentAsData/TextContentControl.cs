@@ -60,13 +60,22 @@ public class TextContentControl : ContentControl, IDocumentTextItem
     }
 
     /// <summary>
-    /// 先頭段落以外のw:pを除去し、再読み取り時に余分なCRLFが付くのを防ぎます。
+    /// 先頭段落以外の、文字列と書式だけを持つw:pを除去します。
+    /// 画像などの別の内容を持つ段落は残します。
     /// 設定値の改行は、先頭段落内のw:brとして既に格納されています。
     /// </summary>
     void RemoveFollowingParagraphs()
     {
         // 削除によって列挙順が変わらないよう、先に対象を確定します。
-        foreach (var paragraph in Element.Descendants<Wordprocessing.Paragraph>().Skip(1).ToArray())
+        foreach (var paragraph in
+            (
+                from paragraph in Element.Descendants<Wordprocessing.Paragraph>().Skip(1)
+                where paragraph.ChildElements.All(it =>
+                    it is Wordprocessing.ParagraphProperties
+                    || it is Wordprocessing.Run run && run.ChildElements.All(child =>
+                        child is Wordprocessing.RunProperties or Wordprocessing.Text))
+                select paragraph
+            ).ToArray())
         {
             paragraph.Remove();
         }
