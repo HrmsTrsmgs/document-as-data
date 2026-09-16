@@ -1038,12 +1038,34 @@ public class DatePickerのテスト
     // Wordが更新しない場合は無変更を仕様化せず、対応対象にするか確認してからメモを完了します。
     // 各ケースは有効化または対象外の記録で完了とし、別の未確認入力へ差し替えて残しません。
 
-    [Fact(Skip = "yyyyyのWord表示が未確認。受理と表示を確認し、期待値レビューと固定DOCX準備後に解除する。")]
-    public void SelectedDateTimeプロパティは五つの小文字年記号の表示を確認します()
+    [Fact]
+    public void SelectedDateTimeプロパティは五つの小文字年記号で四桁年と下二桁を続けて表示します()
     {
-        // w:dateFormat=yyyyy、設定値=2027-02-03。五桁化と複数記号への分割の違いを確認します。
-        // yyyは既に対象外と決定済みであり、その判断を再検討するテストではありません。
-        throw new NotImplementedException("yyyyyのWord表示と対応方針を確認してから検証コードを用意する。");
+        var sourcePath = TestDocument.CreateTemporaryCopy(
+            Path.Combine("TestData", "日付書式が五つの小文字年記号の日付選択Content Control.docx"));
+        var outputPath = TestDocument.CreateOutputPath();
+        try
+        {
+            using (var document = Document.Open(sourcePath, validate: true))
+            {
+                document.DatePickers.Single().SelectedDateTime =
+                    new DateTimeOffset(2027, 2, 3, 0, 0, 0, TimeSpan.FromHours(9));
+                document.SaveAs(outputPath);
+            }
+
+            using var saved = WordprocessingDocument.Open(outputPath, false);
+            // w:dateFormat=yyyyy、w:lid=en-US、w:calendar=gregorianです。
+            // Wordで2026-09-03を選ぶとfullDateが更新され、w:tは202626になります。
+            // 五桁へゼロ埋めせず、四桁年と年の下二桁を連結することを保存結果で確認します。
+            saved.MainDocumentPart!.Document!
+                .Descendants<Wordprocessing.Text>()
+                .Single().Text.Should().Be("202727");
+        }
+        finally
+        {
+            File.Delete(sourcePath);
+            File.Delete(outputPath);
+        }
     }
 
     [Fact(Skip = "YYYYYのWord表示が未確認。受理と表示を確認し、期待値レビューと固定DOCX準備後に解除する。")]
