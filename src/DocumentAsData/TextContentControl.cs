@@ -55,13 +55,20 @@ public class TextContentControl : ContentControl, IDocumentTextItem
                 text.Text = "";
             }
 
-            // 設定値の改行は先頭段落内のw:brに置き換わっているため、
-            // 空になった後続のw:pを残すと読み取り時に余分なCRLFが増えます。
-            // 削除によって列挙順が変わらないよう、先に対象を確定します。
-            foreach (var paragraph in Element.Descendants<Wordprocessing.Paragraph>().Skip(1).ToArray())
-            {
-                paragraph.Remove();
-            }
+            RemoveFollowingParagraphs();
+        }
+    }
+
+    /// <summary>
+    /// 先頭段落以外のw:pを除去し、再読み取り時に余分なCRLFが付くのを防ぎます。
+    /// 設定値の改行は、先頭段落内のw:brとして既に格納されています。
+    /// </summary>
+    void RemoveFollowingParagraphs()
+    {
+        // 削除によって列挙順が変わらないよう、先に対象を確定します。
+        foreach (var paragraph in Element.Descendants<Wordprocessing.Paragraph>().Skip(1).ToArray())
+        {
+            paragraph.Remove();
         }
     }
 
