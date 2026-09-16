@@ -999,6 +999,37 @@ public class DatePickerのテスト
         }
     }
 
+    [Fact]
+    public void SelectedDateTimeプロパティは日付書式の小文字fを表示に残します()
+    {
+        var sourcePath = TestDocument.CreateTemporaryCopy(
+            Path.Combine("TestData", "日付書式に小文字fを含む日付選択Content Control.docx"));
+        var outputPath = TestDocument.CreateOutputPath();
+        try
+        {
+            using (var document = Document.Open(sourcePath, validate: true))
+            {
+                document.DatePickers.Single().SelectedDateTime =
+                    new DateTimeOffset(2027, 2, 3, 0, 0, 0, TimeSpan.FromHours(9));
+                document.SaveAs(outputPath);
+            }
+
+            using var saved = WordprocessingDocument.Open(outputPath, false);
+            // w:dateFormatはyyyy-MM-dd f、w:lidはen-US、w:calendarはgregorianです。
+            // Wordで9月3日を選び直すと、fullDateは2026-09-03T00:00:00Z、w:tは2026-09-03 fになります。
+            // 小文字fは文字として残し、.NETの秒の小数部を表示する書式として解釈しません。
+            // 固定DOCXは同じ書式を持つ最小OOXMLです。年月を変え、表示が更新されてもfが残ることを確認します。
+            saved.MainDocumentPart!.Document!
+                .Descendants<Wordprocessing.Text>()
+                .Single().Text.Should().Be("2027-02-03 f");
+        }
+        finally
+        {
+            File.Delete(sourcePath);
+            File.Delete(outputPath);
+        }
+    }
+
     // 以下は未レビューの保留メモです。書式の全組み合わせではなく解釈ルールごとに置きます。
     // w:dateFormat（表示形式）、w:lid（言語）、w:calendar（暦）を持つ固定DOCXを使い、
     // 公開APIで日時を設定・保存した後のw:t（表示文字列）を確認する予定です。

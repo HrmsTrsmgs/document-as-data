@@ -67,6 +67,7 @@ public partial class DatePicker : ContentControl
     /// 二重引用符は文字として表示し、その内側も書式記号として扱います。
     /// バックスラッシュは.NET用にエスケープして表示に残します。
     /// パーセントは.NETの書式指定として解釈せず、表示に残します。
+    /// 小文字fも秒の小数部として解釈せず、表示に残します。
     /// MMMMM・MMMMMMは月名と月番号を続けて表示します。
     /// ddddd・DDDDDは曜日名と日番号、dddddd・DDDDDDは曜日名と二桁の日番号を続けて表示します。
     /// Wordの書式全体を.NETへ変換するものではありません。
@@ -96,6 +97,7 @@ public partial class DatePicker : ContentControl
                 "\"" => "\\\"",
                 "\\" => "\\\\",
                 "%" => "\\%",
+                "f" => "\\f",
                 var token => token.StartsWith('\'')
                     ? token.Replace("\\", "\\\\")
                     : token.ToLowerInvariant(),
@@ -109,7 +111,7 @@ public partial class DatePicker : ContentControl
     /// 引用文字列と、.NET用に変換するWordの日付書式記号を識別します。
     /// </summary>
     /// <returns>コンパイル時に生成される、書式記号の検索用正規表現。</returns>
-    [GeneratedRegex("'[^']*'|MMMMM|ddddd|am/pm|AM/PM|Y+|D+|/|:|'|\\\\|\"|%")]
+    [GeneratedRegex("'[^']*'|MMMMM|ddddd|am/pm|AM/PM|Y+|D+|/|:|'|\\\\|\"|%|f")]
     private static partial Regex DateFormatTokens();
 
     /// <summary>
