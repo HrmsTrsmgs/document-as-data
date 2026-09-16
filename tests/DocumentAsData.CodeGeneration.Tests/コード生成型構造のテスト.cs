@@ -185,7 +185,7 @@ public sealed class コード生成型構造のテスト
             .WithInnerException<DocumentMappingException>();
     }
 
-    [Fact(Skip = "SpreadsheetAsData 6a80fceの生成型Open失敗時の解放を取り込む候補。項目検証失敗後のファイル解放をレビューしてRedへ進めるときに解除する。")]
+    [Fact]
     public void 生成されたDocument型は項目の検証でOpenに失敗するとファイルを解放します()
     {
         var generatedType = GeneratedCodeInspection
