@@ -1158,11 +1158,34 @@ public class DatePickerのテスト
         }
     }
 
-    [Fact(Skip = "mmmのWord表示が未確認。受理と表示を確認し、期待値レビューと固定DOCX準備後に解除する。")]
-    public void SelectedDateTimeプロパティは三つの分記号の表示を確認します()
+    [Fact]
+    public void SelectedDateTimeプロパティは三つの分記号で二桁と一桁の分を続けて表示します()
     {
-        // w:dateFormat=mmm、設定値=2027-02-03T17:04:05+09:00。mmとmに分割されるかを確認します。
-        throw new NotImplementedException("mmmに対するWordの時刻表示を確認してから検証コードを用意する。");
+        var sourcePath = TestDocument.CreateTemporaryCopy(
+            Path.Combine("TestData", "日付書式が三つの分記号の日付選択Content Control.docx"));
+        var outputPath = TestDocument.CreateOutputPath();
+        try
+        {
+            using (var document = Document.Open(sourcePath, validate: true))
+            {
+                document.DatePickers.Single().SelectedDateTime =
+                    new DateTimeOffset(2027, 2, 3, 0, 0, 0, TimeSpan.FromHours(9));
+                document.SaveAs(outputPath);
+            }
+
+            using var saved = WordprocessingDocument.Open(outputPath, false);
+            // w:dateFormat=mmm、w:lid=en-US、w:calendar=gregorianです。
+            // Wordで2026-09-03を選ぶとfullDateは午前0時、w:tは000になります。
+            // カレンダーで再現できる0分を使い、mmとmの連結を検証します。単なるmmなら00です。
+            saved.MainDocumentPart!.Document!
+                .Descendants<Wordprocessing.Text>()
+                .Single().Text.Should().Be("000");
+        }
+        finally
+        {
+            File.Delete(sourcePath);
+            File.Delete(outputPath);
+        }
     }
 
     [Fact(Skip = "sssのWord表示が未確認。受理と表示を確認し、期待値レビューと固定DOCX準備後に解除する。")]
