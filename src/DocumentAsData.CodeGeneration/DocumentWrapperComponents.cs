@@ -48,7 +48,7 @@ static class DocumentWrapperComponents
         return
             $$"""
             /// <summary>
-            /// Word文書「{{EscapeAmpersands(documentName)}}」を型付きで表します。
+            /// Word文書「{{documentName.EscapeAmpersands()}}」を型付きで表します。
             /// </summary>
             public partial class {{typeName}} : Document
             {
@@ -215,7 +215,7 @@ static class DocumentWrapperComponents
         return
             $$"""
             /// <summary>
-            /// Word文書「{{EscapeAmpersands(documentName)}}」のデータを表します。
+            /// Word文書「{{documentName.EscapeAmpersands()}}」のデータを表します。
             /// </summary>
             public partial class {{typeName}}
             {
@@ -248,7 +248,7 @@ static class DocumentWrapperComponents
         return $$"""
 
             /// <summary>
-            /// 文書項目「{{EscapeLineBreaks(EscapeAmpersands(itemName))}}」の文字列を取得または設定します。
+            /// 文書項目「{{itemName.EscapeAmpersands().EscapeLineBreaks()}}」の文字列を取得または設定します。
             /// </summary>
             {{DataItemNameAttributeDeclaration(itemName, propertyName)}}public string {{propertyName}} { get; set; } = "";
         """;
@@ -269,7 +269,7 @@ static class DocumentWrapperComponents
         return $$"""
 
             /// <summary>
-            /// CheckBox「{{EscapeLineFeed(checkBox.Tag)}}」のチェック状態を取得または設定します。
+            /// CheckBox「{{checkBox.Tag.EscapeLineFeed()}}」のチェック状態を取得または設定します。
             /// </summary>
             {{DataItemNameAttributeDeclaration(checkBox.Tag, propertyName)}}public bool {{propertyName}} { get; set; }
         """;
@@ -290,7 +290,7 @@ static class DocumentWrapperComponents
         return $$"""
 
             /// <summary>
-            /// DatePicker「{{EscapeLineFeed(datePicker.Tag)}}」の日時を取得または設定します。
+            /// DatePicker「{{datePicker.Tag.EscapeLineFeed()}}」の日時を取得または設定します。
             /// </summary>
             {{DataItemNameAttributeDeclaration(datePicker.Tag, propertyName)}}public System.DateTimeOffset {{propertyName}} { get; set; }
         """;
@@ -321,7 +321,7 @@ static class DocumentWrapperComponents
         $$"""
 
             /// <summary>
-            /// MERGEFIELD「{{EscapeLineFeed(mergeField.Name)}}」の文字列を取得または設定します。
+            /// MERGEFIELD「{{mergeField.Name.EscapeLineFeed()}}」の文字列を取得または設定します。
             /// </summary>
             /// <remarks>
             /// 読み取りと書き込みはMERGEFIELDを優先し、存在しない場合に同名の文字列Content Controlを使用します。
@@ -347,7 +347,7 @@ static class DocumentWrapperComponents
         $$"""
 
             /// <summary>
-            /// DatePicker「{{EscapeLineFeed(datePicker.Tag)}}」の日時を取得または設定します。
+            /// DatePicker「{{datePicker.Tag.EscapeLineFeed()}}」の日時を取得または設定します。
             /// </summary>
             public System.DateTimeOffset {{options.GeneratedName(datePicker.Tag)}}
             {
@@ -368,7 +368,7 @@ static class DocumentWrapperComponents
         $$"""
 
             /// <summary>
-            /// CheckBox「{{EscapeLineFeed(checkBox.Tag)}}」のチェック状態を取得または設定します。
+            /// CheckBox「{{checkBox.Tag.EscapeLineFeed()}}」のチェック状態を取得または設定します。
             /// </summary>
             public bool {{options.GeneratedName(checkBox.Tag)}}
             {
@@ -389,7 +389,7 @@ static class DocumentWrapperComponents
         $$"""
 
             /// <summary>
-            /// 文字列Content Control「{{EscapeLineBreaks(EscapeAmpersands(contentControl.Tag))}}」の文字列を取得または設定します。
+            /// 文字列Content Control「{{contentControl.Tag.EscapeAmpersands().EscapeLineBreaks()}}」の文字列を取得または設定します。
             /// </summary>
             /// <remarks>
             /// 読み取りと書き込みは文字列Content Controlを優先し、存在しない場合に同名のMERGEFIELDを使用します。
@@ -413,24 +413,27 @@ static class DocumentWrapperComponents
     /// 生成コード内へ埋め込む文字列リテラルを作ります。
     /// </summary>
     internal static string StringLiteral(string value) =>
-        "\"" + EscapeLineBreaks(value.Replace("\\", "\\\\").Replace("\"", "\\\"")) + "\"";
+        "\"" + value.Replace("\\", "\\\\").Replace("\"", "\\\"").EscapeLineBreaks() + "\"";
 
-    /// <summary>
-    /// LFを可視のエスケープ表記へ変換し、生成ソースの行が分断されるのを防ぎます。
-    /// </summary>
-    static string EscapeLineFeed(string value) =>
-        value.Replace("\n", "\\n");
+    extension(string self)
+    {
+        /// <summary>
+        /// LFを可視のエスケープ表記へ変換し、生成ソースの行が分断されるのを防ぎます。
+        /// </summary>
+        string EscapeLineFeed() =>
+            self.Replace("\n", "\\n");
 
-    /// <summary>
-    /// CRとLFを可視のエスケープ表記へ変換します。
-    /// 文字列リテラルでは、元のバックスラッシュをエスケープした後に呼び出します。
-    /// </summary>
-    static string EscapeLineBreaks(string value) =>
-        EscapeLineFeed(value.Replace("\r", "\\r"));
+        /// <summary>
+        /// CRとLFを可視のエスケープ表記へ変換します。
+        /// 文字列リテラルでは、元のバックスラッシュをエスケープした後に呼び出します。
+        /// </summary>
+        string EscapeLineBreaks() =>
+            self.Replace("\r", "\\r").EscapeLineFeed();
 
-    /// <summary>
-    /// 名前に含まれるアンパサンドがXMLコメントでエンティティとして解釈されるのを防ぎます。
-    /// </summary>
-    static string EscapeAmpersands(string value) =>
-        value.Replace("&", "&amp;");
+        /// <summary>
+        /// 名前に含まれるアンパサンドがXMLコメントでエンティティとして解釈されるのを防ぎます。
+        /// </summary>
+        string EscapeAmpersands() =>
+            self.Replace("&", "&amp;");
+    }
 }
