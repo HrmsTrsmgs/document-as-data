@@ -1552,13 +1552,34 @@ public class DatePickerのテスト
         }
     }
 
-    [Fact(Skip = "japan暦指定時のWord表示が未確認。UIの暦と保存表示を分けて確認し、期待値レビュー後に解除する。")]
-    public void SelectedDateTimeプロパティは日本の暦を指定した場合の年月日表示を確認します()
+    [Fact]
+    public void SelectedDateTimeプロパティは日本の暦を指定しても西暦の書式で年月日を表示します()
     {
-        // w:calendar=japan、w:dateFormat=yyyy/MM/dd、w:lid=ja-JP、設定値=2027-02-03。
-        // カレンダーUIが和暦でも、保存するw:tの年まで和暦になるとは仮定しません。
-        // 元号記号gや和暦年記号eの対応は別の範囲検討課題で、このメモへ追加しません。
-        throw new NotImplementedException("japan暦指定と保存する表示文字列の関係を確認する。");
+        var sourcePath = TestDocument.CreateTemporaryCopy(
+            Path.Combine("TestData", "日本の暦で西暦書式を指定した日付選択Content Control.docx"));
+        var outputPath = TestDocument.CreateOutputPath();
+        try
+        {
+            using (var document = Document.Open(sourcePath, validate: true))
+            {
+                document.DatePickers.Single().SelectedDateTime =
+                    new DateTimeOffset(2027, 2, 3, 0, 0, 0, TimeSpan.FromHours(9));
+                document.SaveAs(outputPath);
+            }
+
+            using var saved = WordprocessingDocument.Open(outputPath, false);
+            // w:calendar=japan、w:dateFormat=yyyy/MM/dd、w:lid=ja-JPとしています。
+            // WordのカレンダーUIは令和8年9月ですが、9月3日を選び保存したw:tは2026/09/03です。
+            // 暦の指定だけを根拠に表示年を和暦へ変換せず、西暦書式の意味を保ちます。
+            saved.MainDocumentPart!.Document!
+                .Descendants<Wordprocessing.Text>()
+                .Single().Text.Should().Be("2027/02/03");
+        }
+        finally
+        {
+            File.Delete(sourcePath);
+            File.Delete(outputPath);
+        }
     }
 
     [Fact(Skip = "空の表示形式の扱いが未決定。Wordの受理と更新を調査し、ライブラリの契約レビュー後に解除する。")]
