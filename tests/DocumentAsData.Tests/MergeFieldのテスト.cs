@@ -641,7 +641,7 @@ public class MergeFieldのテスト
         }
     }
 
-    [Fact(Skip = "公開前レビューで確認した境界run内の旧値残留を修正するときに有効化する。")]
+    [Fact]
     public void Textプロパティは別のrunにある境界と同居する旧値も置き換えて保存します()
     {
         var sourcePath = TestDocument.CreateTemporaryCopy(

@@ -235,16 +235,20 @@ public class MergeField : DocumentItem, IDocumentTextItem
 
         /// <summary>
         /// separateとendを含むrunの間にある古い結果を、新しい表示値のrunで置き換えます。
-        /// 境界を含むrun自体は残します。
+        /// 境界runに同居する表示要素も除去し、境界run自体とその外側の本文は残します。
         /// </summary>
         /// <param name="resultSeparatorRun">separateを含むrun。</param>
         /// <param name="fieldEndRun">endを含むrun。</param>
         /// <param name="newValueElements">新しい表示値を構成する要素。</param>
-        static void ReplaceResultBetweenRuns(
+        void ReplaceResultBetweenRuns(
             OpenXmlElement resultSeparatorRun,
             OpenXmlElement fieldEndRun,
             OpenXmlElement[] newValueElements)
         {
+            foreach (var element in valueElements)
+            {
+                element.Remove();
+            }
             RemoveElementsBetween(resultSeparatorRun, fieldEndRun);
             fieldEndRun.InsertBeforeSelf(new Wordprocessing.Run(newValueElements));
         }
