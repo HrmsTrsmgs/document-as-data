@@ -411,7 +411,7 @@ public sealed class コード生成型構造のテスト
             .WithInnerException<DocumentMappingException>();
     }
 
-    [Fact(Skip = "SpreadsheetAsData e16b0d8の入力Streamの所有権を取り込む候補。生成型の項目検証失敗後も読み取り可能なことをレビューしてRedへ進めるときに解除する。")]
+    [Fact]
     public void 生成されたDocument型は項目の検証でOpenに失敗しても呼び出し側のStreamを閉じません()
     {
         var generatedType = GeneratedCodeInspection
