@@ -291,7 +291,7 @@ public class Document : IDisposable
             var sourceStream = File.OpenRead(filePath);
             try
             {
-                return new(CreateWorkingCopy(sourceStream), sourceStream, filePath);
+                return new(CreateWorkingCopy(sourceStream, 0), sourceStream, filePath);
             }
             catch
             {
@@ -310,17 +310,19 @@ public class Document : IDisposable
             new(new CopyOnWriteStream(source), null, null);
 
         /// <summary>
-        /// 保存元ファイルから独立した編集領域を作り、先頭から読み取れる状態にします。
+        /// 入力の現在位置以降を独立した編集領域へコピーし、指定位置から読み書きできる状態にします。
+        /// コピーや位置設定に失敗した場合は、新しく作った領域を解放します。
         /// </summary>
-        /// <param name="source">先頭に位置する保存元ファイルのStream。</param>
-        /// <returns>元ファイルの内容を複製した、拡張可能な編集領域。</returns>
-        static MemoryStream CreateWorkingCopy(Stream source)
+        /// <param name="source">コピー対象の先頭に位置する入力Stream。所有権は引き受けません。</param>
+        /// <param name="position">コピー後の編集領域の読み書き位置。</param>
+        /// <returns>入力の内容を複製した、拡張可能な編集領域。</returns>
+        static MemoryStream CreateWorkingCopy(Stream source, long position)
         {
             var copy = new MemoryStream();
             try
             {
                 source.CopyTo(copy);
-                copy.Position = 0;
+                copy.Position = position;
                 return copy;
             }
             catch
@@ -486,18 +488,7 @@ public class Document : IDisposable
                     {
                         source.Position = sourceOffset;
                     }
-                    var copy = new MemoryStream();
-                    try
-                    {
-                        source.CopyTo(copy);
-                        copy.Position = position;
-                        workingCopy = copy;
-                    }
-                    catch
-                    {
-                        copy.Dispose();
-                        throw;
-                    }
+                    workingCopy = DocumentSession.CreateWorkingCopy(source, position);
                 }
 
                 return workingCopy;
