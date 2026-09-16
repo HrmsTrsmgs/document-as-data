@@ -375,7 +375,7 @@ public sealed class コード生成診断のテスト
                 new CodeGenerationDiagnostic(true, propertyName, ["customerName"]));
     }
 
-    [Fact(Skip = "SpreadsheetAsData 9850ddbの型名側の正規化を取り込む候補。生成型名の@を除いた比較をレビューしてRedへ進めるときに解除する。")]
+    [Fact]
     public void 生成Document型名にエスケープ表記があっても同じ識別子のプロパティを診断します()
     {
         // @OrderDocumentとOrderDocumentは、C#では同じ型名です。
