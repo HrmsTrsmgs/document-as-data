@@ -206,41 +206,61 @@ public class MergeField : DocumentItem, IDocumentTextItem
                 .ToArray();
             if (resultSeparatorRun == fieldEndRun)
             {
-                // 境界が同じrunにある場合、結果はその子要素です。
-                // 兄弟runには本文があるため触らず、separateとendの間だけを置き換えます。
-                // 列挙中に要素を削除するので、削除対象は先に確定します。
-                foreach (var oldResultElement in
-                    resultSeparator.ElementsAfter()
-                        .TakeWhile(it => it != fieldEnd)
-                        .ToArray())
-                {
-                    oldResultElement.Remove();
-                }
-
-                foreach (var newValueElement in newValueElements)
-                {
-                    fieldEnd.InsertBeforeSelf(newValueElement);
-                }
+                ReplaceResultWithinRun(newValueElements);
             }
             else
             {
-                // OOXML要素を列挙しながら削除すると次の兄弟をたどれないため、削除対象を先に確定します。
-                foreach (var oldResultElement in
-                    resultSeparatorRun.ElementsAfter()
-                        .TakeWhile(it => it != fieldEndRun)
-                        .ToArray())
-                {
-                    oldResultElement.Remove();
-                }
-
-                fieldEndRun.InsertBeforeSelf(
-                    new Wordprocessing.Run(newValueElements));
+                ReplaceResultBetweenRuns(resultSeparatorRun, fieldEndRun, newValueElements);
             }
 
             valueElements.Clear();
             valueElements.AddRange(newValueElements);
             // 書き換えた表示結果をWordが古い結果として扱わないようにします。
             fieldStart.Dirty = null;
+        }
+
+        /// <summary>
+        /// separateとendが同じrunにある結果を、その子要素として置き換えます。
+        /// 境界の外や兄弟runには本文があるため触りません。
+        /// </summary>
+        /// <param name="newValueElements">新しい表示値を構成する要素。</param>
+        void ReplaceResultWithinRun(OpenXmlElement[] newValueElements)
+        {
+            RemoveElementsBetween(resultSeparator, fieldEnd);
+            foreach (var newValueElement in newValueElements)
+            {
+                fieldEnd.InsertBeforeSelf(newValueElement);
+            }
+        }
+
+        /// <summary>
+        /// separateとendを含むrunの間にある古い結果を、新しい表示値のrunで置き換えます。
+        /// 境界を含むrun自体は残します。
+        /// </summary>
+        /// <param name="resultSeparatorRun">separateを含むrun。</param>
+        /// <param name="fieldEndRun">endを含むrun。</param>
+        /// <param name="newValueElements">新しい表示値を構成する要素。</param>
+        static void ReplaceResultBetweenRuns(
+            OpenXmlElement resultSeparatorRun,
+            OpenXmlElement fieldEndRun,
+            OpenXmlElement[] newValueElements)
+        {
+            RemoveElementsBetween(resultSeparatorRun, fieldEndRun);
+            fieldEndRun.InsertBeforeSelf(new Wordprocessing.Run(newValueElements));
+        }
+
+        /// <summary>
+        /// 同じ親を持つ境界の間だけを削除し、両境界は残します。
+        /// OOXML要素を削除すると次の兄弟をたどれないため、削除対象を先に配列へ確定します。
+        /// </summary>
+        /// <param name="start">削除範囲の直前にある境界要素。</param>
+        /// <param name="end">削除範囲の直後にある境界要素。</param>
+        static void RemoveElementsBetween(OpenXmlElement start, OpenXmlElement end)
+        {
+            foreach (var element in start.ElementsAfter().TakeWhile(it => it != end).ToArray())
+            {
+                element.Remove();
+            }
         }
     }
 }
