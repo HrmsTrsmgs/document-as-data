@@ -21,7 +21,7 @@ DocumentAsDataは、DOCXの本文に名前を付けた項目とプログラム�
 
 現在は `.NET 10`（`net10.0`）が対象で、名前空間は `Marimo.DocumentAsData` です。
 ライブラリの実行にWordのインストールは必要ありません。
-初版候補は `0.1.0` で、現在は公開前です。ローカルNuGetパッケージまたはプロジェクト参照で利用します。
+この文書は `0.3.0` を対象とします。NuGetからの導入手順は[README](../README.md)を参照してください。
 
 | パッケージ | 用途 |
 | --- | --- |
@@ -94,7 +94,7 @@ SDK形式の利用側プロジェクトで `Marimo.DocumentAsData.Build` を参�
     <RootNamespace>MyDocuments</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Marimo.DocumentAsData.Build" Version="0.1.0" />
+    <PackageReference Include="Marimo.DocumentAsData.Build" Version="0.3.0" />
     <DocumentAsData Include="template.docx" />
   </ItemGroup>
 </Project>

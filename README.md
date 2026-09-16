@@ -30,25 +30,20 @@ document.SaveAs("output.docx");
 
 ## はじめて使う：コード生成でDOCXを読み書きする
 
-現在の対象は **.NET 10** です。初版候補の `0.1.0` はまだ公開していません。
-以下は、ソースからローカルパッケージを作って試す手順です。
-NuGet.orgから導入できることを前提にはしていません。
+現在の対象は **.NET 10** です。以下はバージョン `0.3.0` の導入手順です。
+コード生成を使う場合は [Marimo.DocumentAsData.Build](https://www.nuget.org/packages/Marimo.DocumentAsData.Build) を参照します。
+公開バージョンの一覧も、このNuGetパッケージページで確認できます。
 
 ### 1. パッケージとサンプルを用意する
 
-.NET SDKはリポジトリの `global.json` に合わせて用意してください（現在は `10.0.302`）。
-以下はWindowsのPowerShellで、取得したリポジトリのルートから実行する例です。
-最初の復元では依存パッケージを取得するためにネットワークを使用します。
+.NET 10 SDKを用意してください。開発・検証には `10.0.302` を使用しています。
+以下はWindowsのPowerShellで、空の作業フォルダーから実行する例です。
+サンプルDOCXとNuGetパッケージの取得にネットワークを使用します。
 
 ```powershell
-dotnet restore DocumentAsData.slnx
-
-dotnet pack src/DocumentAsData/DocumentAsData.csproj -c Release --no-restore -o artifacts/local-packages
-dotnet pack src/DocumentAsData.CodeGeneration/DocumentAsData.CodeGeneration.csproj -c Release --no-restore -o artifacts/local-packages
-dotnet pack src/DocumentAsData.Build/DocumentAsData.Build.csproj -c Release --no-restore -o artifacts/local-packages
-
-dotnet new console --framework net10.0 --name DocumentAsDataDemo --output artifacts/DocumentAsDataDemo
-Copy-Item "tests/DocumentAsData.Tests/TestData/単純形式のMERGEFIELD.docx" "artifacts/DocumentAsDataDemo/template.docx"
+dotnet new console --framework net10.0 --name DocumentAsDataDemo
+Set-Location DocumentAsDataDemo
+Invoke-WebRequest "https://raw.githubusercontent.com/HrmsTrsmgs/document-as-data/main/tests/DocumentAsData.Tests/TestData/単純形式のMERGEFIELD.docx" -OutFile template.docx
 ```
 
 このDOCXには、`CustomerName`（初期値：株式会社○○）と
@@ -57,7 +52,7 @@ Copy-Item "tests/DocumentAsData.Tests/TestData/単純形式のMERGEFIELD.docx" "
 
 ### 2. コード生成を設定する
 
-`artifacts/DocumentAsDataDemo/DocumentAsDataDemo.csproj` を次の内容にします。
+`DocumentAsDataDemo.csproj` を次の内容にします。
 
 ```xml
 <Project Sdk="Microsoft.NET.Sdk">
@@ -70,7 +65,7 @@ Copy-Item "tests/DocumentAsData.Tests/TestData/単純形式のMERGEFIELD.docx" "
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Marimo.DocumentAsData.Build" Version="0.1.0" />
+    <PackageReference Include="Marimo.DocumentAsData.Build" Version="0.3.0" />
     <DocumentAsData Include="template.docx" />
     <None Update="template.docx" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
@@ -80,25 +75,8 @@ Copy-Item "tests/DocumentAsData.Tests/TestData/単純形式のMERGEFIELD.docx" "
 `DocumentAsData` はコード生成の対象、`None` の設定は実行時に使うDOCXのコピーを指定します。
 `Marimo.DocumentAsData.Build` には、読み書き用とコード生成用のパッケージも依存関係として含まれます。
 
-同じフォルダーに `NuGet.Config` を作ります。
-このサンプルだけで使うパッケージ取得先の設定です。
-
-```xml
-<?xml version="1.0" encoding="utf-8"?>
-<configuration>
-  <packageSources>
-    <clear />
-    <add key="DocumentAsDataLocal" value="../local-packages" />
-    <add key="nuget.org" value="https://api.nuget.org/v3/index.json" />
-  </packageSources>
-  <config>
-    <add key="globalPackagesFolder" value="../demo-package-cache" />
-  </config>
-</configuration>
-```
-
-公開前の同じバージョンを繰り返し試す際、以前のパッケージと混ざらないように、サンプル用のキャッシュを分けています。
-後日同じ `0.1.0` を作り直す場合は、`globalPackagesFolder` を新しいフォルダー名に変えて復元してください。
+通常のNuGet.orgの設定を使うため、専用の `NuGet.Config` は不要です。
+ソースからパッケージを作って試す場合は、[ローカルパッケージの手順](https://github.com/HrmsTrsmgs/document-as-data/blob/main/docs/build-and-release.md#公開前にローカルパッケージを使う)を参照してください。
 
 ### 3. 値を読み書きする
 
@@ -121,10 +99,9 @@ document.SaveAs(outputPath);
 Console.WriteLine(outputPath);
 ```
 
-リポジトリのルートから実行します。
+作成した `DocumentAsDataDemo` フォルダーで実行します。
 
 ```powershell
-Set-Location artifacts/DocumentAsDataDemo
 dotnet run
 ```
 
