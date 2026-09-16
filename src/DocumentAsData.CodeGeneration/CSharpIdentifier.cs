@@ -73,21 +73,16 @@ static class CSharpIdentifier
                 : '_');
 
     /// <summary>
-    /// C#識別子の2文字目以降で使用できるUnicodeカテゴリかどうかを判定します。
+    /// 開始位置に使える文字に加え、数字・接続記号・結合記号・書式文字を継続位置に認めます。
     /// </summary>
     static bool IsIdentifierPartCharacter(char character) =>
-        char.GetUnicodeCategory(character) is
-            UnicodeCategory.UppercaseLetter
-            or UnicodeCategory.LowercaseLetter
-            or UnicodeCategory.TitlecaseLetter
-            or UnicodeCategory.ModifierLetter
-            or UnicodeCategory.OtherLetter
-            or UnicodeCategory.LetterNumber
-            or UnicodeCategory.DecimalDigitNumber
-            or UnicodeCategory.ConnectorPunctuation
-            or UnicodeCategory.NonSpacingMark
-            or UnicodeCategory.SpacingCombiningMark
-            or UnicodeCategory.Format;
+        IsIdentifierStartCharacter(character)
+            || char.GetUnicodeCategory(character) is
+                UnicodeCategory.DecimalDigitNumber
+                or UnicodeCategory.ConnectorPunctuation
+                or UnicodeCategory.NonSpacingMark
+                or UnicodeCategory.SpacingCombiningMark
+                or UnicodeCategory.Format;
 
     /// <summary>
     /// ASCII以外の文字を含むかどうかを判定します。
