@@ -1522,12 +1522,34 @@ public class DatePickerのテスト
         }
     }
 
-    [Fact(Skip = "暦省略時のWord表示が未確認。表示を確認し、期待値レビューと固定DOCX準備後に解除する。")]
-    public void SelectedDateTimeプロパティは暦を省略した場合の年月日表示を確認します()
+    [Fact]
+    public void SelectedDateTimeプロパティは暦を省略しても西暦の年月日を表示します()
     {
-        // w:calendarだけを省略し、w:dateFormat=yyyy/MM/dd、w:lid=ja-JP、設定値=2027-02-03。
-        // 明示的なgregorianの既存テストと対照し、省略が表示へ影響するかを確認します。
-        throw new NotImplementedException("w:calendar省略時のWord表示を確認する。");
+        var sourcePath = TestDocument.CreateTemporaryCopy(
+            Path.Combine("TestData", "暦を省略した日付選択Content Control.docx"));
+        var outputPath = TestDocument.CreateOutputPath();
+        try
+        {
+            using (var document = Document.Open(sourcePath, validate: true))
+            {
+                document.DatePickers.Single().SelectedDateTime =
+                    new DateTimeOffset(2027, 2, 3, 0, 0, 0, TimeSpan.FromHours(9));
+                document.SaveAs(outputPath);
+            }
+
+            using var saved = WordprocessingDocument.Open(outputPath, false);
+            // w:calendarだけを省略し、w:dateFormat=yyyy/MM/dd、w:lid=ja-JPとしています。
+            // Wordで2026-09-03を選ぶとw:calendar=gregorianが補われ、表示は2026/09/03になります。
+            // 暦を明示しなくても、西暦の年月日表示を更新できることを確認します。
+            saved.MainDocumentPart!.Document!
+                .Descendants<Wordprocessing.Text>()
+                .Single().Text.Should().Be("2027/02/03");
+        }
+        finally
+        {
+            File.Delete(sourcePath);
+            File.Delete(outputPath);
+        }
     }
 
     [Fact(Skip = "japan暦指定時のWord表示が未確認。UIの暦と保存表示を分けて確認し、期待値レビュー後に解除する。")]
