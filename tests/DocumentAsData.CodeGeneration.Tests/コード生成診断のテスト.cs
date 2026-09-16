@@ -245,7 +245,7 @@ public sealed class コード生成診断のテスト
                 && it.SourceNames.Contains("customer-id"));
     }
 
-    [Fact(Skip = "SpreadsheetAsData 46ab82bの衝突元の集約を取り込む候補。3項目を一つの診断へ含める仕様をレビューしてRedへ進めるときに解除する。")]
+    [Fact]
     public void 同じ生成名に三つ以上の文書項目が対応した場合にすべての元名を一つの診断へ含めます()
     {
         // 固定文書にはCustomerName・Address・Telephoneの単純MERGEFIELDが一つずつあります。
