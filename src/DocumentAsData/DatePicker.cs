@@ -33,7 +33,9 @@ public partial class DatePicker : ContentControl
     /// 日付選択Content Controlの日時を取得または設定します。
     /// </summary>
     /// <remarks>
-    /// 日時が未入力でも設定できます。表示形式、表示言語、表示文字列は必要です。
+    /// 日時が未入力でも設定できます。表示形式の省略・空文字には、表示言語の短い日付形式を使います。
+    /// 表示言語の省略時は、表示runの直接指定、文字スタイル、文書既定の順に言語を参照します。
+    /// 言語を決定できる設定と表示文字列は必要です。Wordの全書式に対応するものではありません。
     /// </remarks>
     /// <exception cref="InvalidOperationException">
     /// 取得時に日時が欠落している場合。または日付選択のプロパティや、設定時に必要な
@@ -79,6 +81,7 @@ public partial class DatePicker : ContentControl
     /// バックスラッシュは.NET用にエスケープして表示に残します。
     /// パーセントは.NETの書式指定として解釈せず、表示に残します。
     /// f・Fも秒の小数部として解釈せず、表示に残します。
+    /// K・zzz・t・ttも.NETの時差や午前午後の記号として解釈せず、表示に残します。
     /// yyyyy・YYYYYは四桁年と年の下二桁を続けて表示します。
     /// MMMMM・MMMMMMは月名と月番号を続けて表示します。
     /// ddddd・DDDDDは曜日名と日番号、dddddd・DDDDDDは曜日名と二桁の日番号を続けて表示します。
