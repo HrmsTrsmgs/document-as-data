@@ -71,6 +71,7 @@ public partial class DatePicker : ContentControl
     /// yyyyy・YYYYYは四桁年と年の下二桁を続けて表示します。
     /// MMMMM・MMMMMMは月名と月番号を続けて表示します。
     /// ddddd・DDDDDは曜日名と日番号、dddddd・DDDDDDは曜日名と二桁の日番号を続けて表示します。
+    /// hhh・HHH・mmm・sssは、二桁指定と一桁指定を続けて表示します。
     /// Wordの書式全体を.NETへ変換するものではありません。
     /// </summary>
     /// <remarks>
@@ -92,6 +93,7 @@ public partial class DatePicker : ContentControl
                 "hhh" => "hh''h",
                 "HHH" => "HH''H",
                 "mmm" => "mm''m",
+                "sss" => "ss''s",
                 "MMMMM" => "MMMM''M", // 空の引用文字列で月名と月番号を分け、後続のMは月番号の桁数指定へ残します。
                 "ddddd" or "DDDDD" => "dddd''d", // 曜日名と日番号が一つの曜日指定へ結合されないよう区切ります。
                 "DDDDDD" => "dddd''dd",
@@ -116,7 +118,7 @@ public partial class DatePicker : ContentControl
     /// 引用文字列と、.NET用に変換するWordの日付書式記号を識別します。
     /// </summary>
     /// <returns>コンパイル時に生成される、書式記号の検索用正規表現。</returns>
-    [GeneratedRegex("'[^']*'|yyyyy|MMMMM|ddddd|hhh|HHH|mmm|am/pm|AM/PM|Y+|D+|/|:|'|\\\\|\"|%|f")]
+    [GeneratedRegex("'[^']*'|yyyyy|MMMMM|ddddd|hhh|HHH|mmm|sss|am/pm|AM/PM|Y+|D+|/|:|'|\\\\|\"|%|f")]
     private static partial Regex DateFormatTokens();
 
     /// <summary>
