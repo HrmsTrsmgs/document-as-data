@@ -58,21 +58,30 @@ static class GeneratedSourceAssertions
 
             return summary == null
                 ? null
-                : string.Join(
-                    " ",
-                    // エンティティの前後も別トークンになるため、トークン間には空白を足しません。
-                    from line in
-                        string.Concat(
-                            summary.Content
-                                .OfType<XmlTextSyntax>()
-                                .SelectMany(it => it.TextTokens)
-                                .Select(it => it.ValueText))
-                            .Split('\n')
-                    let text = line.Trim()
-                    where text != ""
-                    select text);
+                : SingleLineText(summary);
         }
     }
+
+    /// <summary>
+    /// XMLコメントのテキストを一行へ整形します。
+    /// エンティティの前後も別トークンになるため、トークンは空白を挟まず連結し、
+    /// 行の境界だけを空白で区切ります。
+    /// </summary>
+    /// <param name="element">本文を取得するXMLコメント要素。</param>
+    /// <returns>空行と行頭・行末の空白を除いて一行にまとめた本文。</returns>
+    static string SingleLineText(XmlElementSyntax element) =>
+        string.Join(
+            " ",
+            from line in
+                string.Concat(
+                    element.Content
+                        .OfType<XmlTextSyntax>()
+                        .SelectMany(it => it.TextTokens)
+                        .Select(it => it.ValueText))
+                    .Split('\n')
+            let text = line.Trim()
+            where text != ""
+            select text);
 
     extension(TypeDeclarationSyntax self)
     {
