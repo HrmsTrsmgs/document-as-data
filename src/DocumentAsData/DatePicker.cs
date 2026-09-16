@@ -107,6 +107,7 @@ public partial class DatePicker : ContentControl
                 "f" => "\\f",
                 "F" => "\\F",
                 "K" => "\\K",
+                "zzz" => "'zzz'",
                 var token => token.StartsWith('\'')
                     ? token.Replace("\\", "\\\\")
                     : token.ToLowerInvariant(),
@@ -120,7 +121,7 @@ public partial class DatePicker : ContentControl
     /// 引用文字列と、.NET用に変換するWordの日付書式記号を識別します。
     /// </summary>
     /// <returns>コンパイル時に生成される、書式記号の検索用正規表現。</returns>
-    [GeneratedRegex("'[^']*'|yyyyy|MMMMM|ddddd|hhh|HHH|mmm|sss|am/pm|AM/PM|Y+|D+|/|:|'|\\\\|\"|%|f|F|K")]
+    [GeneratedRegex("'[^']*'|yyyyy|MMMMM|ddddd|hhh|HHH|mmm|sss|am/pm|AM/PM|Y+|D+|/|:|'|\\\\|\"|%|f|F|K|zzz")]
     private static partial Regex DateFormatTokens();
 
     /// <summary>

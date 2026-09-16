@@ -1278,12 +1278,34 @@ public class DatePickerのテスト
         }
     }
 
-    [Fact(Skip = "zzzのWordでの意味が未確認。表示を確認し、期待値レビューと固定DOCX準備後に解除する。")]
-    public void SelectedDateTimeプロパティは日付書式の三つの小文字zの扱いを確認します()
+    [Fact]
+    public void SelectedDateTimeプロパティは日付書式の三つの小文字zを表示に残します()
     {
-        // w:dateFormat=yyyy-MM-dd zzz、設定値=2027-02-03T00:00:00+09:00。
-        // 時差の時分を表す.NETのzzzを代表例とします。zの長さを総当たりするメモではありません。
-        throw new NotImplementedException("zzzのWord表示を確認してから検証コードを用意する。");
+        var sourcePath = TestDocument.CreateTemporaryCopy(
+            Path.Combine("TestData", "日付書式に三つの小文字zを含む日付選択Content Control.docx"));
+        var outputPath = TestDocument.CreateOutputPath();
+        try
+        {
+            using (var document = Document.Open(sourcePath, validate: true))
+            {
+                document.DatePickers.Single().SelectedDateTime =
+                    new DateTimeOffset(2027, 2, 3, 0, 0, 0, TimeSpan.FromHours(9));
+                document.SaveAs(outputPath);
+            }
+
+            using var saved = WordprocessingDocument.Open(outputPath, false);
+            // w:dateFormat=yyyy-MM-dd zzz、w:lid=en-US、w:calendar=gregorianです。
+            // Wordで2026-09-03を選ぶとfullDateが更新され、表示は2026-09-03 zzzになります。
+            // .NETの時差表示として解釈せず、zzzの文字列を残します。
+            saved.MainDocumentPart!.Document!
+                .Descendants<Wordprocessing.Text>()
+                .Single().Text.Should().Be("2027-02-03 zzz");
+        }
+        finally
+        {
+            File.Delete(sourcePath);
+            File.Delete(outputPath);
+        }
     }
 
     [Fact(Skip = "小文字tのWordでの意味が未確認。表示を確認し、期待値レビューと固定DOCX準備後に解除する。")]
