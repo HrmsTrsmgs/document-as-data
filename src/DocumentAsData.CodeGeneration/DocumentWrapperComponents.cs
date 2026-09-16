@@ -269,7 +269,7 @@ static class DocumentWrapperComponents
         return $$"""
 
             /// <summary>
-            /// CheckBox「{{checkBox.Tag}}」のチェック状態を取得または設定します。
+            /// CheckBox「{{checkBox.Tag.Replace("\n", "\\n")}}」のチェック状態を取得または設定します。
             /// </summary>
             {{DataItemNameAttributeDeclaration(checkBox.Tag, propertyName)}}public bool {{propertyName}} { get; set; }
         """;
@@ -368,7 +368,7 @@ static class DocumentWrapperComponents
         $$"""
 
             /// <summary>
-            /// CheckBox「{{checkBox.Tag}}」のチェック状態を取得または設定します。
+            /// CheckBox「{{checkBox.Tag.Replace("\n", "\\n")}}」のチェック状態を取得または設定します。
             /// </summary>
             public bool {{options.GeneratedName(checkBox.Tag)}}
             {

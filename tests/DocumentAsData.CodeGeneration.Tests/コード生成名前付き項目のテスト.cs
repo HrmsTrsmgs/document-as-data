@@ -149,7 +149,7 @@ public sealed class コード生成名前付き項目のテスト : IDisposable
         tested.Should().Be("山田太郎");
     }
 
-    [Fact(Skip = "公開前レビューで確認したTagのLFによる生成コメントの破損を修正するときに有効化する。")]
+    [Fact]
     public void LFを含むTagから生成したCheckBoxプロパティでチェック状態を読み取れます()
     {
         // w:tagのvalにLFを含みます。CheckBoxには文字列Content Controlとは別の
