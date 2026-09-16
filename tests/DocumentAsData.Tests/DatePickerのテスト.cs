@@ -1248,12 +1248,34 @@ public class DatePickerのテスト
         }
     }
 
-    [Fact(Skip = "大文字KのWordでの意味が未確認。表示を確認し、期待値レビューと固定DOCX準備後に解除する。")]
-    public void SelectedDateTimeプロパティは日付書式の大文字Kの扱いを確認します()
+    [Fact]
+    public void SelectedDateTimeプロパティは日付書式の大文字Kを表示に残します()
     {
-        // w:dateFormat=yyyy-MM-dd K、設定値=2027-02-03T00:00:00+09:00。
-        // .NETの時差表示へ置き換わることと、Wordの表示が一致するかを確認します。
-        throw new NotImplementedException("大文字KのWord表示を確認してから検証コードを用意する。");
+        var sourcePath = TestDocument.CreateTemporaryCopy(
+            Path.Combine("TestData", "日付書式に大文字Kを含む日付選択Content Control.docx"));
+        var outputPath = TestDocument.CreateOutputPath();
+        try
+        {
+            using (var document = Document.Open(sourcePath, validate: true))
+            {
+                document.DatePickers.Single().SelectedDateTime =
+                    new DateTimeOffset(2027, 2, 3, 0, 0, 0, TimeSpan.FromHours(9));
+                document.SaveAs(outputPath);
+            }
+
+            using var saved = WordprocessingDocument.Open(outputPath, false);
+            // w:dateFormat=yyyy-MM-dd K、w:lid=en-US、w:calendar=gregorianです。
+            // Wordで2026-09-03を選ぶとfullDateが更新され、表示は2026-09-03 Kになります。
+            // .NETの時差表示として解釈せず、Kの文字を残します。
+            saved.MainDocumentPart!.Document!
+                .Descendants<Wordprocessing.Text>()
+                .Single().Text.Should().Be("2027-02-03 K");
+        }
+        finally
+        {
+            File.Delete(sourcePath);
+            File.Delete(outputPath);
+        }
     }
 
     [Fact(Skip = "zzzのWordでの意味が未確認。表示を確認し、期待値レビューと固定DOCX準備後に解除する。")]
