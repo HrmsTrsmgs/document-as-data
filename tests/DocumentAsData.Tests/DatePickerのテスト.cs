@@ -968,6 +968,37 @@ public class DatePickerのテスト
         }
     }
 
+    [Fact]
+    public void SelectedDateTimeプロパティは日付書式のパーセントを表示に残します()
+    {
+        var sourcePath = TestDocument.CreateTemporaryCopy(
+            Path.Combine("TestData", "日付書式にパーセントを含む日付選択Content Control.docx"));
+        var outputPath = TestDocument.CreateOutputPath();
+        try
+        {
+            using (var document = Document.Open(sourcePath, validate: true))
+            {
+                document.DatePickers.Single().SelectedDateTime =
+                    new DateTimeOffset(2027, 2, 3, 0, 0, 0, TimeSpan.FromHours(9));
+                document.SaveAs(outputPath);
+            }
+
+            using var saved = WordprocessingDocument.Open(outputPath, false);
+            // w:dateFormatはyyyy%MM%dd、w:lidはen-US、w:calendarはgregorianです。
+            // Wordで9月3日を選び直し、fullDateが2026-09-03T00:00:00Z、w:tが2026%09%03となることを確認しました。
+            // %は表示する文字であり、.NETの一文字用カスタム書式指定として扱いません。
+            // 固定DOCXは同じ書式を持つ最小OOXMLです。年月を変え、%と月日のゼロ埋めが残ることを確認します。
+            saved.MainDocumentPart!.Document!
+                .Descendants<Wordprocessing.Text>()
+                .Single().Text.Should().Be("2027%02%03");
+        }
+        finally
+        {
+            File.Delete(sourcePath);
+            File.Delete(outputPath);
+        }
+    }
+
     // 以下は未レビューの保留メモです。書式の全組み合わせではなく解釈ルールごとに置きます。
     // w:dateFormat（表示形式）、w:lid（言語）、w:calendar（暦）を持つ固定DOCXを使い、
     // 公開APIで日時を設定・保存した後のw:t（表示文字列）を確認する予定です。
@@ -988,6 +1019,7 @@ public class DatePickerのテスト
     public void SelectedDateTimeプロパティは日付書式の通常文字をNET固有の書式として解釈しません()
     {
         // Wordで通常文字となるもののうち、.NETでは特別な意味を持つ文字を選ぶ。対象文字はWordでの確認後に決める。
+        // %は表示に残すテストで確認済みです。ほかの文字は引き続き未確認です。
         throw new NotImplementedException("保留メモのため、固定DOCXと検証コードを準備してから有効化する。");
     }
 

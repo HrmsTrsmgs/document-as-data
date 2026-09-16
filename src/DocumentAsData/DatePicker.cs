@@ -66,6 +66,7 @@ public partial class DatePicker : ContentControl
     /// 対にならない単一引用符は文字として表示します。
     /// 二重引用符は文字として表示し、その内側も書式記号として扱います。
     /// バックスラッシュは.NET用にエスケープして表示に残します。
+    /// パーセントは.NETの書式指定として解釈せず、表示に残します。
     /// MMMMM・MMMMMMは月名と月番号を続けて表示します。
     /// ddddd・DDDDDは曜日名と日番号、dddddd・DDDDDDは曜日名と二桁の日番号を続けて表示します。
     /// Wordの書式全体を.NETへ変換するものではありません。
@@ -77,10 +78,11 @@ public partial class DatePicker : ContentControl
     /// </remarks>
     /// <param name="format">テンプレートの日付表示形式。</param>
     /// <returns>大文字の年・日指定と午前午後指定を.NETの記号へ置き換えた表示形式。</returns>
-    static string ToDotNetDateFormat(string format) =>
+    static string ToDotNetDateFormat(string format)
+    {
         // 引用部分を先に読み、その内部を書式記号として変換しません。午前午後指定はmやMへ分割しません。
-        DateFormatTokens().Replace(
-            format.Length == 1 ? $"%{format}" : format,
+        var convertedFormat = DateFormatTokens().Replace(
+            format,
             it =>
             it.Value switch
             {
@@ -93,16 +95,21 @@ public partial class DatePicker : ContentControl
                 "'" => "\\'",
                 "\"" => "\\\"",
                 "\\" => "\\\\",
+                "%" => "\\%",
                 var token => token.StartsWith('\'')
                     ? token.Replace("\\", "\\\\")
                     : token.ToLowerInvariant(),
             });
 
+        // 一文字書式用の%は、文書に含まれる表示文字の%をエスケープした後で付けます。
+        return convertedFormat.Length == 1 ? $"%{convertedFormat}" : convertedFormat;
+    }
+
     /// <summary>
     /// 引用文字列と、.NET用に変換するWordの日付書式記号を識別します。
     /// </summary>
     /// <returns>コンパイル時に生成される、書式記号の検索用正規表現。</returns>
-    [GeneratedRegex("'[^']*'|MMMMM|ddddd|am/pm|AM/PM|Y+|D+|/|:|'|\\\\|\"")]
+    [GeneratedRegex("'[^']*'|MMMMM|ddddd|am/pm|AM/PM|Y+|D+|/|:|'|\\\\|\"|%")]
     private static partial Regex DateFormatTokens();
 
     /// <summary>
