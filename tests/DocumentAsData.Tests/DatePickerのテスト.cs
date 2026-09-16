@@ -1218,12 +1218,34 @@ public class DatePickerのテスト
         }
     }
 
-    [Fact(Skip = "大文字FのWordでの意味が未確認。表示を確認し、期待値レビューと固定DOCX準備後に解除する。")]
-    public void SelectedDateTimeプロパティは日付書式の大文字Fの扱いを確認します()
+    [Fact]
+    public void SelectedDateTimeプロパティは日付書式の大文字Fを表示に残します()
     {
-        // w:dateFormat=yyyy-MM-dd F、設定値=2027-02-03T00:00:00+09:00。
-        // .NETではゼロの小数秒が表示されないため、Wordで文字として残るかを区別します。
-        throw new NotImplementedException("大文字FのWord表示を確認してから検証コードを用意する。");
+        var sourcePath = TestDocument.CreateTemporaryCopy(
+            Path.Combine("TestData", "日付書式に大文字Fを含む日付選択Content Control.docx"));
+        var outputPath = TestDocument.CreateOutputPath();
+        try
+        {
+            using (var document = Document.Open(sourcePath, validate: true))
+            {
+                document.DatePickers.Single().SelectedDateTime =
+                    new DateTimeOffset(2027, 2, 3, 0, 0, 0, TimeSpan.FromHours(9));
+                document.SaveAs(outputPath);
+            }
+
+            using var saved = WordprocessingDocument.Open(outputPath, false);
+            // w:dateFormat=yyyy-MM-dd F、w:lid=en-US、w:calendar=gregorianです。
+            // Wordで2026-09-03を選ぶとfullDateが更新され、表示は2026-09-03 Fになります。
+            // .NETのゼロ小数秒を省略する書式として解釈せず、Fの文字を残します。
+            saved.MainDocumentPart!.Document!
+                .Descendants<Wordprocessing.Text>()
+                .Single().Text.Should().Be("2027-02-03 F");
+        }
+        finally
+        {
+            File.Delete(sourcePath);
+            File.Delete(outputPath);
+        }
     }
 
     [Fact(Skip = "大文字KのWordでの意味が未確認。表示を確認し、期待値レビューと固定DOCX準備後に解除する。")]
