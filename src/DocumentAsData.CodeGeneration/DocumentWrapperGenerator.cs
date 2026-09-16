@@ -65,14 +65,12 @@ public static class DocumentWrapperGenerator
             .. from datePicker in document.DatePickers
                select datePicker.Tag
         ];
-        var documentName = options
-            .GeneratedName(Path.GetFileNameWithoutExtension(filePath))
-            .IdentifierComparisonKey;
+        var documentName = Path.GetFileNameWithoutExtension(filePath);
         string[] reservedNames =
         [
             .. ReservedMemberNames,
-            $"{documentName}Document",
-            $"{documentName}Data"
+            options.DocumentTypeName(documentName).IdentifierComparisonKey,
+            options.DataTypeName(documentName).IdentifierComparisonKey
         ];
 
         return

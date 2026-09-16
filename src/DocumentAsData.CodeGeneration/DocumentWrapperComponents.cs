@@ -16,8 +16,8 @@ static class DocumentWrapperComponents
         Document document)
     {
         var documentName = Path.GetFileNameWithoutExtension(filePath);
-        var typeName = $"{options.GeneratedName(documentName)}Document";
-        var dataTypeName = $"{options.GeneratedName(documentName)}Data";
+        var typeName = options.DocumentTypeName(documentName);
+        var dataTypeName = options.DataTypeName(documentName);
 
         return
             $$"""
@@ -191,7 +191,7 @@ static class DocumentWrapperComponents
         Document document)
     {
         var documentName = Path.GetFileNameWithoutExtension(filePath);
-        var typeName = $"{options.GeneratedName(documentName)}Data";
+        var typeName = options.DataTypeName(documentName);
 
         return
             $$"""
