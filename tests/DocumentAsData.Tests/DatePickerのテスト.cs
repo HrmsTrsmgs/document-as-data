@@ -1068,11 +1068,34 @@ public class DatePickerのテスト
         }
     }
 
-    [Fact(Skip = "YYYYYのWord表示が未確認。受理と表示を確認し、期待値レビューと固定DOCX準備後に解除する。")]
-    public void SelectedDateTimeプロパティは五つの大文字年記号の表示を確認します()
+    [Fact]
+    public void SelectedDateTimeプロパティは五つの大文字年記号で四桁年と下二桁を続けて表示します()
     {
-        // w:dateFormat=YYYYY、設定値=2027-02-03。小文字版と同じ結果になるとは仮定しません。
-        throw new NotImplementedException("YYYYYのWord表示と対応方針を確認してから検証コードを用意する。");
+        var sourcePath = TestDocument.CreateTemporaryCopy(
+            Path.Combine("TestData", "日付書式が五つの大文字年記号の日付選択Content Control.docx"));
+        var outputPath = TestDocument.CreateOutputPath();
+        try
+        {
+            using (var document = Document.Open(sourcePath, validate: true))
+            {
+                document.DatePickers.Single().SelectedDateTime =
+                    new DateTimeOffset(2027, 2, 3, 0, 0, 0, TimeSpan.FromHours(9));
+                document.SaveAs(outputPath);
+            }
+
+            using var saved = WordprocessingDocument.Open(outputPath, false);
+            // w:dateFormat=YYYYY、w:lid=en-US、w:calendar=gregorianです。
+            // Wordで2026-09-03を選び直すと、fullDateが更新され、w:tは202626になります。
+            // 大文字指定でも四桁年と年の下二桁を続けて表示します。
+            saved.MainDocumentPart!.Document!
+                .Descendants<Wordprocessing.Text>()
+                .Single().Text.Should().Be("202727");
+        }
+        finally
+        {
+            File.Delete(sourcePath);
+            File.Delete(outputPath);
+        }
     }
 
     [Fact(Skip = "hhhのWord表示が未確認。受理と表示を確認し、期待値レビューと固定DOCX準備後に解除する。")]

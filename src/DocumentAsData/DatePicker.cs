@@ -68,7 +68,7 @@ public partial class DatePicker : ContentControl
     /// バックスラッシュは.NET用にエスケープして表示に残します。
     /// パーセントは.NETの書式指定として解釈せず、表示に残します。
     /// 小文字fも秒の小数部として解釈せず、表示に残します。
-    /// yyyyyは四桁年と年の下二桁を続けて表示します。
+    /// yyyyy・YYYYYは四桁年と年の下二桁を続けて表示します。
     /// MMMMM・MMMMMMは月名と月番号を続けて表示します。
     /// ddddd・DDDDDは曜日名と日番号、dddddd・DDDDDDは曜日名と二桁の日番号を続けて表示します。
     /// Wordの書式全体を.NETへ変換するものではありません。
@@ -88,7 +88,7 @@ public partial class DatePicker : ContentControl
             it =>
             it.Value switch
             {
-                "yyyyy" => "yyyy''yy",
+                "yyyyy" or "YYYYY" => "yyyy''yy",
                 "MMMMM" => "MMMM''M", // 空の引用文字列で月名と月番号を分け、後続のMは月番号の桁数指定へ残します。
                 "ddddd" or "DDDDD" => "dddd''d", // 曜日名と日番号が一つの曜日指定へ結合されないよう区切ります。
                 "DDDDDD" => "dddd''dd",
