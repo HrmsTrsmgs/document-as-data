@@ -66,12 +66,9 @@ sealed class MSBuild連携テストプロジェクト : IDisposable
         string[] projectNames = includeProjectReferences
             ? ["DocumentAsData", "DocumentAsData.CodeGeneration", "DocumentAsData.Build"]
             : ["DocumentAsData.Build"];
-        var scriptFilePath = Path.Combine(DirectoryPath, "Pack.ps1");
-        File.WriteAllText(
-            scriptFilePath,
+        return WritePowerShellScript(
+            "Pack.ps1",
             $$"""
-            $ErrorActionPreference = 'Stop'
-            [Console]::OutputEncoding = [System.Text.UTF8Encoding]::new($false)
             foreach ($projectName in @({{string.Join(", ", projectNames.Select(it => $"'{it}'"))}})) {
                 $projectPath = Join-Path '{{Path.GetFullPath(Path.Combine(projectFilePath, "..", "..")).Replace("'", "''")}}' "$projectName/$projectName.csproj"
                 dotnet pack $projectPath --no-build --no-restore --disable-build-servers --configuration '{{configuration.Replace("'", "''")}}' --output ./packages --nologo --verbosity minimal -p:TreatWarningsAsErrors={{warningsAsErrors}}
@@ -79,7 +76,6 @@ sealed class MSBuild連携テストプロジェクト : IDisposable
             }
             exit 0
             """);
-        return scriptFilePath;
     }
 
     /// <summary>
@@ -147,7 +143,6 @@ sealed class MSBuild連携テストプロジェクト : IDisposable
                 }
                 """);
         }
-        var scriptFilePath = Path.Combine(DirectoryPath, "PackageReference.ps1");
         if (run)
         {
             File.WriteAllText(
@@ -168,11 +163,9 @@ sealed class MSBuild連携テストプロジェクト : IDisposable
                 System.Console.WriteLine($"after:{saved.CustomerName}/{saved.Address}");
                 """);
         }
-        File.WriteAllText(
-            scriptFilePath,
+        return WritePowerShellScript(
+            "PackageReference.ps1",
             $$"""
-            $ErrorActionPreference = 'Stop'
-            [Console]::OutputEncoding = [System.Text.UTF8Encoding]::new($false)
             dotnet restore ./PackageReference.csproj --configfile ./NuGet.Config --nologo --verbosity minimal
             if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
             $buildArguments = @('./PackageReference.csproj', '/t:{{(build
@@ -189,7 +182,6 @@ sealed class MSBuild連携テストプロジェクト : IDisposable
             }
             exit $LASTEXITCODE
             """);
-        return scriptFilePath;
     }
 
     /// <summary>
@@ -212,16 +204,12 @@ sealed class MSBuild連携テストプロジェクト : IDisposable
               <Target Name="Build" DependsOnTargets="GenerateDocumentAsDataSources" />
             </Project>
             """);
-        var scriptFilePath = Path.Combine(DirectoryPath, "Generate.ps1");
-        File.WriteAllText(
-            scriptFilePath,
+        return WritePowerShellScript(
+            "Generate.ps1",
             """
-            $ErrorActionPreference = 'Stop'
-            [Console]::OutputEncoding = [System.Text.UTF8Encoding]::new($false)
             dotnet msbuild ./DocumentAsData.Generate.proj /t:Build /nologo /v:minimal
             exit $LASTEXITCODE
             """);
-        return scriptFilePath;
     }
 
     /// <summary>
@@ -277,16 +265,12 @@ sealed class MSBuild連携テストプロジェクト : IDisposable
               <packageSources><clear /></packageSources>
             </configuration>
             """);
-        var scriptFilePath = Path.Combine(DirectoryPath, "Build.ps1");
-        File.WriteAllText(
-            scriptFilePath,
+        return WritePowerShellScript(
+            "Build.ps1",
             """
-            $ErrorActionPreference = 'Stop'
-            [Console]::OutputEncoding = [System.Text.UTF8Encoding]::new($false)
             dotnet build ./DocumentAsData.BuildSample.csproj --nologo --verbosity minimal
             exit $LASTEXITCODE
             """);
-        return scriptFilePath;
     }
 
     /// <summary>
@@ -313,16 +297,12 @@ sealed class MSBuild連携テストプロジェクト : IDisposable
               </Target>
             </Project>
             """);
-        var scriptFilePath = Path.Combine(DirectoryPath, "DesignTimeBuild.ps1");
-        File.WriteAllText(
-            scriptFilePath,
+        return WritePowerShellScript(
+            "DesignTimeBuild.ps1",
             """
-            $ErrorActionPreference = 'Stop'
-            [Console]::OutputEncoding = [System.Text.UTF8Encoding]::new($false)
             dotnet msbuild ./DocumentAsData.DesignTimeBuild.proj /t:Build /nologo /v:minimal
             exit $LASTEXITCODE
             """);
-        return scriptFilePath;
     }
 
     /// <summary>
@@ -371,14 +351,30 @@ sealed class MSBuild連携テストプロジェクト : IDisposable
               </Target>
             </Project>
             """);
-        var scriptFilePath = Path.Combine(DirectoryPath, "SdkProject.ps1");
-        File.WriteAllText(
-            scriptFilePath,
+        return WritePowerShellScript(
+            "SdkProject.ps1",
             """
-            $ErrorActionPreference = 'Stop'
-            [Console]::OutputEncoding = [System.Text.UTF8Encoding]::new($false)
             dotnet msbuild ./DocumentAsData.SdkProject.csproj /t:WriteCompileItems /nologo /v:minimal
             exit $LASTEXITCODE
+            """);
+    }
+
+    /// <summary>
+    /// 共通のエラー設定とUTF-8出力設定を付けて、検証用スクリプトを書き込みます。
+    /// 終了コードの扱いは、呼び出し元のコマンド列に残します。
+    /// </summary>
+    /// <param name="fileName">一時プロジェクト内に作成するファイル名。</param>
+    /// <param name="commands">サンプル固有のコマンドと終了処理。</param>
+    /// <returns>作成したスクリプトのパス。</returns>
+    string WritePowerShellScript(string fileName, string commands)
+    {
+        var scriptFilePath = Path.Combine(DirectoryPath, fileName);
+        File.WriteAllText(
+            scriptFilePath,
+            $$"""
+            $ErrorActionPreference = 'Stop'
+            [Console]::OutputEncoding = [System.Text.UTF8Encoding]::new($false)
+            {{commands}}
             """);
         return scriptFilePath;
     }
