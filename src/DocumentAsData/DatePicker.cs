@@ -48,6 +48,8 @@ public partial class DatePicker : ContentControl
         {
             var properties = DateProperties;
             var language = properties.LanguageId?.Val?.Value
+                ?? DisplayText.Ancestors<Wordprocessing.Run>().Single()
+                    .RunProperties?.Languages?.Val?.Value
                 ?? throw new InvalidOperationException();
             var culture = CultureInfo.GetCultureInfo(language);
             var format = properties.DateFormat is { } dateFormat

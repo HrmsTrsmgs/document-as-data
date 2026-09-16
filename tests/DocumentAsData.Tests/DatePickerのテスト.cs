@@ -1428,12 +1428,34 @@ public class DatePickerのテスト
         }
     }
 
-    [Fact(Skip = "表示言語省略時のrun言語参照が未確認。参照先と期待値をレビューし、固定DOCX準備後に解除する。")]
-    public void SelectedDateTimeプロパティは表示言語を省略してrunに英語を指定した場合の月名を確認します()
+    [Fact]
+    public void SelectedDateTimeプロパティは表示言語を省略するとrunの言語で月名を表示します()
     {
-        // w:lidを省略し、w:dateFormat=MMMM、内容runのw:rPr/w:langのw:val=en-US、設定値=2027-02-03。
-        // 文書既定のrun言語はja-JPとし、直接指定を優先するかが表示から区別できるようにします。
-        throw new NotImplementedException("w:lid省略時のrunの直接言語指定の扱いを確認する。");
+        var sourcePath = TestDocument.CreateTemporaryCopy(
+            Path.Combine("TestData", "表示言語を省略しrunに英語を指定した日付選択Content Control.docx"));
+        var outputPath = TestDocument.CreateOutputPath();
+        try
+        {
+            using (var document = Document.Open(sourcePath, validate: true))
+            {
+                document.DatePickers.Single().SelectedDateTime =
+                    new DateTimeOffset(2027, 2, 3, 0, 0, 0, TimeSpan.FromHours(9));
+                document.SaveAs(outputPath);
+            }
+
+            using var saved = WordprocessingDocument.Open(outputPath, false);
+            // w:lidを省略し、w:dateFormat=MMMM、内容runのw:rPr/w:langをen-USにしています。
+            // 文書既定のw:docDefaults内の言語はja-JPであり、直接指定との優先順位を区別できます。
+            // Wordで2026-09-03を選ぶとfullDateが更新され、表示はSeptemberになります。
+            saved.MainDocumentPart!.Document!
+                .Descendants<Wordprocessing.Text>()
+                .Single().Text.Should().Be("February");
+        }
+        finally
+        {
+            File.Delete(sourcePath);
+            File.Delete(outputPath);
+        }
     }
 
     [Fact(Skip = "表示言語省略時のスタイル言語参照が未確認。参照先と期待値をレビューし、固定DOCX準備後に解除する。")]
