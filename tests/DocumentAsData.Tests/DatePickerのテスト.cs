@@ -1368,12 +1368,34 @@ public class DatePickerのテスト
         }
     }
 
-    [Fact(Skip = "表示形式省略時の日本語表示が未確認。標準形式の根拠と期待値をレビューし、固定DOCX準備後に解除する。")]
-    public void SelectedDateTimeプロパティは表示形式を省略した日本語の日付表示を確認します()
+    [Fact]
+    public void SelectedDateTimeプロパティは表示形式を省略すると日本語の短い日付形式で表示します()
     {
-        // w:dateFormat要素を省略し、w:lid=ja-JP、w:calendar=gregorian、設定値=2027-02-03とします。
-        // w:valの欠落や空文字とは区別します。実行環境のCurrentCultureを既定値と仮定しません。
-        throw new NotImplementedException("ja-JPで表示形式を省略したときの標準形式を確認する。");
+        var sourcePath = TestDocument.CreateTemporaryCopy(
+            Path.Combine("TestData", "表示形式を省略した日本語の日付選択Content Control.docx"));
+        var outputPath = TestDocument.CreateOutputPath();
+        try
+        {
+            using (var document = Document.Open(sourcePath, validate: true))
+            {
+                document.DatePickers.Single().SelectedDateTime =
+                    new DateTimeOffset(2027, 2, 3, 0, 0, 0, TimeSpan.FromHours(9));
+                document.SaveAs(outputPath);
+            }
+
+            using var saved = WordprocessingDocument.Open(outputPath, false);
+            // w:dateFormat要素はありません。w:lid=ja-JP、w:calendar=gregorianです。
+            // Wordで2026-09-03を選ぶと、表示は2026/09/03、保存されるdateFormatはyyyy/MM/ddになります。
+            // プロセスの現在のカルチャーではなく、文書の表示言語の短い日付形式を使います。
+            saved.MainDocumentPart!.Document!
+                .Descendants<Wordprocessing.Text>()
+                .Single().Text.Should().Be("2027/02/03");
+        }
+        finally
+        {
+            File.Delete(sourcePath);
+            File.Delete(outputPath);
+        }
     }
 
     [Fact(Skip = "表示形式省略時の英語表示が未確認。標準形式の根拠と期待値をレビューし、固定DOCX準備後に解除する。")]
