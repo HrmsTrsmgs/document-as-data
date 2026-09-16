@@ -166,7 +166,7 @@ public class MergeFieldのテスト
     }
 
     [Fact]
-    public void ValueプロパティはMERGEFIELD値を設定します()
+    public void TextプロパティはMERGEFIELD値を設定します()
     {
         var filePath = TestDocument.CreateTemporaryCopy(TestFilePath);
         try
@@ -184,7 +184,7 @@ public class MergeFieldのテスト
     }
 
     [Fact]
-    public void Valueプロパティは単純MERGEFIELDの結果を設定したとき古い結果の印を解除します()
+    public void Textプロパティは単純MERGEFIELDの結果を設定したとき古い結果の印を解除します()
     {
         var sourcePath =
             TestDocument.CreateTemporaryCopy(DirtySimpleMergeFieldPath);
@@ -216,7 +216,7 @@ public class MergeFieldのテスト
     }
 
     [Fact]
-    public void Valueプロパティは複合MERGEFIELDの値を設定します()
+    public void Textプロパティは複合MERGEFIELDの値を設定します()
     {
         var filePath = TestDocument.CreateTemporaryCopy(ComplexMergeFieldPath);
         try
@@ -234,7 +234,7 @@ public class MergeFieldのテスト
     }
 
     [Fact]
-    public void Valueプロパティは複合MERGEFIELDの結果を設定したとき古い結果の印を解除します()
+    public void Textプロパティは複合MERGEFIELDの結果を設定したとき古い結果の印を解除します()
     {
         var sourcePath =
             TestDocument.CreateTemporaryCopy(DirtyComplexMergeFieldPath);
@@ -267,7 +267,7 @@ public class MergeFieldのテスト
     }
 
     [Fact]
-    public void Valueプロパティは空文字列を設定した複合MERGEFIELDへ値を再設定します()
+    public void Textプロパティは空文字列を設定した複合MERGEFIELDへ値を再設定します()
     {
         var filePath = TestDocument.CreateTemporaryCopy(ComplexMergeFieldPath);
         try
@@ -412,7 +412,7 @@ public class MergeFieldのテスト
     }
 
     [Fact]
-    public void Valueプロパティは単純MERGEFIELDの空白を保持する属性を設定します()
+    public void Textプロパティは単純MERGEFIELDの空白を保持する属性を設定します()
     {
         var sourcePath = TestDocument.CreateTemporaryCopy(TestFilePath);
         var outputPath = TestDocument.CreateOutputPath();
@@ -443,7 +443,7 @@ public class MergeFieldのテスト
     }
 
     [Fact]
-    public void Valueプロパティは複合MERGEFIELDの空白を保持する属性を設定します()
+    public void Textプロパティは複合MERGEFIELDの空白を保持する属性を設定します()
     {
         var sourcePath =
             TestDocument.CreateTemporaryCopy(ComplexMergeFieldPath);
@@ -474,7 +474,7 @@ public class MergeFieldのテスト
     }
 
     [Fact]
-    public void Valueプロパティは単純MERGEFIELDの改行とタブを専用要素で保存します()
+    public void Textプロパティは単純MERGEFIELDの改行とタブを専用要素で保存します()
     {
         var sourcePath = TestDocument.CreateTemporaryCopy(TestFilePath);
         var outputPath = TestDocument.CreateOutputPath();
@@ -508,7 +508,7 @@ public class MergeFieldのテスト
     }
 
     [Fact]
-    public void ValueプロパティはLF改行を単純MERGEFIELDの改行要素で保存します()
+    public void TextプロパティはLF改行を単純MERGEFIELDの改行要素で保存します()
     {
         var sourcePath = TestDocument.CreateTemporaryCopy(TestFilePath);
         var outputPath = TestDocument.CreateOutputPath();
@@ -542,7 +542,7 @@ public class MergeFieldのテスト
     }
 
     [Fact]
-    public void Valueプロパティは複合MERGEFIELDの改行とタブを専用要素で保存します()
+    public void Textプロパティは複合MERGEFIELDの改行とタブを専用要素で保存します()
     {
         var sourcePath =
             TestDocument.CreateTemporaryCopy(ComplexMergeFieldPath);
@@ -574,7 +574,7 @@ public class MergeFieldのテスト
     }
 
     [Fact]
-    public void Valueプロパティは分割して保存された単純MERGEFIELDの結果全体を置き換えます()
+    public void Textプロパティは分割して保存された単純MERGEFIELDの結果全体を置き換えます()
     {
         var sourcePath =
             TestDocument.CreateTemporaryCopy(SplitSimpleMergeFieldResultPath);
@@ -642,7 +642,7 @@ public class MergeFieldのテスト
     }
 
     [Fact]
-    public void Valueプロパティは分割して保存された複合MERGEFIELDの結果全体を置き換えます()
+    public void Textプロパティは分割して保存された複合MERGEFIELDの結果全体を置き換えます()
     {
         var sourcePath =
             TestDocument.CreateTemporaryCopy(SplitComplexMergeFieldResultPath);
