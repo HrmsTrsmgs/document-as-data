@@ -49,27 +49,47 @@ public partial class DatePicker : ContentControl
         set
         {
             var properties = DateProperties;
-            var language = properties.LanguageId?.Val?.Value
-                ?? DisplayRunProperties?.Languages?.Val?.Value
-                ?? DocumentStyles?.Elements<Wordprocessing.Style>()
-                    .SingleOrDefault(it => it.StyleId?.Value == DisplayRunProperties?.RunStyle?.Val?.Value)
-                    ?.StyleRunProperties?.Languages?.Val?.Value
-                ?? DocumentStyles?.DocDefaults?.RunPropertiesDefault
-                    ?.RunPropertiesBaseStyle?.Languages?.Val?.Value
-                ?? throw new InvalidOperationException();
-            var culture = CultureInfo.GetCultureInfo(language);
-            var format = properties.DateFormat is { } dateFormat
-                ? dateFormat.Val?.Value ?? throw new InvalidOperationException()
-                : culture.DateTimeFormat.ShortDatePattern;
+            var culture = ResolveDisplayCulture(properties);
+            var format = ResolveDisplayFormat(properties, culture);
 
             properties.FullDate = new() { InnerText = XmlConvert.ToString(value) };
             DisplayText.Text = value.ToString(
-                ToDotNetDateFormat(
-                    format.IsEmpty()
-                        ? culture.DateTimeFormat.ShortDatePattern
-                        : format),
+                ToDotNetDateFormat(format),
                 culture);
         }
+    }
+
+    /// <summary>
+    /// 日付選択自身、表示run、文字スタイル、文書既定の順に、最初に指定された表示言語を使います。
+    /// 後順位のOOXML要素は、先順位で言語が決まらない場合だけ参照します。
+    /// </summary>
+    /// <param name="properties">更新対象の日付選択の設定。</param>
+    /// <returns>表示言語に対応するカルチャー。</returns>
+    CultureInfo ResolveDisplayCulture(Wordprocessing.SdtContentDate properties) =>
+        CultureInfo.GetCultureInfo(
+            properties.LanguageId?.Val?.Value
+                ?? DisplayRunProperties?.Languages?.Val?.Value
+                ?? DisplayCharacterStyle?.StyleRunProperties?.Languages?.Val?.Value
+                ?? DocumentStyles?.DocDefaults?.RunPropertiesDefault
+                    ?.RunPropertiesBaseStyle?.Languages?.Val?.Value
+                ?? throw new InvalidOperationException());
+
+    /// <summary>
+    /// 表示形式の省略と空文字には表示言語の短い日付形式を使います。
+    /// 表示形式要素があるのに値が欠落している場合は、不正な設定として扱います。
+    /// </summary>
+    /// <param name="properties">更新対象の日付選択の設定。</param>
+    /// <param name="culture">既定の表示形式を決める表示言語。</param>
+    /// <returns>表示に使用する日付書式。</returns>
+    static string ResolveDisplayFormat(Wordprocessing.SdtContentDate properties, CultureInfo culture)
+    {
+        var format = properties.DateFormat is { } dateFormat
+            ? dateFormat.Val?.Value ?? throw new InvalidOperationException()
+            : culture.DateTimeFormat.ShortDatePattern;
+
+        return format.IsEmpty()
+            ? culture.DateTimeFormat.ShortDatePattern
+            : format;
     }
 
     /// <summary>
@@ -157,6 +177,13 @@ public partial class DatePicker : ContentControl
     /// </summary>
     Wordprocessing.RunProperties? DisplayRunProperties =>
         DisplayText.Ancestors<Wordprocessing.Run>().Single().RunProperties;
+
+    /// <summary>
+    /// 表示runの文字スタイル参照に対応する定義を取得します。スタイル定義がなければ参照先を探索しません。
+    /// </summary>
+    Wordprocessing.Style? DisplayCharacterStyle =>
+        DocumentStyles?.Elements<Wordprocessing.Style>()
+            .SingleOrDefault(it => it.StyleId?.Value == DisplayRunProperties?.RunStyle?.Val?.Value);
 
     /// <summary>
     /// 文字スタイルの言語と文書既定の言語を参照するため、所属文書のスタイル定義を取得します。
