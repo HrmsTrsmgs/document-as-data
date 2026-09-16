@@ -1211,7 +1211,7 @@ public class Documentのテスト
         }
     }
 
-    [Fact(Skip = "SpreadsheetAsData e96e7edの元ファイル保護を取り込む候補。保存先を開けない場合の内容不変をレビューしてRedへ進めるときに解除する。")]
+    [Fact]
     public void Saveは元ファイルの書き込みが禁止されている場合に内容を変更せず失敗します()
     {
         var filePath = TestDocument.CreateTemporaryCopy(SimpleMergeFieldsPath);
