@@ -10,7 +10,33 @@ static class DocumentWrapperComponents
     /// <summary>
     /// 生成するC#ソースファイル全体を表すテンプレート部品です。
     /// </summary>
+    /// <param name="filePath">生成元のWord文書のパス。</param>
+    /// <param name="options">コード生成時に適用する設定。</param>
+    /// <param name="document">コード生成元の文書。</param>
+    /// <returns>名前空間と文書型・データ型の宣言を含むC#コード。</returns>
     internal static string SourceFile(
+        string filePath,
+        CodeGenerationOptions options,
+        Document document) =>
+        $$"""
+        using System.Linq;
+        using Marimo.DocumentAsData;
+
+        namespace {{options.Namespace}};
+
+        {{DocumentDeclaration(filePath, options, document)}}
+
+        {{DataDeclaration(filePath, options, document)}}
+        """;
+
+    /// <summary>
+    /// 型付き文書の宣言を生成します。ファイルの構成とは分け、Open・項目検証・データ入出力をまとめます。
+    /// </summary>
+    /// <param name="filePath">生成元のWord文書のパス。</param>
+    /// <param name="options">コード生成時に適用する設定。</param>
+    /// <param name="document">コード生成元の文書。</param>
+    /// <returns>型付き文書のC#コード。</returns>
+    internal static string DocumentDeclaration(
         string filePath,
         CodeGenerationOptions options,
         Document document)
@@ -21,11 +47,6 @@ static class DocumentWrapperComponents
 
         return
             $$"""
-            using System.Linq;
-            using Marimo.DocumentAsData;
-
-            namespace {{options.Namespace}};
-
             /// <summary>
             /// Word文書「{{documentName}}」を型付きで表します。
             /// </summary>
@@ -123,8 +144,6 @@ static class DocumentWrapperComponents
                    select DatePickerPropertyDeclaration(datePicker, options)
             ])}}
             }
-
-            {{DataDeclaration(filePath, options, document)}}
             """;
     }
 
