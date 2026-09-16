@@ -150,7 +150,7 @@ public class TextContentControlのテスト
         }
     }
 
-    [Fact(Skip = "公開前レビューで確認した複数段落への再設定による余分な改行を修正するときに有効化する。")]
+    [Fact]
     public void Textプロパティは複数段落から読み取った値を再設定しても改行を増やしません()
     {
         var filePath = TestDocument.CreateTemporaryCopy(

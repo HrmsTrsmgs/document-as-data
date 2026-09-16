@@ -33,6 +33,7 @@ public class TextContentControl : ContentControl, IDocumentTextItem
     /// プレースホルダー表示中は、表示用文字列ではなく空文字列を返します。
     /// 値を設定すると、プレースホルダー表示状態を解除します。
     /// 読み取り時は、Content Control内の段落をCRLFで区切ります。
+    /// 書き込み時は先頭段落へ値をまとめ、値の改行は段落内改行として保存します。
     /// </remarks>
     /// <exception cref="InvalidOperationException">
     /// 値の設定時に文字列要素が存在しない場合。
@@ -52,6 +53,14 @@ public class TextContentControl : ContentControl, IDocumentTextItem
             foreach (var text in texts[1..])
             {
                 text.Text = "";
+            }
+
+            // 設定値の改行は先頭段落内のw:brに置き換わっているため、
+            // 空になった後続のw:pを残すと読み取り時に余分なCRLFが増えます。
+            // 削除によって列挙順が変わらないよう、先に対象を確定します。
+            foreach (var paragraph in Element.Descendants<Wordprocessing.Paragraph>().Skip(1).ToArray())
+            {
+                paragraph.Remove();
             }
         }
     }
