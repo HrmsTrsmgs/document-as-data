@@ -641,6 +641,42 @@ public class MergeFieldのテスト
         }
     }
 
+    [Fact(Skip = "公開前レビューで確認した境界run内の旧値残留を修正するときに有効化する。")]
+    public void Textプロパティは別のrunにある境界と同居する旧値も置き換えて保存します()
+    {
+        var sourcePath = TestDocument.CreateTemporaryCopy(
+            Path.Combine("TestData", "別のrunにある境界と表示文字が同居する複合MERGEFIELD.docx"));
+        var outputPath = TestDocument.CreateOutputPath();
+        try
+        {
+            // w:rは文字やフィールドの境界をまとめるrunです。この文書では、
+            // 最初のrunに「前の本文」・begin・instrText・separate・「旧前半」、
+            // 次のrunに「旧後半」・end・「後の本文」があります。
+            // separate（結果の開始）からend（終了）までが置換対象です。
+            // run間だけを削除すると両端に旧値が残り、runごと削除すると本文を失います。
+            using (var document = Document.Open(sourcePath, validate: true))
+            {
+                document.MergeFields["CustomerName"].Text = "変更後";
+                document.SaveAs(outputPath);
+            }
+
+            // setter直後のキャッシュではなく、実際に保存された結果を確認します。
+            using var reopened = Document.Open(outputPath, validate: true);
+            reopened.MergeFields["CustomerName"].Text.Should().Be("変更後");
+
+            using var saved = WordprocessingDocument.Open(outputPath, false);
+            saved.MainDocumentPart!.Document!
+                .Descendants<Wordprocessing.Text>()
+                .Select(it => it.Text)
+                .Should().Equal("前の本文", "変更後", "後の本文");
+        }
+        finally
+        {
+            File.Delete(sourcePath);
+            File.Delete(outputPath);
+        }
+    }
+
     [Fact]
     public void Textプロパティは分割して保存された複合MERGEFIELDの結果全体を置き換えます()
     {

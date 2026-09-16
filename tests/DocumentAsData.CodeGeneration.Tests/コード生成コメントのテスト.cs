@@ -1,5 +1,7 @@
 ﻿using FluentAssertions;
 using Marimo.DocumentAsData.CodeGeneration.Test.テスト補助;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 
 namespace Marimo.DocumentAsData.CodeGeneration.Test;
 
@@ -15,6 +17,34 @@ public sealed class コード生成コメントのテスト
         @"TestData\コード生成\チェック済みCheckBox.docx";
     const string DatePickerDocumentFilePath =
         @"TestData\コード生成\日付選択ContentControl.docx";
+
+    [Fact(Skip = "公開前レビューで確認した元名のアンパサンドによるXMLコメントの破損を修正するときに有効化する。")]
+    public void 文書名とTagにアンパサンドを含んでも正しいXMLコメントを生成します()
+    {
+        // 文書名もTagもR&Dです。DOCX内のTagはXML上でR&amp;Dと保存しています。
+        // C#の文字列に埋め込めても、XMLコメント内の&は別途エスケープが必要です。
+        // 通常のコンパイル補助はコメント警告を検出しないため、ここでは明示的に診断します。
+        var sources = GeneratedCodeInspection.GenerateSources(
+            @"TestData\コード生成\R&D.docx",
+            options => options.NameMappings["R&D"] = "Research");
+
+        (
+            from source in sources
+            from diagnostic in
+                CSharpSyntaxTree.ParseText(
+                    source,
+                    new CSharpParseOptions(documentationMode: DocumentationMode.Diagnose))
+                    .GetDiagnostics()
+            where diagnostic.Severity is DiagnosticSeverity.Warning or DiagnosticSeverity.Error
+            select diagnostic
+        ).Should().BeEmpty();
+
+        sources.TypeDeclaration("ResearchDocument")
+            .SummaryText().Should().Be("Word文書「R&D」を型付きで表します。");
+        sources.TypeDeclaration("ResearchDocument")
+            .PropertyDeclaration("Research")
+            .SummaryText().Should().Be("文字列Content Control「R&D」の文字列を取得または設定します。");
+    }
 
     [Fact]
     public void Document型のコメントを生成します()

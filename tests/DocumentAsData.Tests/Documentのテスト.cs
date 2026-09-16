@@ -347,6 +347,30 @@ public class Documentのテスト
         }
     }
 
+    [Fact(Skip = "公開前レビューで確認したチェックボックスのOOXML検証漏れを修正するときに有効化する。")]
+    public void Openは検証する場合不正なチェック状態を持つCheckBoxで失敗します()
+    {
+        var filePath = TestDocument.CreateTemporaryCopy(
+            Path.Combine("TestData", "不正なチェック状態を持つCheckBox.docx"));
+        try
+        {
+            // w14:checkboxはOffice 2010の要素です。w14:checkedのvalを、
+            // 真偽値として無効な「invalid」にした、意図的に不正な固定DOCXです。
+            // mc:Ignorable="w14"があるため、Office 2007対象の検証では無視されます。
+            // IsCheckedを読んだときではなく、検証を依頼したOpenで拒否する仕様です。
+            var action = () =>
+            {
+                using var document = Document.Open(filePath, validate: true);
+            };
+
+            action.Should().Throw<InvalidDataException>();
+        }
+        finally
+        {
+            File.Delete(filePath);
+        }
+    }
+
     [Fact]
     public void Openは検証に失敗してもファイルを束縛しません()
     {

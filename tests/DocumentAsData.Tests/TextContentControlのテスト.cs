@@ -150,6 +150,29 @@ public class TextContentControlのテスト
         }
     }
 
+    [Fact(Skip = "公開前レビューで確認した複数段落への再設定による余分な改行を修正するときに有効化する。")]
+    public void Textプロパティは複数段落から読み取った値を再設定しても改行を増やしません()
+    {
+        var filePath = TestDocument.CreateTemporaryCopy(
+            Path.Combine("TestData", "二つの段落を持つContent Control.docx"));
+        try
+        {
+            // w:sdtContent内に「前半」と「後半」のw:p（段落）が一つずつあります。
+            // 読み取りでは段落境界がCRLFになります。書き込みで後続段落を空にするだけだと、
+            // 再読み取り時にその空段落の分だけ末尾のCRLFが増えてしまいます。
+            using var document = Document.Open(filePath, validate: true);
+            var tested = document.ContentControls["CustomerName"];
+
+            tested.Text = tested.Text;
+
+            tested.Text.Should().Be("前半\r\n後半");
+        }
+        finally
+        {
+            File.Delete(filePath);
+        }
+    }
+
     [Fact]
     public void TextプロパティはContentControlの値を設定します()
     {

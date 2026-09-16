@@ -128,6 +128,87 @@ public sealed class コード生成名前付き項目のテスト : IDisposable
         tested.Should().Be("株式会社○○");
     }
 
+    [Fact(Skip = "公開前レビューで確認したTagのLFによる生成コメントの破損を修正するときに有効化する。")]
+    public void LFを含むTagから生成した文字列ContentControlプロパティで文字列を読み取れます()
+    {
+        // w:tagのval内の文字参照&#10;は、名前の一部であるLFです。
+        // 表示内容の改行ではありません。生成コメントと文字列リテラルを壊さず、
+        // 元のTagで項目へ到達できることを、生成コードのコンパイルと実行で確認します。
+        var filePath = @"TestData\コード生成\LFを含むTagの文字列ContentControl.docx";
+        using var document = GeneratedCodeInspection
+            .AssemblyFrom(
+                GeneratedCodeInspection.GenerateSources(
+                    filePath,
+                    options => options.NameMappings["Customer\nName"] = "CustomerName"))
+            .GeneratedType("LFを含むTagの文字列ContentControlDocument")
+            .InvokeStaticMethod<Document>("Open", filePath);
+
+        dynamic documentAccessor = document;
+        string tested = documentAccessor.CustomerName;
+
+        tested.Should().Be("山田太郎");
+    }
+
+    [Fact(Skip = "公開前レビューで確認したTagのLFによる生成コメントの破損を修正するときに有効化する。")]
+    public void LFを含むTagから生成したCheckBoxプロパティでチェック状態を読み取れます()
+    {
+        // w:tagのvalにLFを含みます。CheckBoxには文字列Content Controlとは別の
+        // Document/Dataプロパティの生成処理があるため、その経路を確認します。
+        var filePath = @"TestData\コード生成\LFを含むTagのCheckBox.docx";
+        using var document = GeneratedCodeInspection
+            .AssemblyFrom(
+                GeneratedCodeInspection.GenerateSources(
+                    filePath,
+                    options => options.NameMappings["Customer\nName"] = "Agreement"))
+            .GeneratedType("LFを含むTagのCheckBoxDocument")
+            .InvokeStaticMethod<Document>("Open", filePath);
+
+        dynamic documentAccessor = document;
+        bool tested = documentAccessor.Agreement;
+
+        tested.Should().BeTrue();
+    }
+
+    [Fact(Skip = "公開前レビューで確認したTagのLFによる生成コメントの破損を修正するときに有効化する。")]
+    public void LFを含むTagから生成したDatePickerプロパティで日時を読み取れます()
+    {
+        // w:tagのvalにLFを含みます。日付の表示形式ではなく、
+        // DatePickerのDocument/DataプロパティへTagを埋め込む経路を確認します。
+        var filePath = @"TestData\コード生成\LFを含むTagのDatePicker.docx";
+        using var document = GeneratedCodeInspection
+            .AssemblyFrom(
+                GeneratedCodeInspection.GenerateSources(
+                    filePath,
+                    options => options.NameMappings["Customer\nName"] = "DeliveryDate"))
+            .GeneratedType("LFを含むTagのDatePickerDocument")
+            .InvokeStaticMethod<Document>("Open", filePath);
+
+        dynamic documentAccessor = document;
+        DateTimeOffset tested = documentAccessor.DeliveryDate;
+
+        tested.Should().Be(new DateTimeOffset(2026, 9, 4, 0, 0, 0, TimeSpan.Zero));
+    }
+
+    [Fact(Skip = "公開前レビューで確認したTagのCRによる生成文字列とコメントの破損を修正するときに有効化する。")]
+    public void CRを含むTagから生成した文字列ContentControlプロパティで文字列を読み取れます()
+    {
+        // w:tagのvalの文字参照&#13;はCRです。LFとは異なり、
+        // 現状は生成コメントだけでなくC#の文字列リテラルにも生の改行が入ります。
+        var filePath = @"TestData\コード生成\CRを含むTagの文字列ContentControl.docx";
+        using var document = GeneratedCodeInspection
+            .AssemblyFrom(
+                GeneratedCodeInspection.GenerateSources(
+                    filePath,
+                    options => options.NameMappings["Customer\rName"] = "CustomerName"))
+            .GeneratedType("CRを含むTagの文字列ContentControlDocument")
+            .InvokeStaticMethod<Document>("Open", filePath);
+
+        dynamic documentAccessor = document;
+        string tested = documentAccessor.CustomerName;
+
+        tested.Should().Be("山田太郎");
+    }
+
     [Fact]
     public void 生成されたDocument型のMERGEFIELDプロパティへ文字列を直接書き込めます()
     {
