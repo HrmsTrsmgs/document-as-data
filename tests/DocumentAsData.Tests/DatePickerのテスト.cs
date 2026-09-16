@@ -875,6 +875,37 @@ public class DatePickerのテスト
         }
     }
 
+    [Fact]
+    public void SelectedDateTimeプロパティは五つの大文字の日書式記号で曜日名と日番号を続けて表示します()
+    {
+        var sourcePath = TestDocument.CreateTemporaryCopy(
+            Path.Combine("TestData", "大文字の日書式記号を五つ並べた日付選択Content Control.docx"));
+        var outputPath = TestDocument.CreateOutputPath();
+        try
+        {
+            using (var document = Document.Open(sourcePath, validate: true))
+            {
+                document.DatePickers.Single().SelectedDateTime =
+                    new DateTimeOffset(2027, 2, 3, 0, 0, 0, TimeSpan.FromHours(9));
+                document.SaveAs(outputPath);
+            }
+
+            using var saved = WordprocessingDocument.Open(outputPath, false);
+            // w:dateFormatはDDDDD、w:lidはen-US、w:calendarはgregorianです。
+            // Wordで9月3日を選び直し、fullDateが2026-09-03T00:00:00Z、w:tがThursday3となることを確認しました。
+            // 大文字でもDDDDの曜日名にDの日番号が続き、一桁の日をゼロ埋めしません。
+            // 固定DOCXは同じ書式を持つ最小OOXMLです。別の曜日の日付を設定して保存後の表示を確認します。
+            saved.MainDocumentPart!.Document!
+                .Descendants<Wordprocessing.Text>()
+                .Single().Text.Should().Be("Wednesday3");
+        }
+        finally
+        {
+            File.Delete(sourcePath);
+            File.Delete(outputPath);
+        }
+    }
+
     // 以下は未レビューの保留メモです。書式の全組み合わせではなく解釈ルールごとに置きます。
     // w:dateFormat（表示形式）、w:lid（言語）、w:calendar（暦）を持つ固定DOCXを使い、
     // 公開APIで日時を設定・保存した後のw:t（表示文字列）を確認する予定です。
@@ -884,7 +915,7 @@ public class DatePickerのテスト
     {
         // 長い連続指定について、Wordが記号を区切る規則と.NETとの差を確認して期待値を決める。
         // MMMMM・MMMMMMは月名と一桁・二桁指定の月番号を続けて表示するテストで確認済みです。
-        // dddddは曜日名と日番号を続けて表示するテストで確認済みです。
+        // ddddd・DDDDDは曜日名と日番号を続けて表示するテストで確認済みです。
         // yyy・en-US・gregorianの検証用DOCXをWordで開き、カレンダーで9月16日を選んでも、
         // 保存後のfullDateは2026-09-04T00:00:00Z、表示文字列は元のprobeのままでした。
         // yyyは対応対象から外し、専用の変換や拒否処理は追加しません。ほかの連続指定は未確認です。
