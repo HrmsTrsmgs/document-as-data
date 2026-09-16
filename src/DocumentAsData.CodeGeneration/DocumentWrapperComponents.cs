@@ -290,7 +290,7 @@ static class DocumentWrapperComponents
         return $$"""
 
             /// <summary>
-            /// DatePicker「{{datePicker.Tag}}」の日時を取得または設定します。
+            /// DatePicker「{{datePicker.Tag.Replace("\n", "\\n")}}」の日時を取得または設定します。
             /// </summary>
             {{DataItemNameAttributeDeclaration(datePicker.Tag, propertyName)}}public System.DateTimeOffset {{propertyName}} { get; set; }
         """;
@@ -347,7 +347,7 @@ static class DocumentWrapperComponents
         $$"""
 
             /// <summary>
-            /// DatePicker「{{datePicker.Tag}}」の日時を取得または設定します。
+            /// DatePicker「{{datePicker.Tag.Replace("\n", "\\n")}}」の日時を取得または設定します。
             /// </summary>
             public System.DateTimeOffset {{options.GeneratedName(datePicker.Tag)}}
             {

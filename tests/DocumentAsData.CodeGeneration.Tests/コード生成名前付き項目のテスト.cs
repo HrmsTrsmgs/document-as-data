@@ -169,7 +169,7 @@ public sealed class コード生成名前付き項目のテスト : IDisposable
         tested.Should().BeTrue();
     }
 
-    [Fact(Skip = "公開前レビューで確認したTagのLFによる生成コメントの破損を修正するときに有効化する。")]
+    [Fact]
     public void LFを含むTagから生成したDatePickerプロパティで日時を読み取れます()
     {
         // w:tagのvalにLFを含みます。日付の表示形式ではなく、
