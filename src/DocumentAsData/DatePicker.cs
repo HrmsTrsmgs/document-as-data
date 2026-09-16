@@ -66,7 +66,7 @@ public partial class DatePicker : ContentControl
     /// 対にならない単一引用符は文字として表示します。
     /// 二重引用符は文字として表示し、その内側も書式記号として扱います。
     /// バックスラッシュは.NET用にエスケープして表示に残します。
-    /// MMMMMは月名と月番号を続けて表示します。
+    /// MMMMM・MMMMMMは月名と月番号を続けて表示します。
     /// Wordの書式全体を.NETへ変換するものではありません。
     /// </summary>
     /// <remarks>
@@ -83,7 +83,7 @@ public partial class DatePicker : ContentControl
             it =>
             it.Value switch
             {
-                "MMMMM" => "MMMM%M", // %で区切り、月名の後のMを独立した月番号として扱います。
+                "MMMMM" => "MMMM''M", // 空の引用文字列で月名と月番号を分け、後続のMは月番号の桁数指定へ残します。
                 "am/pm" or "AM/PM" => "tt",
                 "/" => "'/'",
                 ":" => "':'",
