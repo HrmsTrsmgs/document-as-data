@@ -1317,7 +1317,7 @@ public class Documentのテスト
         }
     }
 
-    [Fact(Skip = "SpreadsheetAsData 70b780bのDispose後SaveAsの保護を取り込む候補。例外と保存先不変をレビューしてRedへ進めるときに解除する。")]
+    [Fact]
     public void SaveAsはDispose後に呼び出すと保存先を変更せずに失敗します()
     {
         var sourcePath = TestDocument.CreateTemporaryCopy(SimpleMergeFieldsPath);
