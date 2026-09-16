@@ -1308,12 +1308,34 @@ public class DatePickerのテスト
         }
     }
 
-    [Fact(Skip = "小文字tのWordでの意味が未確認。表示を確認し、期待値レビューと固定DOCX準備後に解除する。")]
-    public void SelectedDateTimeプロパティは日付書式の小文字tの扱いを確認します()
+    [Fact]
+    public void SelectedDateTimeプロパティは日付書式の小文字tを表示に残します()
     {
-        // w:dateFormat=yyyy-MM-dd t、設定値=2027-02-03T00:00:00+09:00。
-        // .NETでは午前午後名の先頭文字です。Wordでもそうなるとは仮定しません。
-        throw new NotImplementedException("小文字tのWord表示を確認してから検証コードを用意する。");
+        var sourcePath = TestDocument.CreateTemporaryCopy(
+            Path.Combine("TestData", "日付書式に小文字tを含む日付選択Content Control.docx"));
+        var outputPath = TestDocument.CreateOutputPath();
+        try
+        {
+            using (var document = Document.Open(sourcePath, validate: true))
+            {
+                document.DatePickers.Single().SelectedDateTime =
+                    new DateTimeOffset(2027, 2, 3, 0, 0, 0, TimeSpan.FromHours(9));
+                document.SaveAs(outputPath);
+            }
+
+            using var saved = WordprocessingDocument.Open(outputPath, false);
+            // w:dateFormat=yyyy-MM-dd t、w:lid=en-US、w:calendar=gregorianです。
+            // Wordで2026-09-03を選ぶとfullDateが更新され、表示は2026-09-03 tになります。
+            // .NETの午前午後名の先頭文字として解釈せず、tの文字を残します。
+            saved.MainDocumentPart!.Document!
+                .Descendants<Wordprocessing.Text>()
+                .Single().Text.Should().Be("2027-02-03 t");
+        }
+        finally
+        {
+            File.Delete(sourcePath);
+            File.Delete(outputPath);
+        }
     }
 
     [Fact(Skip = "ttのWordでの意味が未確認。表示を確認し、期待値レビューと固定DOCX準備後に解除する。")]
