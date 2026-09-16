@@ -89,6 +89,7 @@ public partial class DatePicker : ContentControl
             it.Value switch
             {
                 "yyyyy" or "YYYYY" => "yyyy''yy",
+                "hhh" => "hh''h",
                 "MMMMM" => "MMMM''M", // 空の引用文字列で月名と月番号を分け、後続のMは月番号の桁数指定へ残します。
                 "ddddd" or "DDDDD" => "dddd''d", // 曜日名と日番号が一つの曜日指定へ結合されないよう区切ります。
                 "DDDDDD" => "dddd''dd",
@@ -113,7 +114,7 @@ public partial class DatePicker : ContentControl
     /// 引用文字列と、.NET用に変換するWordの日付書式記号を識別します。
     /// </summary>
     /// <returns>コンパイル時に生成される、書式記号の検索用正規表現。</returns>
-    [GeneratedRegex("'[^']*'|yyyyy|MMMMM|ddddd|am/pm|AM/PM|Y+|D+|/|:|'|\\\\|\"|%|f")]
+    [GeneratedRegex("'[^']*'|yyyyy|MMMMM|ddddd|hhh|am/pm|AM/PM|Y+|D+|/|:|'|\\\\|\"|%|f")]
     private static partial Regex DateFormatTokens();
 
     /// <summary>
