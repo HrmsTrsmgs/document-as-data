@@ -6,13 +6,14 @@
 public static class DocumentWrapperGenerator
 {
     /// <summary>
-    /// 生成メソッドとの重複や、生成コードが参照するコレクションの隠蔽を防ぐために予約する名前です。
+    /// 既存の操作APIや生成メソッドとの重複、生成コードが参照するコレクションの隠蔽を防ぐために予約する名前です。
     /// </summary>
     static readonly string[] ReservedMemberNames =
     [
         nameof(Document.Read),
         nameof(Document.Open),
         nameof(Document.Replace),
+        nameof(Document.Save),
         nameof(Document.MergeFields),
         nameof(Document.ContentControls),
         nameof(Document.CheckBoxes),
