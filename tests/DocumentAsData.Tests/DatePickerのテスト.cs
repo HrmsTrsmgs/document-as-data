@@ -782,6 +782,37 @@ public class DatePickerのテスト
         }
     }
 
+    [Fact]
+    public void SelectedDateTimeプロパティは五つの月書式記号で月名と月番号を続けて表示します()
+    {
+        var sourcePath = TestDocument.CreateTemporaryCopy(
+            Path.Combine("TestData", "月書式記号を五つ並べた日付選択Content Control.docx"));
+        var outputPath = TestDocument.CreateOutputPath();
+        try
+        {
+            using (var document = Document.Open(sourcePath, validate: true))
+            {
+                document.DatePickers.Single().SelectedDateTime =
+                    new DateTimeOffset(2027, 12, 31, 0, 0, 0, TimeSpan.FromHours(9));
+                document.SaveAs(outputPath);
+            }
+
+            using var saved = WordprocessingDocument.Open(outputPath, false);
+            // w:dateFormatはMMMMM、w:lidはen-US、w:calendarはgregorianです。
+            // Wordで9月16日を選び直し、fullDateの更新とw:tのSeptember9を確認しました。
+            // 五つのMを一つの月名指定とはせず、MMMMの月名とMの月番号を続けて表示します。
+            // 固定DOCXは同じ書式を持つ最小OOXMLです。12月へ変更した後の表示を確認します。
+            saved.MainDocumentPart!.Document!
+                .Descendants<Wordprocessing.Text>()
+                .Single().Text.Should().Be("December12");
+        }
+        finally
+        {
+            File.Delete(sourcePath);
+            File.Delete(outputPath);
+        }
+    }
+
     // 以下は未レビューの保留メモです。書式の全組み合わせではなく解釈ルールごとに置きます。
     // w:dateFormat（表示形式）、w:lid（言語）、w:calendar（暦）を持つ固定DOCXを使い、
     // 公開APIで日時を設定・保存した後のw:t（表示文字列）を確認する予定です。
@@ -790,6 +821,7 @@ public class DatePickerのテスト
     public void SelectedDateTimeプロパティは日付書式の記号の繰り返しの扱いを確認します()
     {
         // 長い連続指定について、Wordが記号を区切る規則と.NETとの差を確認して期待値を決める。
+        // MMMMMは月名と月番号を続けて表示するテストで確認済みです。
         // yyy・en-US・gregorianの検証用DOCXをWordで開き、カレンダーで9月16日を選んでも、
         // 保存後のfullDateは2026-09-04T00:00:00Z、表示文字列は元のprobeのままでした。
         // yyyは対応対象から外し、専用の変換や拒否処理は追加しません。ほかの連続指定は未確認です。
