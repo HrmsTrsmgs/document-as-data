@@ -48,7 +48,7 @@ static class DocumentWrapperComponents
         return
             $$"""
             /// <summary>
-            /// Word文書「{{documentName}}」を型付きで表します。
+            /// Word文書「{{documentName.Replace("&", "&amp;")}}」を型付きで表します。
             /// </summary>
             public partial class {{typeName}} : Document
             {
@@ -215,7 +215,7 @@ static class DocumentWrapperComponents
         return
             $$"""
             /// <summary>
-            /// Word文書「{{documentName}}」のデータを表します。
+            /// Word文書「{{documentName.Replace("&", "&amp;")}}」のデータを表します。
             /// </summary>
             public partial class {{typeName}}
             {
@@ -248,7 +248,7 @@ static class DocumentWrapperComponents
         return $$"""
 
             /// <summary>
-            /// 文書項目「{{itemName.Replace("\r", "\\r").Replace("\n", "\\n")}}」の文字列を取得または設定します。
+            /// 文書項目「{{itemName.Replace("&", "&amp;").Replace("\r", "\\r").Replace("\n", "\\n")}}」の文字列を取得または設定します。
             /// </summary>
             {{DataItemNameAttributeDeclaration(itemName, propertyName)}}public string {{propertyName}} { get; set; } = "";
         """;
@@ -389,7 +389,7 @@ static class DocumentWrapperComponents
         $$"""
 
             /// <summary>
-            /// 文字列Content Control「{{contentControl.Tag.Replace("\r", "\\r").Replace("\n", "\\n")}}」の文字列を取得または設定します。
+            /// 文字列Content Control「{{contentControl.Tag.Replace("&", "&amp;").Replace("\r", "\\r").Replace("\n", "\\n")}}」の文字列を取得または設定します。
             /// </summary>
             /// <remarks>
             /// 読み取りと書き込みは文字列Content Controlを優先し、存在しない場合に同名のMERGEFIELDを使用します。

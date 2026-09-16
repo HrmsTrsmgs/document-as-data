@@ -18,7 +18,7 @@ public sealed class コード生成コメントのテスト
     const string DatePickerDocumentFilePath =
         @"TestData\コード生成\日付選択ContentControl.docx";
 
-    [Fact(Skip = "公開前レビューで確認した元名のアンパサンドによるXMLコメントの破損を修正するときに有効化する。")]
+    [Fact]
     public void 文書名とTagにアンパサンドを含んでも正しいXMLコメントを生成します()
     {
         // 文書名もTagもR&Dです。DOCX内のTagはXML上でR&amp;Dと保存しています。

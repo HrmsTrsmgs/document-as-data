@@ -60,11 +60,15 @@ static class GeneratedSourceAssertions
                 ? null
                 : string.Join(
                     " ",
-                    from token in
-                        summary.Content
-                            .OfType<XmlTextSyntax>()
-                            .SelectMany(it => it.TextTokens)
-                    let text = token.ValueText.Trim()
+                    // エンティティの前後も別トークンになるため、トークン間には空白を足しません。
+                    from line in
+                        string.Concat(
+                            summary.Content
+                                .OfType<XmlTextSyntax>()
+                                .SelectMany(it => it.TextTokens)
+                                .Select(it => it.ValueText))
+                            .Split('\n')
+                    let text = line.Trim()
                     where text != ""
                     select text);
         }
