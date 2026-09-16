@@ -382,6 +382,7 @@ using var document = Document.Open("template.docx", validate: true);
 
 Stream版にも `validate` 引数があります。省略時は検証を実行しません。
 `true` の場合はOpen XML SDKのValidatorで検証し、検証エラーがあれば `InvalidDataException` を投げます。
+検証対象はチェックボックスを含むOffice 2010の形式です。
 検証エラーのない文書であることは、表示・レイアウトの正しさや、業務上の値の妥当性を保証しません。
 生成型の必須項目検査とも別の機能です。
 

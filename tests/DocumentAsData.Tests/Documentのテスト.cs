@@ -347,7 +347,7 @@ public class Documentのテスト
         }
     }
 
-    [Fact(Skip = "公開前レビューで確認したチェックボックスのOOXML検証漏れを修正するときに有効化する。")]
+    [Fact]
     public void Openは検証する場合不正なチェック状態を持つCheckBoxで失敗します()
     {
         var filePath = TestDocument.CreateTemporaryCopy(

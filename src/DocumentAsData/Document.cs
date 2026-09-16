@@ -116,7 +116,7 @@ public class Document : IDisposable
         ValidateIfRequested(Open(stream), validate);
 
     /// <summary>
-    /// 指定された場合だけ文書をOpen XMLとして検証します。
+    /// 指定された場合だけ、チェックボックスを含むOffice 2010のOpen XMLとして検証します。
     /// </summary>
     /// <param name="opened">検証対象の文書。</param>
     /// <param name="validate">文書を検証する場合は<c>true</c>。</param>
@@ -124,7 +124,8 @@ public class Document : IDisposable
     /// <exception cref="InvalidDataException">Open XML検証エラーがある場合。</exception>
     static Document ValidateIfRequested(Document opened, bool validate)
     {
-        if (!validate || !new Validation.OpenXmlValidator().Validate(opened.session.Document).Any())
+        if (!validate || !new Validation.OpenXmlValidator(FileFormatVersions.Office2010)
+                .Validate(opened.session.Document).Any())
         {
             return opened;
         }
