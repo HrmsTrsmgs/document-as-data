@@ -33,7 +33,8 @@ public class TextContentControl : ContentControl, IDocumentTextItem
     /// プレースホルダー表示中は、表示用文字列ではなく空文字列を返します。
     /// 値を設定すると、プレースホルダー表示状態を解除します。
     /// 読み取り時は、Content Control内の段落をCRLFで区切ります。
-    /// 書き込み時は先頭段落へ値をまとめ、値の改行は段落内改行として保存します。
+    /// 書き込み時は先頭の文字列要素へ値をまとめ、値の改行は段落内改行として保存します。
+    /// 文字列と書式だけの後続段落は除去し、画像や入れ子のコントロールを持つ段落は保持します。
     /// </remarks>
     /// <exception cref="InvalidOperationException">
     /// 値の設定時に文字列要素が存在しない場合。
@@ -60,8 +61,8 @@ public class TextContentControl : ContentControl, IDocumentTextItem
     }
 
     /// <summary>
-    /// 先頭段落以外の、文字列と書式だけを持つw:pを除去します。
-    /// 画像などの別の内容を持つ段落は残します。
+    /// 自身のw:sdtContent直下で、先頭段落以外の文字列と書式だけを持つw:pを除去します。
+    /// 画像などの別の内容を持つ段落や、入れ子のコントロール内の段落は残します。
     /// 設定値の改行は、先頭段落内のw:brとして既に格納されています。
     /// </summary>
     void RemoveFollowingParagraphs()
@@ -69,7 +70,10 @@ public class TextContentControl : ContentControl, IDocumentTextItem
         // 削除によって列挙順が変わらないよう、先に対象を確定します。
         foreach (var paragraph in
             (
-                from paragraph in Element.Descendants<Wordprocessing.Paragraph>().Skip(1)
+                from paragraph in
+                    Element.Elements<Wordprocessing.SdtContentBlock>()
+                        .SelectMany(it => it.Elements<Wordprocessing.Paragraph>())
+                        .Skip(1)
                 where paragraph.ChildElements.All(it =>
                     it is Wordprocessing.ParagraphProperties
                     || it is Wordprocessing.Run run && run.ChildElements.All(child =>

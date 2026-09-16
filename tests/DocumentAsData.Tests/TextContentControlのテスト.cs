@@ -204,6 +204,32 @@ public class TextContentControlのテスト
     }
 
     [Fact]
+    public void Textプロパティは外側を書き換えても内側のContentControlを引き続き編集できます()
+    {
+        var outputPath = TestDocument.CreateOutputPath();
+        try
+        {
+            using (var document = Document.Open(
+                @"TestData\後続段落が別のContent Controlに属する文書.docx", validate: true))
+            {
+                // Outerのw:sdtContentには直接のw:pと、Innerのw:sdtがあります。
+                // Inner内部のw:pはOuterの後続段落として消してはいけません。
+                document.ContentControls["Outer"].Text = "変更後";
+                document.ContentControls["Inner"].Text = "内側の変更後";
+                document.SaveAs(outputPath);
+            }
+
+            using var saved = Document.Open(outputPath, validate: true);
+            saved.ContentControls.Select(it => it.Tag).Should().Equal("Outer", "Inner");
+            saved.ContentControls["Inner"].Text.Should().Be("内側の変更後");
+        }
+        finally
+        {
+            File.Delete(outputPath);
+        }
+    }
+
+    [Fact]
     public void TextプロパティはContentControlの値を設定します()
     {
         var filePath = TestDocument.CreateTemporaryCopy(ContentControlPath);
