@@ -389,7 +389,7 @@ static class DocumentWrapperComponents
         $$"""
 
             /// <summary>
-            /// 文字列Content Control「{{contentControl.Tag}}」の文字列を取得または設定します。
+            /// 文字列Content Control「{{contentControl.Tag.Replace("\n", "\\n")}}」の文字列を取得または設定します。
             /// </summary>
             /// <remarks>
             /// 読み取りと書き込みは文字列Content Controlを優先し、存在しない場合に同名のMERGEFIELDを使用します。

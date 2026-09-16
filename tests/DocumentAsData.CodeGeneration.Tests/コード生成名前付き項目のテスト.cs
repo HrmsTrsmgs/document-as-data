@@ -128,7 +128,7 @@ public sealed class コード生成名前付き項目のテスト : IDisposable
         tested.Should().Be("株式会社○○");
     }
 
-    [Fact(Skip = "公開前レビューで確認したTagのLFによる生成コメントの破損を修正するときに有効化する。")]
+    [Fact]
     public void LFを含むTagから生成した文字列ContentControlプロパティで文字列を読み取れます()
     {
         // w:tagのval内の文字参照&#10;は、名前の一部であるLFです。
