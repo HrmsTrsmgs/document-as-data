@@ -1338,12 +1338,34 @@ public class DatePickerのテスト
         }
     }
 
-    [Fact(Skip = "ttのWordでの意味が未確認。表示を確認し、期待値レビューと固定DOCX準備後に解除する。")]
-    public void SelectedDateTimeプロパティは日付書式の二つの小文字tの扱いを確認します()
+    [Fact]
+    public void SelectedDateTimeプロパティは日付書式の二つの小文字tを表示に残します()
     {
-        // w:dateFormat=yyyy-MM-dd tt、設定値=2027-02-03T00:00:00+09:00。
-        // 文書が直接持つttを調べます。am/pmから変換した内部のttを調べるテストではありません。
-        throw new NotImplementedException("文書が持つttのWord表示を確認してから検証コードを用意する。");
+        var sourcePath = TestDocument.CreateTemporaryCopy(
+            Path.Combine("TestData", "日付書式に二つの小文字tを含む日付選択Content Control.docx"));
+        var outputPath = TestDocument.CreateOutputPath();
+        try
+        {
+            using (var document = Document.Open(sourcePath, validate: true))
+            {
+                document.DatePickers.Single().SelectedDateTime =
+                    new DateTimeOffset(2027, 2, 3, 0, 0, 0, TimeSpan.FromHours(9));
+                document.SaveAs(outputPath);
+            }
+
+            using var saved = WordprocessingDocument.Open(outputPath, false);
+            // w:dateFormat=yyyy-MM-dd tt、w:lid=en-US、w:calendar=gregorianです。
+            // Wordで2026-09-03を選ぶとfullDateが更新され、表示は2026-09-03 ttになります。
+            // 文書が直接持つttは文字列として残します。am/pmから内部変換したttとは区別します。
+            saved.MainDocumentPart!.Document!
+                .Descendants<Wordprocessing.Text>()
+                .Single().Text.Should().Be("2027-02-03 tt");
+        }
+        finally
+        {
+            File.Delete(sourcePath);
+            File.Delete(outputPath);
+        }
     }
 
     [Fact(Skip = "表示形式省略時の日本語表示が未確認。標準形式の根拠と期待値をレビューし、固定DOCX準備後に解除する。")]
