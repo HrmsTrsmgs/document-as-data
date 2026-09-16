@@ -15,6 +15,7 @@ public static class DocumentWrapperGenerator
         nameof(Document.Replace),
         nameof(Document.Save),
         nameof(Document.SaveAs),
+        nameof(Document.Close),
         nameof(Document.MergeFields),
         nameof(Document.ContentControls),
         nameof(Document.CheckBoxes),

@@ -112,7 +112,7 @@ public sealed class コード生成診断のテスト
                 new CodeGenerationDiagnostic(true, "SaveAs", ["customerName"]));
     }
 
-    [Fact(Skip = "SpreadsheetAsData d6a72d0の予約名診断を取り込む候補。Closeを隠す生成プロパティの拒否をレビューしてRedへ進めるときに解除する。")]
+    [Fact]
     public void 生成プロパティ名がDocumentのCloseメソッドと衝突した場合にエラーを診断します()
     {
         GeneratedCodeInspection
