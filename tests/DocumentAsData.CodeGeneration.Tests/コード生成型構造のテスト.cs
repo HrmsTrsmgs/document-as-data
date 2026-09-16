@@ -72,7 +72,7 @@ public sealed class コード生成型構造のテスト
             .GetProperty("CustomerName");
 
         tested.Should().NotBeNull();
-        tested.PropertyType.Should().Be(typeof(string));
+        tested.PropertyType.Should().Be<string>();
     }
 
     [Fact]
@@ -86,7 +86,7 @@ public sealed class コード生成型構造のテスト
             .GetProperty("Agreement");
 
         tested.Should().NotBeNull();
-        tested.PropertyType.Should().Be(typeof(bool));
+        tested.PropertyType.Should().Be<bool>();
     }
 
     [Fact]
@@ -100,7 +100,7 @@ public sealed class コード生成型構造のテスト
             .GetProperty("DeliveryDate");
 
         tested.Should().NotBeNull();
-        tested.PropertyType.Should().Be(typeof(DateTimeOffset));
+        tested.PropertyType.Should().Be<DateTimeOffset>();
     }
 
     [Fact]

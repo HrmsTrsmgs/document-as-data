@@ -63,9 +63,9 @@ sealed class MSBuild連携テストプロジェクト : IDisposable
             "src", "DocumentAsData.Build", "DocumentAsData.Build.csproj"));
         var configuration = typeof(GenerateDocumentAsData).Assembly
             .GetCustomAttributes<AssemblyConfigurationAttribute>().Single().Configuration;
-        var projectNames = includeProjectReferences
-            ? new[] { "DocumentAsData", "DocumentAsData.CodeGeneration", "DocumentAsData.Build" }
-            : new[] { "DocumentAsData.Build" };
+        string[] projectNames = includeProjectReferences
+            ? ["DocumentAsData", "DocumentAsData.CodeGeneration", "DocumentAsData.Build"]
+            : ["DocumentAsData.Build"];
         var scriptFilePath = Path.Combine(DirectoryPath, "Pack.ps1");
         File.WriteAllText(
             scriptFilePath,

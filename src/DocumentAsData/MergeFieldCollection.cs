@@ -9,7 +9,7 @@ namespace Marimo.DocumentAsData;
 /// <summary>
 /// 文書内のMERGEFIELDを取得するコレクションを表します。
 /// </summary>
-public class MergeFieldCollection : IEnumerable<MergeField>
+public partial class MergeFieldCollection : IEnumerable<MergeField>
 {
     /// <summary>
     /// 列挙方法と生成済みMERGEFIELDをコレクションの生存期間中共有します。
@@ -53,26 +53,18 @@ public class MergeFieldCollection : IEnumerable<MergeField>
     /// <summary>
     /// MERGEFIELDの列挙にだけ必要なOOXML依存の解析処理を集約します。
     /// </summary>
-    sealed class MergeFieldReader
+    /// <param name="document">読み取り対象の文書。</param>
+    sealed partial class MergeFieldReader(Document document)
     {
         /// <summary>
         /// OOXML要素の取得元と、生成するMERGEFIELDの所属先です。
         /// </summary>
-        readonly Document document;
+        readonly Document document = document;
 
         /// <summary>
         /// 同じOOXML要素からは、列挙方法にかかわらず同じMERGEFIELDを返すために保持します。
         /// </summary>
         readonly OpenXmlElementCache<MergeField> cache = new();
-
-        /// <summary>
-        /// 指定した文書に対する読み取り処理を作成します。
-        /// </summary>
-        /// <param name="document">読み取り対象の文書。</param>
-        public MergeFieldReader(Document document)
-        {
-            this.document = document;
-        }
 
         /// <summary>
         /// 文書要素を先頭から読み取り、認識できたMERGEFIELDを文書順に返します。
@@ -200,7 +192,7 @@ public class MergeFieldCollection : IEnumerable<MergeField>
         /// <summary>
         /// OOXMLのフィールド命令を解釈し、MERGEFIELDかどうかとその名前を読み取ります。
         /// </summary>
-        static class MergeFieldInstruction
+        static partial class MergeFieldInstruction
         {
             /// <summary>
             /// フィールド命令がMERGEFIELDかを判定し、MERGEFIELD名を取り出します。
@@ -246,9 +238,16 @@ public class MergeFieldCollection : IEnumerable<MergeField>
 
                 // \"は名前中の引用符として読み進め、エスケープされていない引用符で止めます。
                 // フィールド命令で使うエスケープを外して、名前そのものを返します。
-                return Regex.Match(parameters[1..], """^(?:\\"|[^"])*""")
+                return QuotedName().Match(parameters[1..])
                     .Value.Replace("\\\"", "\"");
             }
+
+            /// <summary>
+            /// 名前中のエスケープされた引用符を含め、閉じ引用符の手前までを取得します。
+            /// </summary>
+            /// <returns>引用符で囲まれた名前の内容を識別する正規表現。</returns>
+            [GeneratedRegex("""^(?:\\"|[^"])*""")]
+            private static partial Regex QuotedName();
         }
 
         /// <summary>

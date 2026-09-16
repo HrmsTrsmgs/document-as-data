@@ -167,7 +167,7 @@ public class MergeField : DocumentItem, IDocumentTextItem
             this.fieldStart = fieldStart;
             this.resultSeparator = resultSeparator;
             this.fieldEnd = fieldEnd;
-            this.valueElements = valueElements.ToList();
+            this.valueElements = [.. valueElements];
         }
 
         /// <inheritdoc />
