@@ -98,7 +98,7 @@ public sealed class MSBuild連携タスクのテスト
             .Should().Contain("public partial class BasicStructureDocument : Document");
     }
 
-    [Fact(Skip = "SpreadsheetAsData f73d5e2のNuGet経由の確認を取り込む候補。デザイン時の生成抑止と項目の紐付けをレビューしてRedへ進めるときに解除する。")]
+    [Fact]
     public void パッケージ参照のデザイン時ビルドは再生成せず文書と生成コードを紐づけます()
     {
         using var project = MSBuild連携テストプロジェクト.Create();
