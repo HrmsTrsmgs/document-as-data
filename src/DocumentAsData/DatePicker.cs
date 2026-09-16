@@ -52,6 +52,8 @@ public partial class DatePicker : ContentControl
                 ?? DocumentStyles?.Elements<Wordprocessing.Style>()
                     .SingleOrDefault(it => it.StyleId?.Value == DisplayRunProperties?.RunStyle?.Val?.Value)
                     ?.StyleRunProperties?.Languages?.Val?.Value
+                ?? DocumentStyles?.DocDefaults?.RunPropertiesDefault
+                    ?.RunPropertiesBaseStyle?.Languages?.Val?.Value
                 ?? throw new InvalidOperationException();
             var culture = CultureInfo.GetCultureInfo(language);
             var format = properties.DateFormat is { } dateFormat
@@ -151,7 +153,7 @@ public partial class DatePicker : ContentControl
         DisplayText.Ancestors<Wordprocessing.Run>().Single().RunProperties;
 
     /// <summary>
-    /// 表示内容が参照する文字スタイルを解決するため、所属文書のスタイル定義を取得します。
+    /// 文字スタイルの言語と文書既定の言語を参照するため、所属文書のスタイル定義を取得します。
     /// </summary>
     Wordprocessing.Styles? DocumentStyles =>
         Element.Ancestors<Wordprocessing.Document>().Single()

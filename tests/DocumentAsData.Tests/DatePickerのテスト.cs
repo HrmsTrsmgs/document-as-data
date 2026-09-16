@@ -1,4 +1,5 @@
-﻿using DocumentFormat.OpenXml.Packaging;
+﻿using System.Globalization;
+using DocumentFormat.OpenXml.Packaging;
 using FluentAssertions;
 using Marimo.DocumentAsData.Test.TestDocuments;
 using Wordprocessing = DocumentFormat.OpenXml.Wordprocessing;
@@ -1488,13 +1489,37 @@ public class DatePickerのテスト
         }
     }
 
-    [Fact(Skip = "表示言語省略時の文書既定言語参照が未確認。参照先と期待値をレビューし、固定DOCX準備後に解除する。")]
-    public void SelectedDateTimeプロパティは表示言語を省略して文書既定に英語を指定した場合の月名を確認します()
+    [Fact]
+    public void SelectedDateTimeプロパティは表示言語を省略すると文書既定の言語で月名を表示します()
     {
-        // w:lid、runとスタイルのw:langを省略し、w:dateFormat=MMMM、設定値=2027-02-03。
-        // styles.xmlのw:docDefaults/w:rPrDefault/w:rPr/w:langをen-USにします。
-        // プロセスのカルチャーをja-JPにしても文書の指定に従うかを確認し、変更したカルチャーは復元します。
-        throw new NotImplementedException("w:lid省略時の文書既定の言語指定の扱いを確認する。");
+        var sourcePath = TestDocument.CreateTemporaryCopy(
+            Path.Combine("TestData", "表示言語を省略し文書既定に英語を指定した日付選択Content Control.docx"));
+        var outputPath = TestDocument.CreateOutputPath();
+        var originalCulture = CultureInfo.CurrentCulture;
+        try
+        {
+            CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("ja-JP");
+            using (var document = Document.Open(sourcePath, validate: true))
+            {
+                document.DatePickers.Single().SelectedDateTime =
+                    new DateTimeOffset(2027, 2, 3, 0, 0, 0, TimeSpan.FromHours(9));
+                document.SaveAs(outputPath);
+            }
+
+            using var saved = WordprocessingDocument.Open(outputPath, false);
+            // w:lid、runと文字スタイルの言語指定を省略し、w:dateFormat=MMMMとしています。
+            // styles.xmlのw:docDefaults/w:rPrDefault/w:rPr/w:langにen-USを指定しています。
+            // WordではSeptemberを表示します。実行環境をja-JPにしても文書の英語指定に従うことを確認します。
+            saved.MainDocumentPart!.Document!
+                .Descendants<Wordprocessing.Text>()
+                .Single().Text.Should().Be("February");
+        }
+        finally
+        {
+            CultureInfo.CurrentCulture = originalCulture;
+            File.Delete(sourcePath);
+            File.Delete(outputPath);
+        }
     }
 
     [Fact(Skip = "暦省略時のWord表示が未確認。表示を確認し、期待値レビューと固定DOCX準備後に解除する。")]
