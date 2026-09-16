@@ -62,7 +62,10 @@ public partial class DatePicker : ContentControl
 
             properties.FullDate = new() { InnerText = XmlConvert.ToString(value) };
             DisplayText.Text = value.ToString(
-                ToDotNetDateFormat(format),
+                ToDotNetDateFormat(
+                    format.IsEmpty()
+                        ? culture.DateTimeFormat.ShortDatePattern
+                        : format),
                 culture);
         }
     }

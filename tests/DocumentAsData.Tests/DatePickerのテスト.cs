@@ -1582,12 +1582,34 @@ public class DatePickerのテスト
         }
     }
 
-    [Fact(Skip = "空の表示形式の扱いが未決定。Wordの受理と更新を調査し、ライブラリの契約レビュー後に解除する。")]
-    public void SelectedDateTimeプロパティは表示形式が空文字の場合の扱いを確認します()
+    [Fact]
+    public void SelectedDateTimeプロパティは表示形式が空文字なら表示言語の短い日付形式を使います()
     {
-        // w:dateFormat要素とw:val属性は存在し、値だけ空文字。w:lid=en-US、設定値=2027-02-03。
-        // 要素省略とは別の入力です。Wordの結果を確認する前に既定書式への変換や例外を仕様化しません。
-        throw new NotImplementedException("空の表示形式の受理とライブラリでの扱いを確認する。");
+        var sourcePath = TestDocument.CreateTemporaryCopy(
+            Path.Combine("TestData", "表示形式が空文字の英語の日付選択Content Control.docx"));
+        var outputPath = TestDocument.CreateOutputPath();
+        try
+        {
+            using (var document = Document.Open(sourcePath, validate: true))
+            {
+                document.DatePickers.Single().SelectedDateTime =
+                    new DateTimeOffset(2027, 2, 3, 0, 0, 0, TimeSpan.FromHours(9));
+                document.SaveAs(outputPath);
+            }
+
+            using var saved = WordprocessingDocument.Open(outputPath, false);
+            // w:dateFormat要素とw:val属性を残し、値だけ空文字にしています。w:lid=en-USです。
+            // Wordで2026-09-03を選ぶとw:dateFormat=M/d/yyyyが補われ、表示は9/3/2026になります。
+            // .NETの空書式による日時全体の表示ではなく、言語の短い日付形式で表示します。
+            saved.MainDocumentPart!.Document!
+                .Descendants<Wordprocessing.Text>()
+                .Single().Text.Should().Be("2/3/2027");
+        }
+        finally
+        {
+            File.Delete(sourcePath);
+            File.Delete(outputPath);
+        }
     }
 
 }
