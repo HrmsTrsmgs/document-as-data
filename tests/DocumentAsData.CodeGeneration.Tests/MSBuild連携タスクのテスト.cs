@@ -131,7 +131,7 @@ public sealed class MSBuild連携タスクのテスト
             .Should().NotContain(it => it.EndsWith(".DocumentAsData.g.cs"));
     }
 
-    [Fact(Skip = "SpreadsheetAsData f73d5e2のNuGet経由の確認を取り込む候補。対象から外した文書の生成物をCompileへ含めない仕様をレビューしてRedへ進めるときに解除する。")]
+    [Fact]
     public void パッケージ参照で生成対象から外した文書の生成コードはCompileに含めません()
     {
         using var project = MSBuild連携テストプロジェクト.Create();
