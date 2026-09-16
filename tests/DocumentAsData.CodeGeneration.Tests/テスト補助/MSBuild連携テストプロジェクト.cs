@@ -86,8 +86,15 @@ sealed class MSBuild連携テストプロジェクト : IDisposable
     /// <param name="build">生成型を使うコードを通常ビルドする場合はtrue、項目評価だけならfalse。</param>
     /// <param name="buildTarget">buildがtrueの場合に実行するターゲット。Cleanも同じ利用者プロジェクトで検証します。</param>
     /// <param name="run">生成型で読み書きする実行用サンプルも作り、ビルド後に実行する場合はtrue。</param>
+    /// <param name="designTimeBuild">文書を再生成しないデザイン時のコンパイルを確認する場合はtrue。</param>
+    /// <param name="includeDocument">Word文書をコード生成対象として登録する場合はtrue。</param>
     /// <returns>restoreと指定した検証を実行するPowerShellスクリプトのパス。</returns>
-    internal string AddPowerShellPackageReferenceSample(bool build = false, string buildTarget = "Build", bool run = false)
+    internal string AddPowerShellPackageReferenceSample(
+        bool build = false,
+        string buildTarget = "Build",
+        bool run = false,
+        bool designTimeBuild = false,
+        bool includeDocument = true)
     {
         using var package = ZipFile.OpenRead(
             Directory.GetFiles(Path.Combine(DirectoryPath, "packages"), "*DocumentAsData.Build.*.nupkg").Single());
@@ -114,6 +121,8 @@ sealed class MSBuild連携テストプロジェクト : IDisposable
               <PropertyGroup>
                 <TargetFramework>net10.0</TargetFramework>
                 <OutputType Condition="'{{run}}' == 'True'">Exe</OutputType>
+                <DesignTimeBuild Condition="'{{designTimeBuild}}' == 'True'">true</DesignTimeBuild>
+                <SkipCompilerExecution Condition="'{{designTimeBuild}}' == 'True'">true</SkipCompilerExecution>
                 <RestorePackagesPath>$(MSBuildProjectDirectory)/restored</RestorePackagesPath>
                 <NuGetAudit>false</NuGetAudit>
                 <RootNamespace>Generated</RootNamespace>
@@ -121,10 +130,16 @@ sealed class MSBuild連携テストプロジェクト : IDisposable
               </PropertyGroup>
               <ItemGroup>
                 <PackageReference Include="{{SecurityElement.Escape(packageId)}}" Version="{{SecurityElement.Escape(packageVersion)}}" />
-                <DocumentAsData Include="BasicStructure.docx" Condition="'{{build}}' == 'True'" />
+                <DocumentAsData Include="BasicStructure.docx" Condition="'{{build}}' == 'True' and '{{includeDocument}}' == 'True'" />
               </ItemGroup>
               <Target Name="WriteAvailableItems">
                 <WriteLinesToFile File="AvailableItemNames.txt" Lines="@(AvailableItemName)" Overwrite="true" />
+              </Target>
+              <Target Name="WriteProjectItems">
+                <!-- DependentUponは生成コードの親文書、LastGenOutputは文書側から見た生成ファイル名です。 -->
+                <WriteLinesToFile File="CompileNesting.txt" Lines="@(Compile->'%(FullPath)|%(DependentUpon)')" Overwrite="true" />
+                <WriteLinesToFile File="DocumentGeneratedOutput.txt" Lines="@(DocumentAsData->'%(FullPath)|%(LastGenOutput)')" Overwrite="true" />
+                <WriteLinesToFile File="OtherItems.txt" Lines="@(None);@(Content)" Overwrite="true" />
               </Target>
               <!-- ReferencePathは、コンパイラへ渡すために解決済みのアセンブリ参照です。 -->
               <Target Name="WriteResolvedReferences" AfterTargets="ResolveReferences">

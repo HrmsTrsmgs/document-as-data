@@ -98,6 +98,68 @@ public sealed class MSBuild連携タスクのテスト
             .Should().Contain("public partial class BasicStructureDocument : Document");
     }
 
+    [Fact(Skip = "SpreadsheetAsData f73d5e2のNuGet経由の確認を取り込む候補。デザイン時の生成抑止と項目の紐付けをレビューしてRedへ進めるときに解除する。")]
+    public void パッケージ参照のデザイン時ビルドは再生成せず文書と生成コードを紐づけます()
+    {
+        using var project = MSBuild連携テストプロジェクト.Create();
+        var documentFilePath = project.AddBasicStructureDocument("BasicStructure.docx");
+        var packScriptFilePath = project.AddPowerShellPackSample(includeProjectReferences: true);
+        var packed = PowerShell実行結果.Run(packScriptFilePath, project.DirectoryPath);
+        packed.ExitCode.Should().Be(0, packed.Output);
+        var buildScriptFilePath = project.AddPowerShellPackageReferenceSample(build: true);
+        var built = PowerShell実行結果.Run(buildScriptFilePath, project.DirectoryPath);
+        built.ExitCode.Should().Be(0, built.Output);
+
+        // 通常ビルド後の一時コピーを非DOCXへ置き換えます。
+        // デザイン時に文書を開き直すと失敗するため、既存生成物だけを参照する経路を区別できます。
+        File.WriteAllText(documentFilePath, "Not a Word document");
+        var scriptFilePath = project.AddPowerShellPackageReferenceSample(
+            build: true,
+            buildTarget: "Compile;WriteProjectItems",
+            designTimeBuild: true);
+
+        var tested = PowerShell実行結果.Run(scriptFilePath, project.DirectoryPath);
+
+        tested.ExitCode.Should().Be(0, tested.Output);
+        // props/targetsの直接Importではなく、NuGetの自動Importで親子の紐付けまで反映されることを確認します。
+        File.ReadAllLines(Path.Combine(project.DirectoryPath, "CompileNesting.txt"))
+            .Should().ContainSingle(it =>
+                it == $"{project.GeneratedFilePathFor("BasicStructure.docx")}|BasicStructure.docx");
+        File.ReadAllLines(Path.Combine(project.DirectoryPath, "DocumentGeneratedOutput.txt"))
+            .Should().Contain($"{documentFilePath}|BasicStructure.DocumentAsData.g.cs");
+        File.ReadAllLines(Path.Combine(project.DirectoryPath, "OtherItems.txt"))
+            .Should().NotContain(it => it.EndsWith(".DocumentAsData.g.cs"));
+    }
+
+    [Fact(Skip = "SpreadsheetAsData f73d5e2のNuGet経由の確認を取り込む候補。対象から外した文書の生成物をCompileへ含めない仕様をレビューしてRedへ進めるときに解除する。")]
+    public void パッケージ参照で生成対象から外した文書の生成コードはCompileに含めません()
+    {
+        using var project = MSBuild連携テストプロジェクト.Create();
+        project.AddBasicStructureDocument("BasicStructure.docx");
+        var packScriptFilePath = project.AddPowerShellPackSample(includeProjectReferences: true);
+        var packed = PowerShell実行結果.Run(packScriptFilePath, project.DirectoryPath);
+        packed.ExitCode.Should().Be(0, packed.Output);
+        var buildScriptFilePath = project.AddPowerShellPackageReferenceSample(build: true);
+        var built = PowerShell実行結果.Run(buildScriptFilePath, project.DirectoryPath);
+        built.ExitCode.Should().Be(0, built.Output);
+        var generatedFilePath = project.GeneratedFilePathFor("BasicStructure.docx");
+        File.Exists(generatedFilePath).Should().BeTrue();
+
+        // 生成ファイルは残したままDocumentAsData項目だけを外し、SDKの既定Compile収集へ戻らないことを確認します。
+        // Consumer.csは生成型を参照したままなので、再コンパイルではなくプロジェクトの項目評価を観測します。
+        var scriptFilePath = project.AddPowerShellPackageReferenceSample(
+            build: true,
+            buildTarget: "WriteProjectItems",
+            includeDocument: false);
+
+        var tested = PowerShell実行結果.Run(scriptFilePath, project.DirectoryPath);
+
+        tested.ExitCode.Should().Be(0, tested.Output);
+        File.Exists(generatedFilePath).Should().BeTrue();
+        File.ReadAllLines(Path.Combine(project.DirectoryPath, "CompileNesting.txt"))
+            .Should().NotContain(it => it.StartsWith($"{generatedFilePath}|"));
+    }
+
     [Fact]
     public void パッケージから生成した型で文書を読み書きして保存後に読み直せます()
     {

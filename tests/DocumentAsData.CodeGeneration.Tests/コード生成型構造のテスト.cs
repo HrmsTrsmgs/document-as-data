@@ -185,6 +185,31 @@ public sealed class コード生成型構造のテスト
             .WithInnerException<DocumentMappingException>();
     }
 
+    [Fact(Skip = "SpreadsheetAsData 6a80fceの生成型Open失敗時の解放を取り込む候補。項目検証失敗後のファイル解放をレビューしてRedへ進めるときに解除する。")]
+    public void 生成されたDocument型は項目の検証でOpenに失敗するとファイルを解放します()
+    {
+        var generatedType = GeneratedCodeInspection
+            .AssemblyFrom(
+                GeneratedCodeInspection.GenerateSources(MergeFieldDocumentFilePath))
+            .GeneratedType("MergefieldDocument");
+        using var temporaryFiles = new TemporaryDocumentFiles();
+        var filePath = temporaryFiles.NewFilePath();
+        File.Copy(BasicStructureDocumentFilePath, filePath);
+
+        // OOXMLとしては正常なので本体のOpenは成功し、その後に生成型の項目検証が失敗します。
+        var tested = () =>
+        {
+            using var document = generatedType.InvokeStaticMethod<Document>("Open", filePath);
+        };
+
+        tested.Should().Throw<TargetInvocationException>()
+            .WithInnerException<DocumentMappingException>();
+        FluentActions.Invoking(() =>
+        {
+            using var stream = File.Open(filePath, FileMode.Open, FileAccess.ReadWrite, FileShare.None);
+        }).Should().NotThrow();
+    }
+
     [Fact]
     public void 生成されたDocument型のOpenで不足したMERGEFIELDの名前と種類を例外メッセージで確認できます()
     {
@@ -384,6 +409,26 @@ public sealed class コード生成型構造のテスト
         // リフレクションによる呼び出しでは、Openの例外がInnerExceptionに入ります。
         tested.Should().Throw<TargetInvocationException>()
             .WithInnerException<DocumentMappingException>();
+    }
+
+    [Fact(Skip = "SpreadsheetAsData e16b0d8の入力Streamの所有権を取り込む候補。生成型の項目検証失敗後も読み取り可能なことをレビューしてRedへ進めるときに解除する。")]
+    public void 生成されたDocument型は項目の検証でOpenに失敗しても呼び出し側のStreamを閉じません()
+    {
+        var generatedType = GeneratedCodeInspection
+            .AssemblyFrom(
+                GeneratedCodeInspection.GenerateSources(MergeFieldDocumentFilePath))
+            .GeneratedType("MergefieldDocument");
+        using var stream = new MemoryStream(File.ReadAllBytes(BasicStructureDocumentFilePath));
+
+        // 本体で文書を開いた後に生成型の項目検証が失敗しても、借りたStreamの所有権は変わりません。
+        var tested = () =>
+        {
+            using var document = generatedType.InvokeStaticMethod<Document>("Open", stream);
+        };
+
+        tested.Should().Throw<TargetInvocationException>()
+            .WithInnerException<DocumentMappingException>();
+        stream.CanRead.Should().BeTrue();
     }
 
     [Fact]

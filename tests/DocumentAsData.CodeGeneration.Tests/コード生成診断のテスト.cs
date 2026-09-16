@@ -90,6 +90,50 @@ public sealed class コード生成診断のテスト
                     ["customerName"]));
     }
 
+    [Fact(Skip = "SpreadsheetAsData d6a72d0の予約名診断を取り込む候補。Saveを隠す生成プロパティの拒否をレビューしてRedへ進めるときに解除する。")]
+    public void 生成プロパティ名がDocumentのSaveメソッドと衝突した場合にエラーを診断します()
+    {
+        GeneratedCodeInspection
+            .GenerateDiagnostics(
+                @"TestData\コード生成\customerData.docx",
+                options => options.NameMappings["customerName"] = "Save")
+            .Should().ContainEquivalentOf(
+                new CodeGenerationDiagnostic(true, "Save", ["customerName"]));
+    }
+
+    [Fact(Skip = "SpreadsheetAsData d6a72d0の予約名診断を取り込む候補。SaveAsを隠す生成プロパティの拒否をレビューしてRedへ進めるときに解除する。")]
+    public void 生成プロパティ名がDocumentのSaveAsメソッドと衝突した場合にエラーを診断します()
+    {
+        GeneratedCodeInspection
+            .GenerateDiagnostics(
+                @"TestData\コード生成\customerData.docx",
+                options => options.NameMappings["customerName"] = "SaveAs")
+            .Should().ContainEquivalentOf(
+                new CodeGenerationDiagnostic(true, "SaveAs", ["customerName"]));
+    }
+
+    [Fact(Skip = "SpreadsheetAsData d6a72d0の予約名診断を取り込む候補。Closeを隠す生成プロパティの拒否をレビューしてRedへ進めるときに解除する。")]
+    public void 生成プロパティ名がDocumentのCloseメソッドと衝突した場合にエラーを診断します()
+    {
+        GeneratedCodeInspection
+            .GenerateDiagnostics(
+                @"TestData\コード生成\customerData.docx",
+                options => options.NameMappings["customerName"] = "Close")
+            .Should().ContainEquivalentOf(
+                new CodeGenerationDiagnostic(true, "Close", ["customerName"]));
+    }
+
+    [Fact(Skip = "SpreadsheetAsData d6a72d0の予約名診断を取り込む候補。Disposeを隠す生成プロパティの拒否をレビューしてRedへ進めるときに解除する。")]
+    public void 生成プロパティ名がDocumentのDisposeメソッドと衝突した場合にエラーを診断します()
+    {
+        GeneratedCodeInspection
+            .GenerateDiagnostics(
+                @"TestData\コード生成\customerData.docx",
+                options => options.NameMappings["customerName"] = "Dispose")
+            .Should().ContainEquivalentOf(
+                new CodeGenerationDiagnostic(true, "Dispose", ["customerName"]));
+    }
+
     [Fact]
     public void 生成プロパティ名がDocumentのMergeFieldsコレクションと衝突した場合にエラーを診断します()
     {
@@ -201,6 +245,28 @@ public sealed class コード生成診断のテスト
                 && it.SourceNames.Contains("customer-id"));
     }
 
+    [Fact(Skip = "SpreadsheetAsData 46ab82bの衝突元の集約を取り込む候補。3項目を一つの診断へ含める仕様をレビューしてRedへ進めるときに解除する。")]
+    public void 同じ生成名に三つ以上の文書項目が対応した場合にすべての元名を一つの診断へ含めます()
+    {
+        // 固定文書にはCustomerName・Address・Telephoneの単純MERGEFIELDが一つずつあります。
+        // 元の名前は重複しておらず、生成名の割り当てによって初めて3項目が衝突します。
+        GeneratedCodeInspection
+            .GenerateDiagnostics(
+                @"TestData\コード生成\3項目のMERGEFIELD.docx",
+                options => options.NameMappings = new()
+                {
+                    ["CustomerName"] = "SharedValue",
+                    ["Address"] = "SharedValue",
+                    ["Telephone"] = "SharedValue"
+                })
+            .Should().ContainSingle()
+            .Which.Should().BeEquivalentTo(
+                new CodeGenerationDiagnostic(
+                    true,
+                    "SharedValue",
+                    ["CustomerName", "Address", "Telephone"]));
+    }
+
     [Fact]
     public void 区切り文字だけの文書名はCSharp識別子を生成できないため診断します()
     {
@@ -307,6 +373,23 @@ public sealed class コード生成診断のテスト
                 })
             .Should().ContainEquivalentOf(
                 new CodeGenerationDiagnostic(true, propertyName, ["customerName"]));
+    }
+
+    [Fact(Skip = "SpreadsheetAsData 9850ddbの型名側の正規化を取り込む候補。生成型名の@を除いた比較をレビューしてRedへ進めるときに解除する。")]
+    public void 生成Document型名にエスケープ表記があっても同じ識別子のプロパティを診断します()
+    {
+        // @OrderDocumentとOrderDocumentは、C#では同じ型名です。
+        // プロパティ側ではなく、比較相手の生成型名に@を付けます。
+        GeneratedCodeInspection
+            .GenerateDiagnostics(
+                @"TestData\コード生成\customerData.docx",
+                options => options.NameMappings = new()
+                {
+                    ["customerData"] = "@Order",
+                    ["customerName"] = "OrderDocument"
+                })
+            .Should().ContainEquivalentOf(
+                new CodeGenerationDiagnostic(true, "OrderDocument", ["customerName"]));
     }
 
     // 3. 非衝突の境界：文字の大小は区別し、利用者が衝突を解消できることを確認します。

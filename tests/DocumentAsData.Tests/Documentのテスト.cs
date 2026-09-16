@@ -1211,6 +1211,30 @@ public class Documentのテスト
         }
     }
 
+    [Fact(Skip = "SpreadsheetAsData e96e7edの元ファイル保護を取り込む候補。保存先を開けない場合の内容不変をレビューしてRedへ進めるときに解除する。")]
+    public void Saveは元ファイルの書き込みが禁止されている場合に内容を変更せず失敗します()
+    {
+        var filePath = TestDocument.CreateTemporaryCopy(SimpleMergeFieldsPath);
+        try
+        {
+            var original = File.ReadAllBytes(filePath);
+            using var tested = Document.Open(filePath);
+            tested.MergeFields["CustomerName"].Text = "変更後";
+            // 別の読み取り用Streamで書き込み開始を妨げます。
+            // 保存途中の任意の失敗ではなく、保存先を開けない場合の元ファイル保護を確認します。
+            using var reader = File.OpenRead(filePath);
+
+            FluentActions.Invoking(tested.Save)
+                .Should().Throw<IOException>();
+
+            File.ReadAllBytes(filePath).Should().Equal(original);
+        }
+        finally
+        {
+            File.Delete(filePath);
+        }
+    }
+
     [Fact]
     public void Saveが元ファイルへの書き込みに失敗しても編集内容を保持して再保存できます()
     {
@@ -1285,6 +1309,29 @@ public class Documentのテスト
             document.SaveAs(outputPath);
 
             File.Exists(outputPath).Should().BeTrue();
+        }
+        finally
+        {
+            File.Delete(sourcePath);
+            File.Delete(outputPath);
+        }
+    }
+
+    [Fact(Skip = "SpreadsheetAsData 70b780bのDispose後SaveAsの保護を取り込む候補。例外と保存先不変をレビューしてRedへ進めるときに解除する。")]
+    public void SaveAsはDispose後に呼び出すと保存先を変更せずに失敗します()
+    {
+        var sourcePath = TestDocument.CreateTemporaryCopy(SimpleMergeFieldsPath);
+        var outputPath = TestDocument.CreateTemporaryCopy(EmptyDocumentPath);
+        try
+        {
+            var original = File.ReadAllBytes(outputPath);
+            using var tested = Document.Open(sourcePath);
+            tested.Dispose();
+
+            FluentActions.Invoking(() => tested.SaveAs(outputPath))
+                .Should().Throw<ObjectDisposedException>();
+
+            File.ReadAllBytes(outputPath).Should().Equal(original);
         }
         finally
         {
