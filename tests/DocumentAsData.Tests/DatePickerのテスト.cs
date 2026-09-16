@@ -1030,56 +1030,163 @@ public class DatePickerのテスト
         }
     }
 
-    // 以下は未レビューの保留メモです。書式の全組み合わせではなく解釈ルールごとに置きます。
-    // w:dateFormat（表示形式）、w:lid（言語）、w:calendar（暦）を持つ固定DOCXを使い、
-    // 公開APIで日時を設定・保存した後のw:t（表示文字列）を確認する予定です。
-    // 未確定のWordの挙動や例外契約は、この段階で断定しません。
-    [Fact(Skip = "日付書式の保留メモ。0.3.0への採用は未決定。仕様レビューと固定DOCX・検証コードの準備後に解除する。")]
-    public void SelectedDateTimeプロパティは日付書式の記号の繰り返しの扱いを確認します()
+    // 以下19件は入力を限定した未レビューの調査メモです。実装済みケースは含めません。
+    // 特記がなければw:lid=en-US、w:calendar=gregorianを使います。
+    // w:dateFormatは書式文字列、fullDateは保存日時、w:tは表示文字列です。
+    // Wordで日付を選び直し、書式が保持され、fullDateとw:tが更新されたかを確認します。
+    // 表示の期待値をレビュー後、固定DOCXと公開APIによる保存結果の検証に置き換えて解除します。
+    // Wordが更新しない場合は無変更を仕様化せず、対応対象にするか確認してからメモを完了します。
+    // 各ケースは有効化または対象外の記録で完了とし、別の未確認入力へ差し替えて残しません。
+
+    [Fact(Skip = "yyyyyのWord表示が未確認。受理と表示を確認し、期待値レビューと固定DOCX準備後に解除する。")]
+    public void SelectedDateTimeプロパティは五つの小文字年記号の表示を確認します()
     {
-        // 長い連続指定について、Wordが記号を区切る規則と.NETとの差を確認して期待値を決める。
-        // MMMMM・MMMMMMは月名と一桁・二桁指定の月番号を続けて表示するテストで確認済みです。
-        // ddddd・DDDDD・dddddd・DDDDDDは曜日名と一桁・二桁指定の日番号を続けて表示するテストで確認済みです。
-        // yyy・en-US・gregorianの検証用DOCXをWordで開き、カレンダーで9月16日を選んでも、
-        // 保存後のfullDateは2026-09-04T00:00:00Z、表示文字列は元のprobeのままでした。
-        // yyyは対応対象から外し、専用の変換や拒否処理は追加しません。ほかの連続指定は未確認です。
-        throw new NotImplementedException("保留メモのため、固定DOCXと検証コードを準備してから有効化する。");
+        // w:dateFormat=yyyyy、設定値=2027-02-03。五桁化と複数記号への分割の違いを確認します。
+        // yyyは既に対象外と決定済みであり、その判断を再検討するテストではありません。
+        throw new NotImplementedException("yyyyyのWord表示と対応方針を確認してから検証コードを用意する。");
     }
 
-    [Fact(Skip = "日付書式の保留メモ。0.3.0への採用は未決定。仕様レビューと固定DOCX・検証コードの準備後に解除する。")]
-    public void SelectedDateTimeプロパティは日付書式の通常文字をNET固有の書式として解釈しません()
+    [Fact(Skip = "YYYYYのWord表示が未確認。受理と表示を確認し、期待値レビューと固定DOCX準備後に解除する。")]
+    public void SelectedDateTimeプロパティは五つの大文字年記号の表示を確認します()
     {
-        // Wordで通常文字となるもののうち、.NETでは特別な意味を持つ文字を選ぶ。対象文字はWordでの確認後に決める。
-        // %は表示に残すテストで確認済みです。ほかの文字は引き続き未確認です。
-        throw new NotImplementedException("保留メモのため、固定DOCXと検証コードを準備してから有効化する。");
+        // w:dateFormat=YYYYY、設定値=2027-02-03。小文字版と同じ結果になるとは仮定しません。
+        throw new NotImplementedException("YYYYYのWord表示と対応方針を確認してから検証コードを用意する。");
     }
 
-    [Fact(Skip = "日付書式の保留メモ。0.3.0への採用は未決定。仕様レビューと固定DOCX・検証コードの準備後に解除する。")]
-    public void SelectedDateTimeプロパティは表示形式が省略された場合の表示を確認します()
+    [Fact(Skip = "hhhのWord表示が未確認。受理と表示を確認し、期待値レビューと固定DOCX準備後に解除する。")]
+    public void SelectedDateTimeプロパティは三つの十二時間制の時記号の表示を確認します()
     {
-        // w:dateFormatがない場合の言語に基づく表示形式を確認する。欠落した属性値や不正形式とは分ける。
-        throw new NotImplementedException("保留メモのため、固定DOCXと検証コードを準備してから有効化する。");
+        // w:dateFormat=hhh、設定値=2027-02-03T17:04:05+09:00。hhとhに分割されるかを確認します。
+        // カレンダー操作だけでは時刻を指定できないため、Wordで時刻を反映できる確認手順も必要です。
+        throw new NotImplementedException("hhhに対するWordの時刻表示を確認してから検証コードを用意する。");
     }
 
-    [Fact(Skip = "日付書式の保留メモ。0.3.0への採用は未決定。仕様レビューと固定DOCX・検証コードの準備後に解除する。")]
-    public void SelectedDateTimeプロパティは表示言語が省略された場合の表示を確認します()
+    [Fact(Skip = "HHHのWord表示が未確認。受理と表示を確認し、期待値レビューと固定DOCX準備後に解除する。")]
+    public void SelectedDateTimeプロパティは三つの二十四時間制の時記号の表示を確認します()
     {
-        // w:lidがない場合に参照する内容のrunの言語を確認する。実行環境の現在カルチャーで勝手に補わない。
-        throw new NotImplementedException("保留メモのため、固定DOCXと検証コードを準備してから有効化する。");
+        // w:dateFormat=HHH、設定値=2027-02-03T17:04:05+09:00。HHとHに分割されるかを確認します。
+        throw new NotImplementedException("HHHに対するWordの時刻表示を確認してから検証コードを用意する。");
     }
 
-    [Fact(Skip = "日付書式の保留メモ。0.3.0への採用は未決定。仕様レビューと固定DOCX・検証コードの準備後に解除する。")]
-    public void SelectedDateTimeプロパティは暦指定と表示言語による表示の扱いを確認します()
+    [Fact(Skip = "mmmのWord表示が未確認。受理と表示を確認し、期待値レビューと固定DOCX準備後に解除する。")]
+    public void SelectedDateTimeプロパティは三つの分記号の表示を確認します()
     {
-        // w:calendarは日付選択UIの暦指定でもある。保存表示への影響をWordで確認し、UI設定から表示の年を推測しない。
-        throw new NotImplementedException("保留メモのため、固定DOCXと検証コードを準備してから有効化する。");
+        // w:dateFormat=mmm、設定値=2027-02-03T17:04:05+09:00。mmとmに分割されるかを確認します。
+        throw new NotImplementedException("mmmに対するWordの時刻表示を確認してから検証コードを用意する。");
     }
 
-    [Fact(Skip = "日付書式の保留メモ。0.3.0への採用は未決定。仕様レビューと固定DOCX・検証コードの準備後に解除する。")]
-    public void SelectedDateTimeプロパティは非対応の日付書式を指定された場合の扱いを確認します()
+    [Fact(Skip = "sssのWord表示が未確認。受理と表示を確認し、期待値レビューと固定DOCX準備後に解除する。")]
+    public void SelectedDateTimeプロパティは三つの秒記号の表示を確認します()
     {
-        // 対応範囲と、非対応時に例外・無変更などのどの契約を採るかを先にレビューする。現段階で例外型を固定しない。
-        throw new NotImplementedException("保留メモのため、固定DOCXと検証コードを準備してから有効化する。");
+        // w:dateFormat=sss、設定値=2027-02-03T17:04:05+09:00。ssとsに分割されるかを確認します。
+        throw new NotImplementedException("sssに対するWordの時刻表示を確認してから検証コードを用意する。");
+    }
+
+    [Fact(Skip = "大文字FのWordでの意味が未確認。表示を確認し、期待値レビューと固定DOCX準備後に解除する。")]
+    public void SelectedDateTimeプロパティは日付書式の大文字Fの扱いを確認します()
+    {
+        // w:dateFormat=yyyy-MM-dd F、設定値=2027-02-03T00:00:00+09:00。
+        // .NETではゼロの小数秒が表示されないため、Wordで文字として残るかを区別します。
+        throw new NotImplementedException("大文字FのWord表示を確認してから検証コードを用意する。");
+    }
+
+    [Fact(Skip = "大文字KのWordでの意味が未確認。表示を確認し、期待値レビューと固定DOCX準備後に解除する。")]
+    public void SelectedDateTimeプロパティは日付書式の大文字Kの扱いを確認します()
+    {
+        // w:dateFormat=yyyy-MM-dd K、設定値=2027-02-03T00:00:00+09:00。
+        // .NETの時差表示へ置き換わることと、Wordの表示が一致するかを確認します。
+        throw new NotImplementedException("大文字KのWord表示を確認してから検証コードを用意する。");
+    }
+
+    [Fact(Skip = "zzzのWordでの意味が未確認。表示を確認し、期待値レビューと固定DOCX準備後に解除する。")]
+    public void SelectedDateTimeプロパティは日付書式の三つの小文字zの扱いを確認します()
+    {
+        // w:dateFormat=yyyy-MM-dd zzz、設定値=2027-02-03T00:00:00+09:00。
+        // 時差の時分を表す.NETのzzzを代表例とします。zの長さを総当たりするメモではありません。
+        throw new NotImplementedException("zzzのWord表示を確認してから検証コードを用意する。");
+    }
+
+    [Fact(Skip = "小文字tのWordでの意味が未確認。表示を確認し、期待値レビューと固定DOCX準備後に解除する。")]
+    public void SelectedDateTimeプロパティは日付書式の小文字tの扱いを確認します()
+    {
+        // w:dateFormat=yyyy-MM-dd t、設定値=2027-02-03T00:00:00+09:00。
+        // .NETでは午前午後名の先頭文字です。Wordでもそうなるとは仮定しません。
+        throw new NotImplementedException("小文字tのWord表示を確認してから検証コードを用意する。");
+    }
+
+    [Fact(Skip = "ttのWordでの意味が未確認。表示を確認し、期待値レビューと固定DOCX準備後に解除する。")]
+    public void SelectedDateTimeプロパティは日付書式の二つの小文字tの扱いを確認します()
+    {
+        // w:dateFormat=yyyy-MM-dd tt、設定値=2027-02-03T00:00:00+09:00。
+        // 文書が直接持つttを調べます。am/pmから変換した内部のttを調べるテストではありません。
+        throw new NotImplementedException("文書が持つttのWord表示を確認してから検証コードを用意する。");
+    }
+
+    [Fact(Skip = "表示形式省略時の日本語表示が未確認。標準形式の根拠と期待値をレビューし、固定DOCX準備後に解除する。")]
+    public void SelectedDateTimeプロパティは表示形式を省略した日本語の日付表示を確認します()
+    {
+        // w:dateFormat要素を省略し、w:lid=ja-JP、w:calendar=gregorian、設定値=2027-02-03とします。
+        // w:valの欠落や空文字とは区別します。実行環境のCurrentCultureを既定値と仮定しません。
+        throw new NotImplementedException("ja-JPで表示形式を省略したときの標準形式を確認する。");
+    }
+
+    [Fact(Skip = "表示形式省略時の英語表示が未確認。標準形式の根拠と期待値をレビューし、固定DOCX準備後に解除する。")]
+    public void SelectedDateTimeプロパティは表示形式を省略した英語の日付表示を確認します()
+    {
+        // w:dateFormat要素を省略し、w:lid=en-US、w:calendar=gregorian、設定値=2027-02-03とします。
+        // 日本語の既定書式へ固定していないことを確認する、表示言語の対照例です。
+        throw new NotImplementedException("en-USで表示形式を省略したときの標準形式を確認する。");
+    }
+
+    [Fact(Skip = "表示言語省略時のrun言語参照が未確認。参照先と期待値をレビューし、固定DOCX準備後に解除する。")]
+    public void SelectedDateTimeプロパティは表示言語を省略してrunに英語を指定した場合の月名を確認します()
+    {
+        // w:lidを省略し、w:dateFormat=MMMM、内容runのw:rPr/w:langのw:val=en-US、設定値=2027-02-03。
+        // 文書既定のrun言語はja-JPとし、直接指定を優先するかが表示から区別できるようにします。
+        throw new NotImplementedException("w:lid省略時のrunの直接言語指定の扱いを確認する。");
+    }
+
+    [Fact(Skip = "表示言語省略時のスタイル言語参照が未確認。参照先と期待値をレビューし、固定DOCX準備後に解除する。")]
+    public void SelectedDateTimeプロパティは表示言語を省略して文字スタイルに英語を指定した場合の月名を確認します()
+    {
+        // w:lidとrunの直接w:langを省略し、w:dateFormat=MMMM、設定値=2027-02-03。
+        // runのw:rStyleが参照する文字スタイルのw:rPr/w:langをen-US、文書既定はja-JPとします。
+        // OOXMLの言語継承全般ではなく、この一段の参照だけを対象とします。
+        throw new NotImplementedException("w:lid省略時の文字スタイルの言語指定の扱いを確認する。");
+    }
+
+    [Fact(Skip = "表示言語省略時の文書既定言語参照が未確認。参照先と期待値をレビューし、固定DOCX準備後に解除する。")]
+    public void SelectedDateTimeプロパティは表示言語を省略して文書既定に英語を指定した場合の月名を確認します()
+    {
+        // w:lid、runとスタイルのw:langを省略し、w:dateFormat=MMMM、設定値=2027-02-03。
+        // styles.xmlのw:docDefaults/w:rPrDefault/w:rPr/w:langをen-USにします。
+        // プロセスのカルチャーをja-JPにしても文書の指定に従うかを確認し、変更したカルチャーは復元します。
+        throw new NotImplementedException("w:lid省略時の文書既定の言語指定の扱いを確認する。");
+    }
+
+    [Fact(Skip = "暦省略時のWord表示が未確認。表示を確認し、期待値レビューと固定DOCX準備後に解除する。")]
+    public void SelectedDateTimeプロパティは暦を省略した場合の年月日表示を確認します()
+    {
+        // w:calendarだけを省略し、w:dateFormat=yyyy/MM/dd、w:lid=ja-JP、設定値=2027-02-03。
+        // 明示的なgregorianの既存テストと対照し、省略が表示へ影響するかを確認します。
+        throw new NotImplementedException("w:calendar省略時のWord表示を確認する。");
+    }
+
+    [Fact(Skip = "japan暦指定時のWord表示が未確認。UIの暦と保存表示を分けて確認し、期待値レビュー後に解除する。")]
+    public void SelectedDateTimeプロパティは日本の暦を指定した場合の年月日表示を確認します()
+    {
+        // w:calendar=japan、w:dateFormat=yyyy/MM/dd、w:lid=ja-JP、設定値=2027-02-03。
+        // カレンダーUIが和暦でも、保存するw:tの年まで和暦になるとは仮定しません。
+        // 元号記号gや和暦年記号eの対応は別の範囲検討課題で、このメモへ追加しません。
+        throw new NotImplementedException("japan暦指定と保存する表示文字列の関係を確認する。");
+    }
+
+    [Fact(Skip = "空の表示形式の扱いが未決定。Wordの受理と更新を調査し、ライブラリの契約レビュー後に解除する。")]
+    public void SelectedDateTimeプロパティは表示形式が空文字の場合の扱いを確認します()
+    {
+        // w:dateFormat要素とw:val属性は存在し、値だけ空文字。w:lid=en-US、設定値=2027-02-03。
+        // 要素省略とは別の入力です。Wordの結果を確認する前に既定書式への変換や例外を仕様化しません。
+        throw new NotImplementedException("空の表示形式の受理とライブラリでの扱いを確認する。");
     }
 
 }
