@@ -56,16 +56,7 @@ public sealed class GenerateDocumentAsData : Microsoft.Build.Utilities.Task
         }
         catch (FileNotFoundException exception)
         {
-            Log.LogError(
-                subcategory: null,
-                errorCode: null,
-                helpKeyword: null,
-                file: exception.FileName,
-                lineNumber: 0,
-                columnNumber: 0,
-                endLineNumber: 0,
-                endColumnNumber: 0,
-                message: exception.Message);
+            LogFileError(exception.FileName, exception.Message);
             return false;
         }
     }
@@ -91,16 +82,9 @@ public sealed class GenerateDocumentAsData : Microsoft.Build.Utilities.Task
             where diagnostic.IsError
             select diagnostic)
         {
-            Log.LogError(
-                subcategory: null,
-                errorCode: null,
-                helpKeyword: null,
-                file: documentFilePath,
-                lineNumber: 0,
-                columnNumber: 0,
-                endLineNumber: 0,
-                endColumnNumber: 0,
-                message: $"DocumentAsData のコード生成診断: 生成名 '{diagnostic.GeneratedName}'、元名 '{string.Join(", ", diagnostic.SourceNames)}'");
+            LogFileError(
+                documentFilePath,
+                $"DocumentAsData のコード生成診断: 生成名 '{diagnostic.GeneratedName}'、元名 '{string.Join(", ", diagnostic.SourceNames)}'");
         }
 
         if (Log.HasLoggedErrors)
@@ -173,19 +157,28 @@ public sealed class GenerateDocumentAsData : Microsoft.Build.Utilities.Task
         }
         catch (JsonException exception)
         {
-            Log.LogError(
-                subcategory: null,
-                errorCode: null,
-                helpKeyword: null,
-                file: dictionaryFilePath,
-                lineNumber: 0,
-                columnNumber: 0,
-                endLineNumber: 0,
-                endColumnNumber: 0,
-                message: exception.Message);
+            LogFileError(dictionaryFilePath, exception.Message);
             throw;
         }
     }
+
+    /// <summary>
+    /// 行・列を特定しないファイル単位のエラーを、MSBuildのエラー一覧へ報告します。
+    /// 失敗の返却や例外の再スローは呼び出し元で判断します。
+    /// </summary>
+    /// <param name="filePath">問題のあるファイルのパス。例外にパスがない場合はnull。</param>
+    /// <param name="message">報告するエラーの内容。</param>
+    void LogFileError(string? filePath, string message) =>
+        Log.LogError(
+            subcategory: null,
+            errorCode: null,
+            helpKeyword: null,
+            file: filePath,
+            lineNumber: 0,
+            columnNumber: 0,
+            endLineNumber: 0,
+            endColumnNumber: 0,
+            message: message);
 
     /// <summary>
     /// 文書隣を優先して、指定したWord文書用の識別子名変換辞書を探します。
