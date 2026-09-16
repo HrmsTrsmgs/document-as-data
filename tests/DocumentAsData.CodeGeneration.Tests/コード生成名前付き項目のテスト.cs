@@ -189,7 +189,7 @@ public sealed class コード生成名前付き項目のテスト : IDisposable
         tested.Should().Be(new DateTimeOffset(2026, 9, 4, 0, 0, 0, TimeSpan.Zero));
     }
 
-    [Fact(Skip = "公開前レビューで確認したTagのCRによる生成文字列とコメントの破損を修正するときに有効化する。")]
+    [Fact]
     public void CRを含むTagから生成した文字列ContentControlプロパティで文字列を読み取れます()
     {
         // w:tagのvalの文字参照&#13;はCRです。LFとは異なり、
