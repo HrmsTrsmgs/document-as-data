@@ -52,7 +52,7 @@ try {
         $env:DOCUMENTASDATA_TEST_MSBUILD = $null
     }
 
-    foreach ($projectName in @('DocumentAsData', 'DocumentAsData.CodeGeneration', 'DocumentAsData.Build')) {
+    foreach ($projectName in @('DocumentAsData', 'DocumentAsData.CodeGeneration', 'DocumentAsData.Build', 'DocumentAsData.Package')) {
         Invoke-DotNet @(
             'pack', "./src/$projectName/$projectName.csproj", '--no-build', '--no-restore',
             '--configuration', 'Release', '--disable-build-servers', '-p:TreatWarningsAsErrors=true',

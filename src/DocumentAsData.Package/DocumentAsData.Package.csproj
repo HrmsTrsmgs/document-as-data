@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <PackageId>Marimo.DocumentAsData</PackageId>
+    <Description>DocumentAsDataの読み書き、コード生成、Visual Studio/MSBuild連携をまとめて利用するための推奨パッケージです。</Description>
+  </PropertyGroup>
+  <!-- BuildのbuildTransitive設定と、CodeGeneration・Coreへの依存関係を利用します。 -->
+  <ItemGroup>
+    <ProjectReference Include="..\DocumentAsData.Build\DocumentAsData.Build.csproj" />
+    <!-- 参照DLLを追加せず、.NET 10向けの依存関係グループに対応させます。 -->
+    <None Include="..\DocumentAsData.Build\PackagePlaceholder\_._" Pack="true" PackagePath="lib\net10.0\_._" Visible="false" />
+  </ItemGroup>
+</Project>

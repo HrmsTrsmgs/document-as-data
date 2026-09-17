@@ -31,7 +31,7 @@ document.SaveAs("output.docx");
 ## はじめて使う：コード生成でDOCXを読み書きする
 
 現在の対象は **.NET 10** です。以下はバージョン `0.3.0` の導入手順です。
-コード生成を使う場合は [Marimo.DocumentAsData.Build](https://www.nuget.org/packages/Marimo.DocumentAsData.Build) を参照します。
+通常は全部入りの [Marimo.DocumentAsData](https://www.nuget.org/packages/Marimo.DocumentAsData) を参照します。
 公開バージョンの一覧も、このNuGetパッケージページで確認できます。
 
 ### 1. パッケージとサンプルを用意する
@@ -65,7 +65,7 @@ Invoke-WebRequest "https://raw.githubusercontent.com/HrmsTrsmgs/document-as-data
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Marimo.DocumentAsData.Build" Version="0.3.0" />
+    <PackageReference Include="Marimo.DocumentAsData" Version="0.3.0" />
     <DocumentAsData Include="template.docx" />
     <None Update="template.docx" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
@@ -73,7 +73,7 @@ Invoke-WebRequest "https://raw.githubusercontent.com/HrmsTrsmgs/document-as-data
 ```
 
 `DocumentAsData` はコード生成の対象、`None` の設定は実行時に使うDOCXのコピーを指定します。
-`Marimo.DocumentAsData.Build` には、読み書き用とコード生成用のパッケージも依存関係として含まれます。
+`Marimo.DocumentAsData` は、読み書き用のCore、コード生成用のCodeGeneration、ビルド連携用のBuildを依存関係としてまとめて導入します。
 
 通常のNuGet.orgの設定を使うため、専用の `NuGet.Config` は不要です。
 ソースからパッケージを作って試す場合は、[ローカルパッケージの手順](https://github.com/HrmsTrsmgs/document-as-data/blob/main/docs/build-and-release.md#公開前にローカルパッケージを使う)を参照してください。
@@ -133,9 +133,11 @@ Wordなどで開くと、名前が `株式会社サンプル`、住所が `大�
 
 | やりたいこと | 利用するAPI・パッケージ |
 | --- | --- |
-| DOCXから型を生成し、プロパティで読み書きしたい | `Marimo.DocumentAsData.Build` |
+| DOCXから型を生成し、プロパティで読み書きしたい（推奨） | `Marimo.DocumentAsData` |
 | 自分の処理からC#コードを生成したい | `DocumentWrapperGenerator`：`Marimo.DocumentAsData.CodeGeneration` |
 | 手書きの型や項目名で読み書きしたい | `Document`：`Marimo.DocumentAsData.Core` |
+
+既存の `Marimo.DocumentAsData.Build` の直接参照も引き続き利用できます。
 
 コード生成を使わない場合は、たとえば次のように同じ文書を扱えます。
 名前空間は `Marimo.DocumentAsData` です。

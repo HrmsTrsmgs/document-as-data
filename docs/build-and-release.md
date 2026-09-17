@@ -22,7 +22,7 @@
 | ファイル・要素 | 役割と、必要になった理由 |
 | --- | --- |
 | `global.json` | 開発・CIで使用する.NET SDKを揃える |
-| `src/Directory.Build.props` | 3パッケージのバージョン・作者・MIT・README・リポジトリ情報を揃える。テストプロジェクトには適用しない |
+| `src/Directory.Build.props` | 4パッケージのバージョン・作者・MIT・README・リポジトリ情報を揃える。テストプロジェクトには適用しない |
 | 各 `src/*/*.csproj` | Core、生成器、ビルドタスクそれぞれの依存関係と配布内容を定める |
 | `buildTransitive/*.props` | 評価の早い段階で生成ファイルの既定項目への取り込みを防ぎ、ビルドアクション候補を登録する |
 | `buildTransitive/*.targets` | 生成ソースのCompile登録、元DOCXとの紐付け、通常ビルド時の生成、Cleanを定める |
@@ -39,9 +39,10 @@ IDEがソースの一覧を知るだけのときにもCompile項目は必要だ�
 * `Marimo.DocumentAsData.Core`：DOCXを読み書きする本体。
 * `Marimo.DocumentAsData.CodeGeneration`：Coreに依存する生成器。
 * `Marimo.DocumentAsData.Build`：生成器に依存し、ビルドへ組み込む設定とタスクを配布する。
+* `Marimo.DocumentAsData`：通常の利用者向けの統合パッケージ。Buildに依存し、上記3パッケージをまとめて導入する。
 
 Coreだけでも通常のライブラリとして使える。Buildを参照した場合は、依存関係として生成器とCoreも復元される。
-別の集約パッケージは作っていない。
+統合パッケージ自身にはDLLやビルド設定を重複して梱包せず、Buildの`buildTransitive`設定を利用する。
 
 Buildパッケージでは、タスク本体と実行に必要なDLLを `tools/net10.0/` へ梱包する。
 利用アプリにMSBuildのタスク型まで公開する必要はないので、タスクDLLを `lib/` に入れない。
@@ -146,12 +147,13 @@ GitHub Actions上での実行結果はpush後に別途確認する。ローカ�
 2. バージョンを変える場合は `src/Directory.Build.props` と対応する配布検査の期待値・READMEを揃える。
 3. READMEの「公開前」表記と利用例を最終確認し、必要な変更をコミットする。
 4. クリーンな作業ツリーからPrepare-Releaseを再実行し、TRXとVERIFICATION.mdを確認する。
-5. 3パッケージ、依存関係、README、MIT、SHA-256を確認する。未実行環境の保証を加えない。
+5. 4パッケージ、依存関係、README、MIT、SHA-256を確認する。未実行環境の保証を加えない。
 6. GitHub Actions上の検証結果も確認する。公開権限・認証は別途用意する。
 7. 承認したコミット・バージョン・成果物だけでタグ、GitHub Release、NuGet公開を行う。
 
 この準備スクリプトにはpush、タグ、Release作成、NuGet公開のコマンドを含めていない。
-公開時は依存順（Core → CodeGeneration → Build）と、NuGet側で各バージョンが利用可能になったことを確認する。
+公開時は依存順（Core → CodeGeneration → Build → 統合パッケージ）と、NuGet側で各バージョンが利用可能になったことを確認する。
+既に公開した同一バージョンは再公開せず、追加したパッケージだけを公開する。
 公開後は新しい利用者プロジェクトから公開フィードだけで復元して、最小例を実行する。
 
 ## 初版の公開前整備で変更したファイル

@@ -29,6 +29,8 @@
     <ProjectReference Include="..\..\src\DocumentAsData\DocumentAsData.csproj" />
     <ProjectReference Include="..\..\src\DocumentAsData.Build\DocumentAsData.Build.csproj" />
     <ProjectReference Include="..\..\src\DocumentAsData.CodeGeneration\DocumentAsData.CodeGeneration.csproj" />
+    <!-- 統合パッケージの梱包テスト用にビルドします。テストの参照DLLには追加しません。 -->
+    <ProjectReference Include="..\..\src\DocumentAsData.Package\DocumentAsData.Package.csproj" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
   <ItemGroup>

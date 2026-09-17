@@ -54,7 +54,8 @@ sealed class MSBuild連携テストプロジェクト : IDisposable
     /// <returns>パッケージを作成するPowerShellスクリプトのパス。</returns>
     /// <param name="includeProjectReferences">利用側のrestoreに必要な参照プロジェクトも梱包する場合はtrue。</param>
     /// <param name="warningsAsErrors">梱包時の警告も失敗として検証する場合はtrue。</param>
-    internal string AddPowerShellPackSample(bool includeProjectReferences = false, bool warningsAsErrors = false)
+    /// <param name="includeCombinedPackage">統合パッケージも梱包する場合はtrue。</param>
+    internal string AddPowerShellPackSample(bool includeProjectReferences = false, bool warningsAsErrors = false, bool includeCombinedPackage = false)
     {
         Directory.CreateDirectory(DirectoryPath);
         var projectFilePath = Path.GetFullPath(Path.Combine(
@@ -66,6 +67,8 @@ sealed class MSBuild連携テストプロジェクト : IDisposable
         string[] projectNames = includeProjectReferences
             ? ["DocumentAsData", "DocumentAsData.CodeGeneration", "DocumentAsData.Build"]
             : ["DocumentAsData.Build"];
+        if (includeCombinedPackage)
+            projectNames = [.. projectNames, "DocumentAsData.Package"];
         return WritePowerShellScript(
             "Pack.ps1",
             $$"""
@@ -88,16 +91,18 @@ sealed class MSBuild連携テストプロジェクト : IDisposable
     /// <param name="run">生成型で読み書きする実行用サンプルも作り、ビルド後に実行する場合はtrue。</param>
     /// <param name="designTimeBuild">文書を再生成しないデザイン時のコンパイルを確認する場合はtrue。</param>
     /// <param name="includeDocument">Word文書をコード生成対象として登録する場合はtrue。</param>
+    /// <param name="packageFilePattern">利用者が参照するパッケージを選ぶファイル名パターン。</param>
     /// <returns>restoreと指定した検証を実行するPowerShellスクリプトのパス。</returns>
     internal string AddPowerShellPackageReferenceSample(
         bool build = false,
         string buildTarget = "Build",
         bool run = false,
         bool designTimeBuild = false,
-        bool includeDocument = true)
+        bool includeDocument = true,
+        string packageFilePattern = "*DocumentAsData.Build.*.nupkg")
     {
         using var package = ZipFile.OpenRead(
-            Directory.GetFiles(Path.Combine(DirectoryPath, "packages"), "*DocumentAsData.Build.*.nupkg").Single());
+            Directory.GetFiles(Path.Combine(DirectoryPath, "packages"), packageFilePattern).Single());
         using var manifestStream = package.Entries.Single(it => it.FullName.EndsWith(".nuspec")).Open();
         var manifest = XDocument.Load(manifestStream);
         var packageId = manifest.Descendants().Single(it => it.Name.LocalName == "id").Value;

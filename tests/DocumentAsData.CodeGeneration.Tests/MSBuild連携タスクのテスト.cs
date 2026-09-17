@@ -8,10 +8,29 @@ namespace Marimo.DocumentAsData.CodeGeneration.Test;
 public sealed class MSBuild連携タスクのテスト
 {
     [Fact]
-    public void 配布する三パッケージに識別情報とMITライセンスと説明書を含めます()
+    public void 統合パッケージだけの参照でコード生成と文書の読み書きができます()
     {
         using var project = MSBuild連携テストプロジェクト.Create();
-        var scriptFilePath = project.AddPowerShellPackSample(includeProjectReferences: true);
+        project.AddCustomerDataDocument("BasicStructure.docx");
+        var packScriptFilePath = project.AddPowerShellPackSample(
+            includeProjectReferences: true, warningsAsErrors: true, includeCombinedPackage: true);
+        var packed = PowerShell実行結果.Run(packScriptFilePath, project.DirectoryPath);
+        packed.ExitCode.Should().Be(0, packed.Output);
+        var scriptFilePath = project.AddPowerShellPackageReferenceSample(
+            build: true, run: true, packageFilePattern: "Marimo.DocumentAsData.0.3.0.nupkg");
+
+        var tested = PowerShell実行結果.Run(scriptFilePath, project.DirectoryPath);
+
+        tested.ExitCode.Should().Be(0, tested.Output);
+        tested.Output.Should().Contain("before:株式会社○○/東京都")
+            .And.Contain("after:更新後/大阪府");
+    }
+
+    [Fact]
+    public void 配布する四パッケージに識別情報とMITライセンスと説明書を含めます()
+    {
+        using var project = MSBuild連携テストプロジェクト.Create();
+        var scriptFilePath = project.AddPowerShellPackSample(includeProjectReferences: true, includeCombinedPackage: true);
 
         var tested = PowerShell実行結果.Run(scriptFilePath, project.DirectoryPath);
 
@@ -20,7 +39,8 @@ public sealed class MSBuild連携タスクのテスト
             .Select(Path.GetFileName).Should().BeEquivalentTo([
                 "Marimo.DocumentAsData.Core.0.3.0.nupkg",
                 "Marimo.DocumentAsData.CodeGeneration.0.3.0.nupkg",
-                "Marimo.DocumentAsData.Build.0.3.0.nupkg"]);
+                "Marimo.DocumentAsData.Build.0.3.0.nupkg",
+                "Marimo.DocumentAsData.0.3.0.nupkg"]);
         foreach (var packagePath in Directory.GetFiles(Path.Combine(project.DirectoryPath, "packages"), "*.nupkg"))
         {
             using var package = ZipFile.OpenRead(packagePath);

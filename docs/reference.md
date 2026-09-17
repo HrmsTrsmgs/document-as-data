@@ -25,6 +25,7 @@ DocumentAsDataは、DOCXの本文に名前を付けた項目とプログラム�
 
 | パッケージ | 用途 |
 | --- | --- |
+| `Marimo.DocumentAsData` | 通常の利用に推奨する統合パッケージ。Buildを通じて以下の3パッケージを導入する |
 | `Marimo.DocumentAsData.Build` | ビルド時のコード自動生成。以下の2パッケージを依存関係に含む |
 | `Marimo.DocumentAsData.CodeGeneration` | プログラムから生成器を呼ぶ。Coreを依存関係に含む |
 | `Marimo.DocumentAsData.Core` | DOCXの読み書き。コード生成を使わない場合はこれだけを参照 |
@@ -83,7 +84,7 @@ CheckBoxとDatePickerは、それぞれ同じTagの同じ種類が必要です�
 
 ### MSBuildで自動生成する
 
-SDK形式の利用側プロジェクトで `Marimo.DocumentAsData.Build` を参照し、
+SDK形式の利用側プロジェクトで `Marimo.DocumentAsData` を参照し、
 生成対象のDOCXを `DocumentAsData` 項目として指定します。
 ローカルパッケージの復元元を設定したうえで、例えば次のように記述します。
 
@@ -94,7 +95,7 @@ SDK形式の利用側プロジェクトで `Marimo.DocumentAsData.Build` を参�
     <RootNamespace>MyDocuments</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Marimo.DocumentAsData.Build" Version="0.3.0" />
+    <PackageReference Include="Marimo.DocumentAsData" Version="0.3.0" />
     <DocumentAsData Include="template.docx" />
   </ItemGroup>
 </Project>
