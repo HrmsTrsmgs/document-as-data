@@ -69,6 +69,7 @@ public class MergeField : DocumentItem, IDocumentTextItem
 
     /// <summary>
     /// MERGEFIELDの表示文字列を取得または設定します。
+    /// 設定したフィールドは、Wordのフィールド更新で値が失われないようロックします。
     /// </summary>
     /// <exception cref="InvalidOperationException">
     /// 文字列の設定時に表示結果が存在しないか、複合フィールドの結果領域を取得できない場合。
@@ -118,8 +119,9 @@ public class MergeField : DocumentItem, IDocumentTextItem
                 simpleField.RemoveAllChildren();
                 simpleField.AppendChild(
                     new Wordprocessing.Run(WordTextValue.CreateElements(value)));
-                // 書き換えた表示結果をWordが古い結果として扱わないようにします。
+                // 古い結果の印を解除し、Wordの更新で値が戻らないようにします。
                 simpleField.Dirty = null;
+                simpleField.FieldLock = true;
             }
         }
     }
@@ -131,7 +133,7 @@ public class MergeField : DocumentItem, IDocumentTextItem
     {
         /// <summary>
         /// 複合フィールドの開始要素です。
-        /// 値の書き込み後に、表示結果が古いことを示す状態を解除するため保持します。
+        /// 書き込み後に古い結果の印を解除し、Wordの再計算を止めるため保持します。
         /// </summary>
         readonly Wordprocessing.FieldChar fieldStart;
 
@@ -215,8 +217,9 @@ public class MergeField : DocumentItem, IDocumentTextItem
 
             valueElements.Clear();
             valueElements.AddRange(newValueElements);
-            // 書き換えた表示結果をWordが古い結果として扱わないようにします。
+            // 古い結果の印を解除し、Wordの更新で値が戻らないようにします。
             fieldStart.Dirty = null;
+            fieldStart.FieldLock = true;
         }
 
         /// <summary>

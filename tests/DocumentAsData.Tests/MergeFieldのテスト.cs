@@ -216,6 +216,35 @@ public class MergeFieldのテスト
     }
 
     [Fact]
+    public void Textプロパティは単純MERGEFIELDへ書き込んだ結果をWordの更新から保護します()
+    {
+        var sourcePath = TestDocument.CreateTemporaryCopy(TestFilePath);
+        var outputPath = TestDocument.CreateOutputPath();
+        try
+        {
+            using (var document = Document.Open(sourcePath))
+            {
+                document.MergeFields["CustomerName"].Text = "変更後";
+                document.SaveAs(outputPath);
+            }
+
+            using var saved = WordprocessingDocument.Open(outputPath, false);
+            // w:fldLockはWordによるフィールド結果の再計算を禁止します。
+            // w:dirtyの解除だけでは、明示的な更新で書き込んだ値が失われます。
+            var field = saved.MainDocumentPart!.Document!
+                .Descendants<Wordprocessing.SimpleField>()
+                .Single(it =>
+                    it.Instruction?.Value?.Contains("CustomerName") == true);
+            (field.FieldLock?.Value ?? false).Should().BeTrue();
+        }
+        finally
+        {
+            File.Delete(sourcePath);
+            File.Delete(outputPath);
+        }
+    }
+
+    [Fact]
     public void Textプロパティは複合MERGEFIELDの値を設定します()
     {
         var filePath = TestDocument.CreateTemporaryCopy(ComplexMergeFieldPath);
@@ -258,6 +287,36 @@ public class MergeFieldのテスト
                     it.FieldCharType?.Value ==
                     Wordprocessing.FieldCharValues.Begin);
             (fieldStart.Dirty?.Value ?? false).Should().BeFalse();
+        }
+        finally
+        {
+            File.Delete(sourcePath);
+            File.Delete(outputPath);
+        }
+    }
+
+    [Fact]
+    public void Textプロパティは複合MERGEFIELDへ書き込んだ結果をWordの更新から保護します()
+    {
+        var sourcePath = TestDocument.CreateTemporaryCopy(ComplexMergeFieldPath);
+        var outputPath = TestDocument.CreateOutputPath();
+        try
+        {
+            using (var document = Document.Open(sourcePath))
+            {
+                document.MergeFields["CustomerName"].Text = "変更後";
+                document.SaveAs(outputPath);
+            }
+
+            using var saved = WordprocessingDocument.Open(outputPath, false);
+            // 複合形式では開始側のw:fldCharにw:fldLockを設定します。
+            // Wordのフィールド更新で、保存した結果が項目名へ戻ることを防ぎます。
+            var fieldStart = saved.MainDocumentPart!.Document!
+                .Descendants<Wordprocessing.FieldChar>()
+                .Single(it =>
+                    it.FieldCharType?.Value ==
+                    Wordprocessing.FieldCharValues.Begin);
+            (fieldStart.FieldLock?.Value ?? false).Should().BeTrue();
         }
         finally
         {
