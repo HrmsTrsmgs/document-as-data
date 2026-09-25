@@ -6,6 +6,8 @@
 ここでは同じサンプルを起点に、必要に応じて低レイヤーのAPIへ進みます。
 すべての使い方を覚えてから利用を始める必要はありません。
 
+以下のStream出力は開発版の機能で、公開済み `0.3.0` にはまだ含まれません。
+
 ## 1. 自分のテンプレートを使う
 
 READMEの `template.docx` には、`CustomerName` と `Address` という名前のMERGEFIELDがあります。
@@ -201,9 +203,38 @@ document.SaveAs(Path.Combine(AppContext.BaseDirectory, "output.docx"));
 
 Streamで開いた文書に `Save()` を呼ぶと `NotSupportedException` になります。
 容量を拡張できるStreamであっても、入力先へ書き戻すAPIとしては使えません。
-現時点では `SaveAs(Stream)` はなく、保存先はファイルパスだけです。
-ブラウザ内だけで編集結果をダウンロードするまでの一連の処理には、まだ対応していません。
-Blazor固有の型への依存もありません。
+別のStreamへ出力する場合は `SaveAs(Stream)` を使います。生成型も同じAPIを利用できます。
+
+```csharp
+using var output = new MemoryStream();
+document.SaveAs(output);
+byte[] bytes = output.ToArray();
+```
+
+出力先には同期書き込み・シーク・長さ変更が必要です。現在位置にかかわらず先頭から全体を置き換え、古い末尾も削除します。
+出力先は閉じません。Streamとして読み直す場合は `output.Position = 0` で先頭へ戻してください。
+保存中に出力先への書き込みが失敗すると、出力先は途中まで変更される場合があります。元文書とは別のStreamを渡してください。
+
+Blazorでユーザーが選択したファイルは、まず呼び出し側で非同期にメモリへ読み込みます。
+`IBrowserFile.OpenReadStream()` のStreamは同期読み取りができないため、そのまま同期APIの `Document.Open` には渡しません。
+次は `browserFile`、許容サイズの `maxAllowedSize`、書き込む `data` が利用側にある場合の例です。
+
+```csharp
+using var input = new MemoryStream();
+await using var upload = browserFile.OpenReadStream(maxAllowedSize);
+await upload.CopyToAsync(input);
+input.Position = 0;
+
+using var document = Document.Open(input);
+document.Replace(data);
+using var output = new MemoryStream();
+document.SaveAs(output);
+byte[] bytes = output.ToArray(); // 利用側のダウンロード処理へ渡します。
+```
+
+ファイルパスや一時ファイルは不要です。ただし文書全体と出力をメモリに持つので、ファイルサイズの上限を設けてください。
+ライブラリはBlazor固有の型には依存しません。ブラウザーでのダウンロード処理は利用側の責務です。
+Blazor WebAssemblyでの発行後の実動作は未検証です。
 
 ### 構造を検証して開く
 

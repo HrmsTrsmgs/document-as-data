@@ -8,6 +8,57 @@ namespace Marimo.DocumentAsData.CodeGeneration.Test;
 public sealed class MSBuild連携タスクのテスト
 {
     [Fact]
+    public void 共用ライブラリのBuild参照を非公開にしてもCoreは利用アプリへ渡ります()
+    {
+        using var project = MSBuild連携テストプロジェクト.Create();
+        project.AddCustomerDataDocument("BasicStructure.docx");
+        var packScript = project.AddPowerShellPackSample(includeProjectReferences: true);
+        var packed = PowerShell実行結果.Run(packScript, project.DirectoryPath);
+        packed.ExitCode.Should().Be(0, packed.Output);
+        var script = project.AddPowerShellPackageReferenceSample(build: true, run: true, sharedLibrary: true);
+        var projectPath = Path.Combine(project.DirectoryPath, "PackageReference.csproj");
+        var projectXml = XDocument.Load(projectPath);
+        var buildReference = projectXml.Descendants("PackageReference").Single();
+        buildReference.SetAttributeValue("PrivateAssets", "all");
+        buildReference.AddAfterSelf(new XElement("PackageReference",
+            new XAttribute("Include", "Marimo.DocumentAsData.Core"),
+            new XAttribute("Version", "0.3.0")));
+        projectXml.Save(projectPath);
+
+        var tested = PowerShell実行結果.Run(script, project.DirectoryPath);
+
+        tested.ExitCode.Should().Be(0, tested.Output);
+        tested.Output.Should().Contain("after:更新後/大阪府");
+        File.ReadAllText(Path.Combine(project.DirectoryPath, "App", "obj", "App.csproj.nuget.g.targets"))
+            .Should().NotContain("Marimo.DocumentAsData.Build");
+        Directory.GetFiles(Path.Combine(project.DirectoryPath, "App", "bin", "Debug", "net10.0"))
+            .Select(Path.GetFileName).Should().Contain("DocumentAsData.dll")
+            .And.NotContain(["DocumentAsData.CodeGeneration.dll", "DocumentAsData.Build.dll"]);
+    }
+
+    [Fact]
+    public void 共用ライブラリの利用アプリにはCoreだけが渡り生成用DLLは配布されません()
+    {
+        using var project = MSBuild連携テストプロジェクト.Create();
+        project.AddCustomerDataDocument("BasicStructure.docx");
+        var packScript = project.AddPowerShellPackSample(
+            includeProjectReferences: true, includeCombinedPackage: true);
+        var packed = PowerShell実行結果.Run(packScript, project.DirectoryPath);
+        packed.ExitCode.Should().Be(0, packed.Output);
+        var script = project.AddPowerShellPackageReferenceSample(
+            build: true, run: true,
+            packageFilePattern: "Marimo.DocumentAsData.0.3.0.nupkg", sharedLibrary: true);
+
+        var tested = PowerShell実行結果.Run(script, project.DirectoryPath);
+
+        tested.ExitCode.Should().Be(0, tested.Output);
+        tested.Output.Should().Contain("after:更新後/大阪府");
+        Directory.GetFiles(Path.Combine(project.DirectoryPath, "App", "bin", "Debug", "net10.0"))
+            .Select(Path.GetFileName).Should().Contain("DocumentAsData.dll")
+            .And.NotContain(["DocumentAsData.CodeGeneration.dll", "DocumentAsData.Build.dll"]);
+    }
+
+    [Fact]
     public void 統合パッケージだけの参照でコード生成と文書の読み書きができます()
     {
         using var project = MSBuild連携テストプロジェクト.Create();
@@ -313,6 +364,22 @@ public sealed class MSBuild連携タスクのテスト
         var scriptFilePath = project.AddPowerShellSdkBuildSample(includeDocument: false);
 
         var tested = PowerShell実行結果.Run(scriptFilePath, project.DirectoryPath);
+
+        tested.ExitCode.Should().Be(0, tested.Output);
+    }
+
+    [Fact]
+    public void 対象Word文書がなければコード生成タスクを読み込みません()
+    {
+        using var project = MSBuild連携テストプロジェクト.Create();
+        var script = project.AddPowerShellSdkBuildSample(includeDocument: false);
+        var projectPath = Path.Combine(project.DirectoryPath, "DocumentAsData.BuildSample.csproj");
+        var projectXml = XDocument.Load(projectPath);
+        // タスクが起動されるとDLLの解決に失敗する設定で、生成対象なしの通常ビルドを確認します。
+        projectXml.Descendants("DocumentAsDataTaskAssembly").Single().Value = "存在しないタスク.dll";
+        projectXml.Save(projectPath);
+
+        var tested = PowerShell実行結果.Run(script, project.DirectoryPath);
 
         tested.ExitCode.Should().Be(0, tested.Output);
     }

@@ -1342,6 +1342,196 @@ public class Documentのテスト
     }
 
     [Fact]
+    public void SaveAsはStreamへReplaceした文字列を保存しReadで読み直せます()
+    {
+        using var source = new MemoryStream(File.ReadAllBytes(ContentControlsPath));
+        using var document = Document.Open(source);
+        using var output = new MemoryStream();
+        var data = new DocumentData { CustomerName = "変更後の名前", Address = "変更後の住所" };
+        document.Replace(data);
+
+        document.SaveAs(output);
+
+        output.Position = 0;
+        using var saved = Document.Open(output, true);
+        saved.Read<DocumentData>().Should().BeEquivalentTo(data);
+    }
+
+    [Fact]
+    public void SaveAsはStreamの現在位置によらず先頭から置き換え以前の末尾を残しません()
+    {
+        using var document = Document.Open(ContentControlsPath);
+        using var output = new MemoryStream();
+        output.Write(new byte[1024 * 1024]);
+        output.Position = 100;
+        document.Replace(new DocumentData { CustomerName = "変更後", Address = "東京都" });
+
+        document.SaveAs(output);
+
+        output.Length.Should().BeLessThan(1024 * 1024);
+        output.Position.Should().Be(output.Length);
+        output.Position = 0;
+        using var saved = Document.Open(output, true);
+        saved.Read<DocumentData>().CustomerName.Should().Be("変更後");
+    }
+
+    [Fact]
+    public void SaveAsは読み取り不可でもシーク可能な書き込み専用Streamへ保存できます()
+    {
+        var outputPath = TestDocument.CreateOutputPath();
+        try
+        {
+            using var document = Document.Open(ContentControlsPath);
+            document.Replace(new DocumentData { CustomerName = "変更後", Address = "東京都" });
+            using (var output = new FileStream(outputPath, FileMode.Create, FileAccess.Write))
+            {
+                document.SaveAs(output);
+                output.CanWrite.Should().BeTrue();
+            }
+
+            using var saved = Document.Open(outputPath, true);
+            saved.Read<DocumentData>().CustomerName.Should().Be("変更後");
+        }
+        finally
+        {
+            File.Delete(outputPath);
+        }
+    }
+
+    [Fact]
+    public void SaveAsはStreamへReplaceしたMERGEFIELDを保存できます()
+    {
+        using var source = new MemoryStream(File.ReadAllBytes(SimpleMergeFieldsPath));
+        using var document = Document.Open(source);
+        using var output = new MemoryStream();
+        document.Replace(new CustomerNameOnlyDocumentData { CustomerName = "変更後" });
+
+        document.SaveAs(output);
+
+        output.Position = 0;
+        using var saved = Document.Open(output, true);
+        saved.Read<CustomerNameOnlyDocumentData>().CustomerName.Should().Be("変更後");
+    }
+
+    [Fact]
+    public void SaveAsはStreamへReplaceしたチェック状態を保存できます()
+    {
+        using var source = new MemoryStream(File.ReadAllBytes(@"TestData\acceptanceForm.docx"));
+        using var document = Document.Open(source);
+        using var output = new MemoryStream();
+        document.Replace(new AcceptanceDocumentData { TermsAccepted = false });
+
+        document.SaveAs(output);
+
+        output.Position = 0;
+        using var saved = Document.Open(output, true);
+        saved.Read<AcceptanceDocumentData>().TermsAccepted.Should().BeFalse();
+    }
+
+    [Fact]
+    public void SaveAsはStreamへReplaceした日付を保存できます()
+    {
+        using var source = new MemoryStream(File.ReadAllBytes(@"TestData\deliveryForm.docx"));
+        using var document = Document.Open(source);
+        using var output = new MemoryStream();
+        var data = new DateDocumentData
+        {
+            DeliveryDate = new DateTimeOffset(2026, 9, 25, 0, 0, 0, TimeSpan.FromHours(9))
+        };
+        document.Replace(data);
+
+        document.SaveAs(output);
+
+        output.Position = 0;
+        using var saved = Document.Open(output, true);
+        saved.Read<DateDocumentData>().Should().BeEquivalentTo(data);
+    }
+
+    [Fact]
+    public void SaveAsは元Streamを変更せず文書を閉じた後も入出力Streamを閉じません()
+    {
+        var original = File.ReadAllBytes(ContentControlsPath);
+        using var source = new MemoryStream([.. original]);
+        using var output = new MemoryStream();
+        using (var document = Document.Open(source))
+        {
+            document.Replace(new DocumentData { CustomerName = "変更後", Address = "東京都" });
+            document.SaveAs(output);
+        }
+
+        source.CanRead.Should().BeTrue();
+        source.ToArray().Should().Equal(original);
+        output.CanWrite.Should().BeTrue();
+        output.Position = 0;
+        using var saved = Document.Open(output);
+        saved.Read<DocumentData>().CustomerName.Should().Be("変更後");
+    }
+
+    [Fact]
+    public void SaveAsはDispose後に呼び出すと出力Streamを変更せずに失敗します()
+    {
+        using var document = Document.Open(ContentControlsPath);
+        using var output = new MemoryStream([1, 2, 3]);
+        document.Dispose();
+
+        FluentActions.Invoking(() => document.SaveAs(output))
+            .Should().Throw<ObjectDisposedException>();
+
+        output.CanWrite.Should().BeTrue();
+        output.ToArray().Should().Equal(1, 2, 3);
+    }
+
+    [Fact]
+    public void SaveAsは出力Streamへの書き込みに失敗しても別のStreamへ再保存できます()
+    {
+        var original = File.ReadAllBytes(ContentControlsPath);
+        using var source = new MemoryStream([.. original]);
+        using var document = Document.Open(source);
+        using var tooSmall = new MemoryStream(new byte[1]);
+        using var output = new MemoryStream();
+        document.Replace(new DocumentData { CustomerName = "変更後", Address = "東京都" });
+
+        FluentActions.Invoking(() => document.SaveAs(tooSmall))
+            .Should().Throw<NotSupportedException>();
+        document.SaveAs(output);
+
+        tooSmall.CanWrite.Should().BeTrue();
+        source.ToArray().Should().Equal(original);
+        output.Position = 0;
+        using var saved = Document.Open(output);
+        saved.Read<DocumentData>().CustomerName.Should().Be("変更後");
+    }
+
+    [Fact]
+    public void SaveAsはシークできない出力Streamを変更せずに拒否します()
+    {
+        using var document = Document.Open(ContentControlsPath);
+        using var output = new MemoryStream();
+        using var destination = new System.IO.Compression.GZipStream(
+            output, System.IO.Compression.CompressionMode.Compress, leaveOpen: true);
+
+        // 圧縮用Streamは書き込み可能ですが、シークや長さ変更ができません。
+        FluentActions.Invoking(() => document.SaveAs(destination))
+            .Should().Throw<NotSupportedException>();
+
+        destination.CanWrite.Should().BeTrue();
+        output.Length.Should().Be(0);
+    }
+
+    [Fact]
+    public void SaveAsは読み取り専用の出力Streamを変更せずに拒否します()
+    {
+        using var document = Document.Open(ContentControlsPath);
+        using var output = new MemoryStream([1, 2, 3], writable: false);
+
+        FluentActions.Invoking(() => document.SaveAs(output))
+            .Should().Throw<NotSupportedException>();
+
+        output.CanRead.Should().BeTrue();
+        output.ToArray().Should().Equal(1, 2, 3);
+    }
+
+    [Fact]
     public void SaveAsはDispose後に呼び出すと保存先を変更せずに失敗します()
     {
         var sourcePath = TestDocument.CreateTemporaryCopy(SimpleMergeFieldsPath);

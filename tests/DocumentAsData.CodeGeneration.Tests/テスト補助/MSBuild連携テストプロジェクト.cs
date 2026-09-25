@@ -92,6 +92,7 @@ sealed class MSBuild連携テストプロジェクト : IDisposable
     /// <param name="designTimeBuild">文書を再生成しないデザイン時のコンパイルを確認する場合はtrue。</param>
     /// <param name="includeDocument">Word文書をコード生成対象として登録する場合はtrue。</param>
     /// <param name="packageFilePattern">利用者が参照するパッケージを選ぶファイル名パターン。</param>
+    /// <param name="sharedLibrary">生成対象を共用ライブラリに置き、別のアプリからProjectReferenceする場合はtrue。</param>
     /// <returns>restoreと指定した検証を実行するPowerShellスクリプトのパス。</returns>
     internal string AddPowerShellPackageReferenceSample(
         bool build = false,
@@ -99,7 +100,8 @@ sealed class MSBuild連携テストプロジェクト : IDisposable
         bool run = false,
         bool designTimeBuild = false,
         bool includeDocument = true,
-        string packageFilePattern = "*DocumentAsData.Build.*.nupkg")
+        string packageFilePattern = "*DocumentAsData.Build.*.nupkg",
+        bool sharedLibrary = false)
     {
         using var package = ZipFile.OpenRead(
             Directory.GetFiles(Path.Combine(DirectoryPath, "packages"), packageFilePattern).Single());
@@ -125,7 +127,7 @@ sealed class MSBuild連携テストプロジェクト : IDisposable
             <Project Sdk="Microsoft.NET.Sdk">
               <PropertyGroup>
                 <TargetFramework>net10.0</TargetFramework>
-                <OutputType Condition="'{{run}}' == 'True'">Exe</OutputType>
+                <OutputType Condition="'{{run}}' == 'True' and '{{sharedLibrary}}' != 'True'">Exe</OutputType>
                 <DesignTimeBuild Condition="'{{designTimeBuild}}' == 'True'">true</DesignTimeBuild>
                 <SkipCompilerExecution Condition="'{{designTimeBuild}}' == 'True'">true</SkipCompilerExecution>
                 <RestorePackagesPath>$(MSBuildProjectDirectory)/restored</RestorePackagesPath>
@@ -136,6 +138,7 @@ sealed class MSBuild連携テストプロジェクト : IDisposable
               <ItemGroup>
                 <PackageReference Include="{{SecurityElement.Escape(packageId)}}" Version="{{SecurityElement.Escape(packageVersion)}}" />
                 <DocumentAsData Include="BasicStructure.docx" Condition="'{{build}}' == 'True' and '{{includeDocument}}' == 'True'" />
+                <Compile Remove="App/**/*.cs" />
               </ItemGroup>
               <Target Name="WriteAvailableItems">
                 <WriteLinesToFile File="AvailableItemNames.txt" Lines="@(AvailableItemName)" Overwrite="true" />
@@ -152,6 +155,26 @@ sealed class MSBuild連携テストプロジェクト : IDisposable
               </Target>
             </Project>
             """);
+        if (sharedLibrary)
+        {
+            Directory.CreateDirectory(Path.Combine(DirectoryPath, "App"));
+            File.WriteAllText(
+                Path.Combine(DirectoryPath, "App", "App.csproj"),
+                """
+                <Project Sdk="Microsoft.NET.Sdk">
+                  <PropertyGroup>
+                    <TargetFramework>net10.0</TargetFramework>
+                    <OutputType>Exe</OutputType>
+                    <RestorePackagesPath>$(MSBuildProjectDirectory)/../restored</RestorePackagesPath>
+                    <NuGetAudit>false</NuGetAudit>
+                    <UseSharedCompilation>false</UseSharedCompilation>
+                  </PropertyGroup>
+                  <ItemGroup>
+                    <ProjectReference Include="../PackageReference.csproj" />
+                  </ItemGroup>
+                </Project>
+                """);
+        }
         if (build)
         {
             File.WriteAllText(
@@ -166,7 +189,7 @@ sealed class MSBuild連携テストプロジェクト : IDisposable
         if (run)
         {
             File.WriteAllText(
-                Path.Combine(DirectoryPath, "Program.cs"),
+                Path.Combine(DirectoryPath, sharedLibrary ? "App" : "", "Program.cs"),
                 """
                 using Generated;
 
@@ -183,12 +206,13 @@ sealed class MSBuild連携テストプロジェクト : IDisposable
                 System.Console.WriteLine($"after:{saved.CustomerName}/{saved.Address}");
                 """);
         }
+        var consumerProject = sharedLibrary ? "App/App.csproj" : "PackageReference.csproj";
         return WritePowerShellScript(
             "PackageReference.ps1",
             $$"""
-            dotnet restore ./PackageReference.csproj --configfile ./NuGet.Config --nologo --verbosity minimal
+            dotnet restore ./{{consumerProject}} --configfile ./NuGet.Config --nologo --verbosity minimal
             if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-            $buildArguments = @('./PackageReference.csproj', '/t:{{(build
+            $buildArguments = @('./{{consumerProject}}', '/t:{{(build
                 ? buildTarget
                 : "WriteAvailableItems")}}', '/nologo', '/v:minimal', '/nr:false')
             if ($env:DOCUMENTASDATA_TEST_MSBUILD) {
@@ -198,7 +222,7 @@ sealed class MSBuild連携テストプロジェクト : IDisposable
             }
             if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
             if ('{{run}}' -eq 'True') {
-                dotnet run --project ./PackageReference.csproj --no-build --no-restore
+                dotnet run --project ./{{consumerProject}} --no-build --no-restore
             }
             exit $LASTEXITCODE
             """);

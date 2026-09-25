@@ -387,6 +387,28 @@ public sealed class コード生成型構造のテスト
     }
 
     [Fact]
+    public void 生成されたDocument型はStreamだけでReadとReplaceと保存ができます()
+    {
+        var generatedType = GeneratedCodeInspection
+            .AssemblyFrom(GeneratedCodeInspection.GenerateSources(MergeFieldDocumentFilePath))
+            .GeneratedType("MergefieldDocument");
+        using var source = new MemoryStream(File.ReadAllBytes(MergeFieldDocumentFilePath));
+        using var document = generatedType.InvokeStaticMethod<Document>("Open", source);
+        using var output = new MemoryStream();
+        dynamic documentAccessor = document;
+        var data = documentAccessor.Read();
+        data.CustomerName = "変更後";
+
+        documentAccessor.Replace(data);
+        documentAccessor.SaveAs(output);
+
+        output.Position = 0;
+        using var saved = generatedType.InvokeStaticMethod<Document>("Open", output);
+        dynamic savedAccessor = saved;
+        (savedAccessor.Read().CustomerName as object).Should().Be("変更後");
+    }
+
+    [Fact]
     public void 生成されたDocument型は必要なMERGEFIELDが不足したStreamをOpenすると例外になります()
     {
         using var stream = new MemoryStream();

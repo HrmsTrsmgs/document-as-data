@@ -3,6 +3,8 @@
 Word文書（DOCX）の名前付き項目を、C#のプロパティとして読み書きする.NETライブラリです。
 Open XML SDKの型やXML構造を扱わずに、文書とプログラムの間でデータを交換できます。
 
+開発中の変更として、Stream出力と生成用依存の分離を追加しています。これらは公開済み `0.3.0` には含まれません。
+
 たとえば、テンプレートから生成した型を使うと、次のように書けます。
 
 ```csharp
@@ -73,7 +75,9 @@ Invoke-WebRequest "https://raw.githubusercontent.com/HrmsTrsmgs/document-as-data
 ```
 
 `DocumentAsData` はコード生成の対象、`None` の設定は実行時に使うDOCXのコピーを指定します。
-`Marimo.DocumentAsData` は、読み書き用のCore、コード生成用のCodeGeneration、ビルド連携用のBuildを依存関係としてまとめて導入します。
+`Marimo.DocumentAsData` は読み書き用Coreとビルド連携用Buildを導入します。開発版では生成用DLLをBuildのツール内へ分離し、利用アプリの実行時依存には含めません。
+生成APIをプログラムから直接呼ぶ場合は `Marimo.DocumentAsData.CodeGeneration` を明示的に参照してください。
+サーバーとBlazorで共用するライブラリへの導入は、[共用ライブラリの設定](docs/reference.md#共用ライブラリで生成する場合)を参照してください。
 
 通常のNuGet.orgの設定を使うため、専用の `NuGet.Config` は不要です。
 ソースからパッケージを作って試す場合は、[ローカルパッケージの手順](https://github.com/HrmsTrsmgs/document-as-data/blob/main/docs/build-and-release.md#公開前にローカルパッケージを使う)を参照してください。
@@ -158,7 +162,7 @@ document.SaveAs("output.docx");
 * 生成型の `Open` は、その型が必要とする項目を検査します。単にDOCXなら何でも同じ型で開けるわけではありません。
 * `ContentControls` は文字列用です。チェックボックスは `CheckBoxes`、日付選択は `DatePickers` で扱います。
 * 日付選択はテンプレートの言語・書式に従って表示を更新しますが、Word独自の全書式に対応するものではありません。省略時の扱いと確認済みの範囲は[機能リファレンス](docs/reference.md#チェックボックスと日時)と[日付書式の対応整理](docs/date-format-compatibility.md)を参照してください。
-* `Open(Stream)` は入力用Streamを借用し、内容を変更したり閉じたりしません。Streamで開いた文書の `Save()` は使用できません。現時点の保存先はファイルパスであり、`SaveAs(Stream)` はありません。
+* `Open(Stream)` は入力用Streamを借用し、内容を変更したり閉じたりしません。Streamで開いた文書の `Save()` は使用できません。`SaveAs(Stream)` で別の書き込み・シーク・長さ変更が可能なStreamへ出力できます。現在位置によらず先頭から全体を置き換え、出力先も閉じません。[Stream入出力の使い方](docs/tutorial.md#streamから開く)を参照してください。
 * MERGEFIELDやContent Controlを普通のテキストに変換・除去する処理、PDF化、レイアウト編集、OCR、自由文章からの推測抽出は行いません。
 * カスタムXMLとデータ連結されたContent Control、選択リスト、画像コントロール、繰り返し項目などには制約があります。詳細は機能リファレンスを参照してください。
 

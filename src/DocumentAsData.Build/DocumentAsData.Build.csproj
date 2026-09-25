@@ -14,7 +14,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\DocumentAsData.CodeGeneration\DocumentAsData.CodeGeneration.csproj" />
+    <!-- 生成器はtools内でのみ使い、利用アプリへはCoreだけを依存パッケージとして渡します。 -->
+    <ProjectReference Include="..\DocumentAsData.CodeGeneration\DocumentAsData.CodeGeneration.csproj" PrivateAssets="all" />
+    <ProjectReference Include="..\DocumentAsData\DocumentAsData.csproj" />
   </ItemGroup>
 
   <!-- 利用側で読み込むMSBuild連携設定をパッケージへ含めます。 -->

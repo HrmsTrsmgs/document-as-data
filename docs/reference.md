@@ -14,23 +14,44 @@ DocumentAsDataは、DOCXの本文に名前を付けた項目とプログラム�
 | 自分で定義したデータ型を使う | `Document.Read<T>()`・`Replace(data)` | プロパティ名や属性で文書項目と対応付ける |
 | 実行時に決まる名前で読み書きする | `MergeFields` などのコレクション | 名前やTagで項目を指定する |
 | 文書にある項目を調べる | 各コレクションの列挙 | 名前・Tagと現在の値を取り出す |
-| ファイルパスを使わず入力する | `Document.Open(Stream)` | 読み取り専用・非シーク入力も扱う。出力は現在ファイルパスのみ |
+| ファイルパスを使わず入出力する | `Document.Open(Stream)`・`SaveAs(Stream)` | 非シーク入力も扱う。出力にはシーク・長さ変更が必要 |
 | OOXMLの構造を検証して開く | `Document.Open(..., validate: true)` | 名前の有無や業務データの検査とは別の検証 |
 
 ### パッケージ
 
 現在は `.NET 10`（`net10.0`）が対象で、名前空間は `Marimo.DocumentAsData` です。
 ライブラリの実行にWordのインストールは必要ありません。
-この文書は `0.3.0` を対象とします。NuGetからの導入手順は[README](../README.md)を参照してください。
+この文書は開発中のソースを対象とします。Stream出力と生成用依存の分離は、公開済み `0.3.0` には含まれません。NuGetからの導入手順は[README](../README.md)を参照してください。
 
 | パッケージ | 用途 |
 | --- | --- |
-| `Marimo.DocumentAsData` | 通常の利用に推奨する統合パッケージ。Buildを通じて以下の3パッケージを導入する |
-| `Marimo.DocumentAsData.Build` | ビルド時のコード自動生成。以下の2パッケージを依存関係に含む |
+| `Marimo.DocumentAsData` | 通常の利用に推奨する統合パッケージ。BuildとCoreを導入する |
+| `Marimo.DocumentAsData.Build` | ビルド時のコード自動生成。Coreを依存関係に含む。生成器とその依存DLLはtools内に同梱する |
 | `Marimo.DocumentAsData.CodeGeneration` | プログラムから生成器を呼ぶ。Coreを依存関係に含む |
 | `Marimo.DocumentAsData.Core` | DOCXの読み書き。コード生成を使わない場合はこれだけを参照 |
 
 梱包・ローカルフィードへの登録・確認済みのビルド環境は、[ビルドとリリースの手引き](build-and-release.md) を参照してください。
+
+#### 共用ライブラリで生成する場合
+
+DOCXと生成コードを持つクラスライブラリでは、Coreを通常参照し、Buildを `PrivateAssets="all"` で参照すると、生成用のMSBuild設定を利用アプリへ渡さずに済みます。
+以下のバージョンは、開発版をローカルに梱包した場合の設定例です。
+
+```xml
+<ItemGroup>
+  <PackageReference Include="Marimo.DocumentAsData.Core" Version="0.3.0" />
+  <PackageReference Include="Marimo.DocumentAsData.Build" Version="0.3.0" PrivateAssets="all" />
+  <DocumentAsData Include="template.docx" />
+  <EmbeddedResource Include="template.docx" />
+</ItemGroup>
+```
+
+サーバー／Blazorアプリはこの共用ライブラリをProjectReferenceします。生成は共用ライブラリのビルド時に行い、アプリにはCoreと必要な実行時依存が渡ります。
+BuildだけをPrivateAssetsにするとCoreの依存まで隠れるため、上記のCoreの明示参照は省かないでください。
+埋め込んだテンプレートをStreamとして開けば、実行時のファイル配置に依存しません。埋め込みやダウンロードは利用側で行います。
+
+統合パッケージは引き続き簡単な導入用に利用できます。`buildTransitive` も維持していますが、対象DOCXがないプロジェクトでは生成タスクを起動しません。
+生成APIを直接呼び出す用途では、`Marimo.DocumentAsData.CodeGeneration` を明示的に参照してください。Buildや統合パッケージ経由では生成APIの参照は追加しません。
 
 ## 型付きコード生成
 
@@ -345,10 +366,10 @@ Word独自の表示形式すべてとの互換性はありません。自動テ�
 
 変更は作業領域に保持されます。`Close()`・`Dispose()`・`using` の終了だけでは元データへ保存しません。
 
-| 開き方 | `Save()` | `SaveAs(path)` | Close・Dispose時 |
-| --- | --- | --- | --- |
-| `Open(string)` | 元ファイルへ保存 | 別ファイルへ保存。保存元は変えない | 未保存の変更を反映せず、元ファイルの束縛を解除 |
-| `Open(Stream)` | `NotSupportedException` | 別ファイルへ保存。入力内容は変えない | 元Streamの内容を変更せず、Stream自体も閉じない |
+| 開き方 | `Save()` | `SaveAs(path)` | `SaveAs(Stream)` | Close・Dispose時 |
+| --- | --- | --- | --- | --- |
+| `Open(string)` | 元ファイルへ保存 | 別ファイルへ保存。保存元は変えない | 別Stream全体を置き換える | 未保存の変更を反映せず、元ファイルの束縛を解除 |
+| `Open(Stream)` | `NotSupportedException` | 別ファイルへ保存。入力内容は変えない | 別Stream全体を置き換える | 元Streamの内容を変更せず、Stream自体も閉じない |
 
 パス版は元ファイルを開いている間束縛します。`Save()` は元ファイルへ書き戻し、`SaveAs(path)` は保存先を開いたまま保持しません。
 どちらも呼び出しが戻った時点で保存されているため、DocumentのDisposeを待たずに保存した内容を読めます。
@@ -365,11 +386,24 @@ Word独自の表示形式すべてとの互換性はありません。自動テ�
 * 読み取り専用・非シークの入力でも文書を編集して `SaveAs(path)` で保存できます。非シーク入力はライブラリ内でメモリへコピーするため、呼び出し側で編集用Streamを作る必要はありません。
 * `SaveAs(path)` が保存先を開けずに失敗した場合も、元Streamと編集内容は保持され、別の保存先へ再試行できます。
 
+### 出力Streamの契約
+
+`SaveAs(Stream destination)` は入力とは別のStreamへDOCXを出力します。生成型からも使用できます。
+
+* 出力先には同期書き込み・シーク・長さ変更の能力が必要です。`new MemoryStream()` を使用できます。
+* 現在位置にかかわらず先頭から全体を置き換え、古い末尾を残しません。保存後の位置は末尾です。
+* 出力先を閉じません。DocumentをDisposeした後も呼び出し側で使用・破棄できます。
+* 読み取り専用・シークできない出力先は使用できません。
+* メモリ上でDOCXを完成させてから出力します。一時ファイルは使用しません。
+* 書き込みに失敗した出力先は部分的に変更される場合があります。元文書の編集内容は維持され、別の出力先へ再試行できます。
+
 ### ブラウザでの利用範囲
 
 本体はBlazorの `IBrowserFile` には依存せず、通常の `Stream` を受け取ります。
 ブラウザでのダウンロードやHTTPレスポンスの生成は利用側の責務です。
-現在はStreamへの出力APIがないため、Streamだけで編集結果の出力まで完結するブラウザ用途には未対応です。
+入力と出力にMemoryStreamを使うことで、ファイルパスを使わずに読み込み・置換・出力を行えます。
+`IBrowserFile.OpenReadStream()` のような非同期読み取り専用の入力は、利用側で `CopyToAsync` によりMemoryStreamへ取り込んでから渡してください。
+HTTPレスポンスなどのシークできない出力先へ直接SaveAsはできません。MemoryStreamへ保存した内容を利用側で転送します。
 Blazor WebAssembly上での実動作は、このリポジトリのテストでは確認していません。
 非同期の `OpenAsync` APIも現在提供していません。
 

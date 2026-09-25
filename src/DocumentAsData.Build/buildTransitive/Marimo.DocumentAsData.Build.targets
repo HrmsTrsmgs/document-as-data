@@ -27,7 +27,7 @@
   <Target
     Name="GenerateDocumentAsDataSources"
     BeforeTargets="CoreCompile"
-    Condition="'$(DesignTimeBuild)' != 'true'">
+    Condition="'$(DesignTimeBuild)' != 'true' and '@(DocumentAsData)' != ''">
     <Marimo.DocumentAsData.Build.GenerateDocumentAsData
       DocumentFiles="@(DocumentAsData)"
       RootNamespace="$(RootNamespace)"

@@ -208,6 +208,18 @@ public class Document : IDisposable
         session.SaveAs(filePath);
 
     /// <summary>
+    /// 保存元を変更せず、編集した文書をDOCXとしてStreamへ出力します。
+    /// 現在位置にかかわらず先頭から全体を置き換え、出力先は閉じません。
+    /// </summary>
+    /// <param name="destination">入力とは別の、同期書き込み・シーク・長さ変更が可能な出力先。</param>
+    /// <remarks>
+    /// 保存後の位置は末尾です。読み直す場合は呼び出し側で先頭へ戻してください。
+    /// 出力先への書き込みに失敗すると、出力先は途中まで変更される場合があります。
+    /// </remarks>
+    public void SaveAs(Stream destination) =>
+        session.SaveAs(destination);
+
+    /// <summary>
     /// 未保存の変更を保存せずに文書を閉じます。呼び出し側のStreamは閉じません。
     /// </summary>
     public void Close() =>
@@ -365,6 +377,21 @@ public class Document : IDisposable
         internal void SaveAs(string filePath)
         {
             using var savedDocument = Document.Clone(filePath);
+        }
+
+        /// <summary>
+        /// SDKが要求する読み書き可能なメモリ上でDOCXを完成させてから、出力先全体を置き換えます。
+        /// </summary>
+        /// <param name="destination">DOCXの出力先。</param>
+        internal void SaveAs(Stream destination)
+        {
+            using var output = new MemoryStream();
+            // ZIPの終端を含めて確定してからコピーするため、複製した文書をここで閉じます。
+            Document.Clone(output).Dispose();
+            output.Position = 0;
+            destination.Position = 0;
+            destination.SetLength(0);
+            output.CopyTo(destination);
         }
 
         /// <summary>

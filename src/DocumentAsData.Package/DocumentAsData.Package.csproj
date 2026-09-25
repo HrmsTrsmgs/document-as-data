@@ -5,7 +5,7 @@
     <PackageId>Marimo.DocumentAsData</PackageId>
     <Description>DocumentAsDataの読み書き、コード生成、Visual Studio/MSBuild連携をまとめて利用するための推奨パッケージです。</Description>
   </PropertyGroup>
-  <!-- BuildのbuildTransitive設定と、CodeGeneration・Coreへの依存関係を利用します。 -->
+  <!-- BuildのbuildTransitive設定とCoreへの依存関係を利用します。生成用DLLはBuildのtools内に隔離します。 -->
   <ItemGroup>
     <ProjectReference Include="..\DocumentAsData.Build\DocumentAsData.Build.csproj" />
     <!-- 参照DLLを追加せず、.NET 10向けの依存関係グループに対応させます。 -->
