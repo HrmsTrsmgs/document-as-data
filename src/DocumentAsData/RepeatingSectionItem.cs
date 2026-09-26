@@ -8,6 +8,11 @@ namespace Marimo.DocumentAsData;
 public class RepeatingSectionItem : ContentControl
 {
     /// <summary>
+    /// この明細内の項目を自作クラスへ対応付ける処理です。
+    /// </summary>
+    readonly DocumentObjectMapper objectMapper;
+
+    /// <summary>
     /// 明細1件を囲むOOXML要素への参照を保持します。
     /// </summary>
     /// <param name="document">明細が属する文書。</param>
@@ -19,6 +24,7 @@ public class RepeatingSectionItem : ContentControl
         MergeFields = new(document, element.Descendants());
         CheckBoxes = new(document, element.Descendants());
         DatePickers = new(document, element.Descendants());
+        objectMapper = new(ContentControls, MergeFields, CheckBoxes, DatePickers);
     }
 
     /// <summary>
@@ -40,4 +46,12 @@ public class RepeatingSectionItem : ContentControl
     /// この明細内の日付選択Content Controlを取得します。
     /// </summary>
     public DatePickerCollection DatePickers { get; }
+
+    /// <summary>
+    /// この明細内だけを対象として、既存のオブジェクト対応付けで読み取ります。
+    /// </summary>
+    /// <typeparam name="T">明細のデータを読み込む型。</typeparam>
+    /// <returns>明細のデータを読み込んだオブジェクト。</returns>
+    internal T Read<T>() =>
+        objectMapper.Read<T>();
 }

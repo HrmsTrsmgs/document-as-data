@@ -10,17 +10,51 @@ namespace Marimo.DocumentAsData;
 sealed class DocumentObjectMapper
 {
     /// <summary>
-    /// 名前付き項目の読み書き対象となる文書です。
+    /// 対応付けの対象範囲にある文字列Content Controlです。
     /// </summary>
-    readonly Document document;
+    readonly ContentControlCollection contentControls;
+
+    /// <summary>
+    /// 対応付けの対象範囲にあるMERGEFIELDです。
+    /// </summary>
+    readonly MergeFieldCollection mergeFields;
+
+    /// <summary>
+    /// 対応付けの対象範囲にあるチェックボックスです。
+    /// </summary>
+    readonly CheckBoxCollection checkBoxes;
+
+    /// <summary>
+    /// 対応付けの対象範囲にある日付選択Content Controlです。
+    /// </summary>
+    readonly DatePickerCollection datePickers;
 
     /// <summary>
     /// 指定した文書に対するオブジェクト対応付けを作成します。
     /// </summary>
     /// <param name="document">名前付き項目の読み書き対象となる文書。</param>
     internal DocumentObjectMapper(Document document)
+        : this(document.ContentControls, document.MergeFields, document.CheckBoxes, document.DatePickers)
     {
-        this.document = document;
+    }
+
+    /// <summary>
+    /// 同じ検索範囲に属する項目を、オブジェクト対応付けの対象にします。
+    /// </summary>
+    /// <param name="contentControls">文字列Content Control。</param>
+    /// <param name="mergeFields">MERGEFIELD。</param>
+    /// <param name="checkBoxes">チェックボックス。</param>
+    /// <param name="datePickers">日付選択Content Control。</param>
+    internal DocumentObjectMapper(
+        ContentControlCollection contentControls,
+        MergeFieldCollection mergeFields,
+        CheckBoxCollection checkBoxes,
+        DatePickerCollection datePickers)
+    {
+        this.contentControls = contentControls;
+        this.mergeFields = mergeFields;
+        this.checkBoxes = checkBoxes;
+        this.datePickers = datePickers;
     }
 
     /// <summary>
@@ -133,10 +167,10 @@ sealed class DocumentObjectMapper
     {
         IEnumerable<string> names =
         [
-            .. document.ContentControls.Select(it => it.Tag),
-            .. document.MergeFields.Select(it => it.Name),
-            .. document.CheckBoxes.Select(it => it.Tag),
-            .. document.DatePickers.Select(it => it.Tag)
+            .. contentControls.Select(it => it.Tag),
+            .. mergeFields.Select(it => it.Name),
+            .. checkBoxes.Select(it => it.Tag),
+            .. datePickers.Select(it => it.Tag)
         ];
 
         return (
@@ -193,10 +227,10 @@ sealed class DocumentObjectMapper
     {
         IEnumerable<IDocumentTextItem> targets =
         [
-            .. from contentControl in document.ContentControls
+            .. from contentControl in contentControls
                where contentControl.Tag == name
                select contentControl,
-            .. from mergeField in document.MergeFields
+            .. from mergeField in mergeFields
                where mergeField.Name == name
                select mergeField
         ];
@@ -212,7 +246,7 @@ sealed class DocumentObjectMapper
     /// <exception cref="InvalidOperationException">同じTagの対象が複数存在する場合。</exception>
     DatePicker? FindDatePicker(string tag) =>
         (
-            from datePicker in document.DatePickers
+            from datePicker in datePickers
             where datePicker.Tag == tag
             select datePicker
         ).SingleOrDefault();
@@ -225,7 +259,7 @@ sealed class DocumentObjectMapper
     /// <exception cref="InvalidOperationException">同じTagの対象が複数存在する場合。</exception>
     CheckBox? FindCheckBox(string tag) =>
         (
-            from checkBox in document.CheckBoxes
+            from checkBox in checkBoxes
             where checkBox.Tag == tag
             select checkBox
         ).SingleOrDefault();

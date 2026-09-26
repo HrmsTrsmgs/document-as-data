@@ -38,7 +38,8 @@ public class RepeatingSection : ContentControl
     /// <typeparam name="T">明細1件分のデータを読み込む型。</typeparam>
     /// <returns>文書順に読み込んだ明細データ。</returns>
     public IEnumerable<T> Read<T>() =>
-        throw new NotImplementedException();
+        from item in Items
+        select item.Read<T>();
 
     /// <summary>
     /// 明細の内容と件数を、指定したデータで置き換えます。

@@ -18,7 +18,7 @@ public class RepeatingSectionのテスト
         document.RepeatingSections["Items"].Items.Should().ContainSingle();
     }
 
-    [Fact(Skip = "明細内の検索のGreen後、複数の明細を自作クラスへ対応付けるAPIをレビューします。")]
+    [Fact]
     public void Readは明細ごとに自作クラスへ対応付けて文書順に読み取ります()
     {
         using var document = Document.Open(
