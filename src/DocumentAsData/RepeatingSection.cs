@@ -42,10 +42,15 @@ public class RepeatingSection : ContentControl
         select item.Read<T>();
 
     /// <summary>
-    /// 明細の内容と件数を、指定したデータで置き換えます。
+    /// 既存の明細の内容を、同じ件数のデータで順番に置き換えます。
     /// </summary>
     /// <typeparam name="T">明細1件分のデータを保持する型。</typeparam>
-    /// <param name="items">置き換え後の明細データ。</param>
-    public void Replace<T>(IEnumerable<T> items) =>
-        throw new NotImplementedException();
+    /// <param name="items">既存の明細と同じ件数の、置き換え後のデータ。</param>
+    public void Replace<T>(IEnumerable<T> items)
+    {
+        foreach (var (item, data) in Items.Zip(items))
+        {
+            item.Replace(data);
+        }
+    }
 }

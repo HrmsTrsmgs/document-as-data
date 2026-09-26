@@ -29,7 +29,7 @@ public class RepeatingSectionのテスト
             .Should().Equal("商品A", "商品B");
     }
 
-    [Fact(Skip = "明細のReadのGreen後、文書項目名を指定する既存属性との接続をレビューします。")]
+    [Fact]
     public void Readは属性で指定した明細内のTagを使用します()
     {
         using var document = Document.Open(
@@ -40,7 +40,7 @@ public class RepeatingSectionのテスト
             .Should().Equal("商品A", "商品B");
     }
 
-    [Fact(Skip = "明細のReadのGreen後、項目不足の明細へ他の明細の値を流用しないことをレビューします。")]
+    [Fact]
     public void Readはある明細で必要な項目が不足すると失敗します()
     {
         using var document = Document.Open(
@@ -51,7 +51,7 @@ public class RepeatingSectionのテスト
         action.Should().Throw<InvalidOperationException>();
     }
 
-    [Fact(Skip = "明細のReadのGreen後、同件数のReplaceと書き込み範囲をレビューします。")]
+    [Fact]
     public void Replaceは同じ件数の明細を順番に変更しセクション外の項目を保持します()
     {
         using var document = Document.Open(

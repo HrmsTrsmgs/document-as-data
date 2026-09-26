@@ -54,4 +54,12 @@ public class RepeatingSectionItem : ContentControl
     /// <returns>明細のデータを読み込んだオブジェクト。</returns>
     internal T Read<T>() =>
         objectMapper.Read<T>();
+
+    /// <summary>
+    /// この明細内だけを対象として、既存のオブジェクト対応付けで書き込みます。
+    /// </summary>
+    /// <typeparam name="T">明細のデータを保持する型。</typeparam>
+    /// <param name="data">明細へ書き込むデータ。</param>
+    internal void Replace<T>(T data) =>
+        objectMapper.Replace(data);
 }
