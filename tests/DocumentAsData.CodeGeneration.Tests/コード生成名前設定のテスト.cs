@@ -16,6 +16,60 @@ public sealed class コード生成名前設定のテスト
     const string DatePickerDocumentFilePath =
         @"TestData\コード生成\日付選択ContentControl.docx";
 
+    [Fact(Skip = "型付き繰り返し項目の生成後、セクション名と明細内の名前変換をレビューします。")]
+    public void NameMappingsは繰り返しセクションと明細データのプロパティ名へ適用されます()
+    {
+        using var document = GeneratedCodeInspection
+            .AssemblyFrom(GeneratedCodeInspection.GenerateSources(
+                @"TestData\コード生成\repeatingTemplate.docx",
+                options =>
+                {
+                    options.NameMappings["Items"] = "Lines";
+                    options.NameMappings["ItemName"] = "ProductName";
+                }))
+            .GeneratedType("RepeatingTemplateDocument")
+            .InvokeStaticMethod<Document>("Open", @"TestData\コード生成\repeatingTemplate.docx");
+        dynamic documentAccessor = document;
+        IEnumerable<dynamic> items = documentAccessor.Lines;
+
+        items.Select(it => it.ProductName as object).Should().Equal("商品A");
+    }
+
+    [Fact(Skip = "生成された明細の名前変換のGreen後、元のTagへの書き込みをレビューします。")]
+    public void NameMappingsで変更した明細データのプロパティから元のTagへ書き込めます()
+    {
+        var assembly = GeneratedCodeInspection.AssemblyFrom(
+            [
+                .. GeneratedCodeInspection.GenerateSources(
+                    @"TestData\コード生成\repeatingTemplate.docx",
+                    options => options.NameMappings["ItemName"] = "ProductName"),
+                """
+                using System.Linq;
+                namespace Generated;
+                public static class UseMappedRepeatingItems
+                {
+                    public static string[] Replace(RepeatingTemplateDocument document)
+                    {
+                        document.Items.Replace([new() { ProductName = "商品C" }]);
+                        return document.ContentControls.Select(it => it.Text).ToArray();
+                    }
+                }
+                """
+            ]);
+        using var document = assembly.GeneratedType("RepeatingTemplateDocument")
+            .InvokeStaticMethod<Document>("Open", @"TestData\コード生成\repeatingTemplate.docx");
+
+        assembly.GeneratedType("UseMappedRepeatingItems").InvokeStaticMethod<string[]>("Replace", document)
+            .Should().Equal("商品C");
+    }
+
+    [Fact(Skip = "明細の範囲を区別する生成のGreen後、同じ明細内だけの名前衝突をレビューします。")]
+    public void 生成時に同じ明細内で重複した名前は診断します()
+    {
+        GeneratedCodeInspection.GenerateDiagnostics(@"TestData\コード生成\repeatingDuplicateItem.docx")
+            .Should().Contain(it => it.IsError && it.GeneratedName == "ItemName");
+    }
+
     [Fact]
     public void 書式文字を含むTagから生成したDataプロパティへ文字列を読み込みます()
     {

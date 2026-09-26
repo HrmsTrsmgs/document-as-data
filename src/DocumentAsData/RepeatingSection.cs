@@ -18,4 +18,26 @@ public class RepeatingSection : ContentControl
         : base(document, element)
     {
     }
+
+    /// <summary>
+    /// セクション内の明細を文書に現れる順で取得します。
+    /// </summary>
+    public IReadOnlyList<RepeatingSectionItem> Items =>
+        throw new NotImplementedException();
+
+    /// <summary>
+    /// 各明細の名前付き項目を、指定した型へ対応付けて読み込みます。
+    /// </summary>
+    /// <typeparam name="T">明細1件分のデータを読み込む型。</typeparam>
+    /// <returns>文書順に読み込んだ明細データ。</returns>
+    public IEnumerable<T> Read<T>() =>
+        throw new NotImplementedException();
+
+    /// <summary>
+    /// 明細の内容と件数を、指定したデータで置き換えます。
+    /// </summary>
+    /// <typeparam name="T">明細1件分のデータを保持する型。</typeparam>
+    /// <param name="items">置き換え後の明細データ。</param>
+    public void Replace<T>(IEnumerable<T> items) =>
+        throw new NotImplementedException();
 }

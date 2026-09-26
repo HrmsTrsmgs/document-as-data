@@ -24,6 +24,145 @@ public sealed class コード生成名前付き項目のテスト : IDisposable
 
     readonly TemporaryDocumentFiles temporaryFiles = new();
 
+    [Fact(Skip = "明細の読み取りAPIのGreen後、1件のテンプレートから型付きコレクションを生成する仕様をレビューします。")]
+    public void 生成された繰り返し項目は明細が1件でもコレクションとして読み取れます()
+    {
+        using var document = GeneratedCodeInspection
+            .AssemblyFrom(GeneratedCodeInspection.GenerateSources(@"TestData\コード生成\repeatingTemplate.docx"))
+            .GeneratedType("RepeatingTemplateDocument")
+            .InvokeStaticMethod<Document>("Open", @"TestData\コード生成\repeatingTemplate.docx");
+        dynamic documentAccessor = document;
+        IEnumerable<dynamic> items = documentAccessor.Items;
+
+        items.Select(it => it.ItemName as object).Should().Equal("商品A");
+    }
+
+    [Fact(Skip = "型付き繰り返し項目の生成後、実行時の明細数がテンプレートと異なる場合をレビューします。")]
+    public void 明細1件から生成した繰り返し項目で複数の明細を読み取れます()
+    {
+        using var document = GeneratedCodeInspection
+            .AssemblyFrom(GeneratedCodeInspection.GenerateSources(@"TestData\コード生成\repeatingTemplate.docx"))
+            .GeneratedType("RepeatingTemplateDocument")
+            .InvokeStaticMethod<Document>("Open", @"TestData\コード生成\repeatingItems.docx");
+        dynamic documentAccessor = document;
+        IEnumerable<dynamic> items = documentAccessor.Items;
+
+        items.Select(it => it.ItemName as object).Should().Equal("商品A", "商品B");
+    }
+
+    [Fact(Skip = "型付き繰り返し項目の生成後、複数の明細を持つ文書を生成元にする仕様をレビューします。")]
+    public void 複数の明細から生成しても同じ項目名を文書全体の重複として扱いません()
+    {
+        using var document = GeneratedCodeInspection
+            .AssemblyFrom(GeneratedCodeInspection.GenerateSources(@"TestData\コード生成\repeatingItems.docx"))
+            .GeneratedType("RepeatingItemsDocument")
+            .InvokeStaticMethod<Document>("Open", @"TestData\コード生成\repeatingItems.docx");
+        dynamic documentAccessor = document;
+        IEnumerable<dynamic> items = documentAccessor.Items;
+
+        items.Select(it => it.ItemName as object).Should().Equal("商品A", "商品B");
+    }
+
+    [Fact(Skip = "明細の件数変更と型付き生成のGreen後、生成された明細データによるReplaceをレビューします。")]
+    public void 生成された繰り返し項目へ明細データを書き込んで件数を変更できます()
+    {
+        var assembly = GeneratedCodeInspection.AssemblyFrom(
+            [
+                .. GeneratedCodeInspection.GenerateSources(@"TestData\コード生成\repeatingTemplate.docx"),
+                """
+                using System.Linq;
+                namespace Generated;
+                public static class UseRepeatingItems
+                {
+                    public static string[] Replace(RepeatingTemplateDocument document)
+                    {
+                        document.Items.Replace([
+                            new() { ItemName = "商品C" },
+                            new() { ItemName = "商品D" }
+                        ]);
+                        return document.ContentControls.Select(it => it.Text).ToArray();
+                    }
+                }
+                """
+            ]);
+        using var document = assembly.GeneratedType("RepeatingTemplateDocument")
+            .InvokeStaticMethod<Document>("Open", @"TestData\コード生成\repeatingTemplate.docx");
+
+        assembly.GeneratedType("UseRepeatingItems").InvokeStaticMethod<string[]>("Replace", document)
+            .Should().Equal("商品C", "商品D");
+    }
+
+    [Fact(Skip = "型付き繰り返し項目の生成後、通常項目と明細内項目の名前の範囲をレビューします。")]
+    public void 生成された通常項目と明細内の項目は同じ名前でも別々に読み取れます()
+    {
+        using var document = GeneratedCodeInspection
+            .AssemblyFrom(GeneratedCodeInspection.GenerateSources(@"TestData\コード生成\repeatingOutside.docx"))
+            .GeneratedType("RepeatingOutsideDocument")
+            .InvokeStaticMethod<Document>("Open", @"TestData\コード生成\repeatingOutside.docx");
+        dynamic documentAccessor = document;
+        IEnumerable<dynamic> items = documentAccessor.Items;
+
+        (documentAccessor.ItemName as object).Should().Be("文書全体の商品名");
+        items.Select(it => it.ItemName as object).Should().Equal("商品A", "商品B");
+    }
+
+    [Fact(Skip = "型付き繰り返し項目の生成後、明細データが文書と直接連動しないことをレビューします。")]
+    public void 生成された明細データの変更はReplaceするまで文書へ反映されません()
+    {
+        using var document = GeneratedCodeInspection
+            .AssemblyFrom(GeneratedCodeInspection.GenerateSources(@"TestData\コード生成\repeatingTemplate.docx"))
+            .GeneratedType("RepeatingTemplateDocument")
+            .InvokeStaticMethod<Document>("Open", @"TestData\コード生成\repeatingTemplate.docx");
+        dynamic documentAccessor = document;
+        IEnumerable<dynamic> items = documentAccessor.Items;
+        var data = items.Single();
+
+        data.ItemName = "変更後";
+
+        document.ContentControls["ItemName"].Text.Should().Be("商品A");
+    }
+
+    [Fact(Skip = "型付き繰り返し項目の生成後、明細内MERGEFIELDのデータ生成への接続をレビューします。")]
+    public void 生成された明細データでMERGEFIELDの文字列を読み取れます()
+    {
+        using var document = GeneratedCodeInspection
+            .AssemblyFrom(GeneratedCodeInspection.GenerateSources(@"TestData\コード生成\repeatingKinds.docx"))
+            .GeneratedType("RepeatingKindsDocument")
+            .InvokeStaticMethod<Document>("Open", @"TestData\コード生成\repeatingKinds.docx");
+        dynamic documentAccessor = document;
+        IEnumerable<dynamic> items = documentAccessor.Items;
+
+        items.Select(it => it.Code as object).Should().Equal("A001", "B001");
+    }
+
+    [Fact(Skip = "型付き繰り返し項目の生成後、明細内チェックボックスのデータ生成への接続をレビューします。")]
+    public void 生成された明細データでチェック状態を読み取れます()
+    {
+        using var document = GeneratedCodeInspection
+            .AssemblyFrom(GeneratedCodeInspection.GenerateSources(@"TestData\コード生成\repeatingKinds.docx"))
+            .GeneratedType("RepeatingKindsDocument")
+            .InvokeStaticMethod<Document>("Open", @"TestData\コード生成\repeatingKinds.docx");
+        dynamic documentAccessor = document;
+        IEnumerable<dynamic> items = documentAccessor.Items;
+
+        items.Select(it => it.Agreement as object).Should().Equal(true, true);
+    }
+
+    [Fact(Skip = "型付き繰り返し項目の生成後、明細内日付選択のデータ生成への接続をレビューします。")]
+    public void 生成された明細データで日時を読み取れます()
+    {
+        using var document = GeneratedCodeInspection
+            .AssemblyFrom(GeneratedCodeInspection.GenerateSources(@"TestData\コード生成\repeatingKinds.docx"))
+            .GeneratedType("RepeatingKindsDocument")
+            .InvokeStaticMethod<Document>("Open", @"TestData\コード生成\repeatingKinds.docx");
+        dynamic documentAccessor = document;
+        IEnumerable<dynamic> items = documentAccessor.Items;
+
+        items.Select(it => it.DeliveryDate as object).Should().Equal(
+            new DateTimeOffset(2026, 9, 26, 0, 0, 0, TimeSpan.Zero),
+            new DateTimeOffset(2026, 9, 27, 0, 0, 0, TimeSpan.Zero));
+    }
+
     public void Dispose()
     {
         temporaryFiles.Dispose();

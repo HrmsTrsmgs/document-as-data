@@ -43,6 +43,16 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- 繰り返しセクションの固定データはCoreのテストと共有します。 -->
+    <None Include="..\DocumentAsData.Tests\TestData\繰り返しセクションのContent Control.docx" Link="TestData\コード生成\repeatingTemplate.docx" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\DocumentAsData.Tests\TestData\繰り返しセクションに2件の明細.docx" Link="TestData\コード生成\repeatingItems.docx" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\DocumentAsData.Tests\TestData\明細の内外に同じTag.docx" Link="TestData\コード生成\repeatingOutside.docx" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\DocumentAsData.Tests\TestData\明細に4種類の項目.docx" Link="TestData\コード生成\repeatingKinds.docx" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\DocumentAsData.Tests\TestData\繰り返しセクションの明細に項目が不足.docx" Link="TestData\コード生成\repeatingMissingItem.docx" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\DocumentAsData.Tests\TestData\1件の明細内に同じTag.docx" Link="TestData\コード生成\repeatingDuplicateItem.docx" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Include="..\DocumentAsData.Tests\TestData\複合形式のMERGEFIELD.docx"
           Link="TestData\コード生成\単一項目.docx"
           CopyToOutputDirectory="PreserveNewest" />
