@@ -66,9 +66,20 @@ public class RepeatingSectionItem : ContentControl
     /// <summary>
     /// w15:repeatingSectionItemを持つ明細の枠を内容ごと複製し、同じ親の直後へ挿入します。
     /// 内側の入力項目だけでなく明細の枠も残すことで、追加分を明細として取得できます。
+    /// w:idはTagとは別のContent Control識別子なので、複製分には文書内で未使用の番号を割り当てます。
     /// </summary>
-    internal void InsertCopyAfter() =>
-        Element.InsertAfterSelf(Element.CloneNode(true));
+    internal void InsertCopyAfter()
+    {
+        var copy = Element.CloneNode(true);
+        var lastId = Document.Elements.OfType<Wordprocessing.SdtId>().Max(it => it.Val?.Value) ?? 0;
+
+        foreach (var id in copy.Descendants<Wordprocessing.SdtId>())
+        {
+            id.Val = ++lastId;
+        }
+
+        Element.InsertAfterSelf(copy);
+    }
 
     /// <summary>
     /// 明細の枠を親から取り除き、内側の入力項目も文書の検索対象から外します。

@@ -145,7 +145,7 @@ public class RepeatingSectionのテスト
             .Select(it => it.ItemName).Should().Equal("商品C");
     }
 
-    [Fact(Skip = "件数変更のGreen後、取得済みセクションから変更後の明細を扱えることをレビューします。")]
+    [Fact]
     public void Replace後も同じセクションから明細を取得して再度変更できます()
     {
         using var document = Document.Open(
@@ -158,7 +158,7 @@ public class RepeatingSectionのテスト
         tested.Read<ItemData>().Select(it => it.ItemName).Should().Equal("商品C", "商品E");
     }
 
-    [Fact(Skip = "件数変更のGreen後、保存して開き直した文書でも明細を扱えることをレビューします。")]
+    [Fact]
     public void Replaceした明細の件数と値は保存後も保持されます()
     {
         using var output = new MemoryStream();
@@ -177,7 +177,7 @@ public class RepeatingSectionのテスト
             .Select(it => it.ItemName).Should().Equal("商品C", "商品D");
     }
 
-    [Fact(Skip = "件数変更のGreen後、Wordで編集できる表行構造と書式の保持をレビューします。")]
+    [Fact]
     public void Replaceで増やした明細は表行の構造と書式を保持します()
     {
         using var document = Document.Open(
@@ -205,7 +205,7 @@ public class RepeatingSectionのテスト
         new OpenXmlValidator(FileFormatVersions.Office2013).Validate(saved).Should().BeEmpty();
     }
 
-    [Fact(Skip = "件数変更のGreen後、複製されたContent ControlをWordが区別できることをレビューします。")]
+    [Fact]
     public void Replaceで増やした明細のContentControlは識別IDが重複しません()
     {
         using var document = Document.Open(
