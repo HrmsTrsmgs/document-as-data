@@ -169,6 +169,7 @@ document.SaveAs("output.docx");
 
 生成プロパティでは、文書直下と明細内の同名の文字列Content Controlを別々に読み取れます。`ContentControl.IsInRepeatingSection` で所属を判定できます。同名が内外にある場合の文書直下への書き込みは、まだ未対応です。
 生成された明細データではMERGEFIELDの文字列、チェックボックスのチェック状態、日付選択の日時（`DateTimeOffset`）も読み取れます。明細データの変更は、`Replace` するまで文書へ反映されません。
+`NameMappings` によるセクション・明細プロパティの名前変更と、変更後の名前から元のTagへの書き戻しにも対応しています。型付きの `Open` は各明細の文字列Content Control不足を検査します。他の種類の明細内不足や、文字列Content ControlとMERGEFIELDの置き換え互換性は、この明細別検査ではまだ扱っていません。
 
 ## 開発する
 

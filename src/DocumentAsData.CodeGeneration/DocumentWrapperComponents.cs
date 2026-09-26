@@ -95,6 +95,7 @@ static class DocumentWrapperComponents
                 /// <summary>
                 /// 生成元の文書にあったMERGEFIELD、文字列Content Control、CheckBox、DatePickerが存在することを検証します。
                 /// 文字列項目は同名のMERGEFIELDと文字列Content Controlを読み取り先として認めます。
+                /// 繰り返しセクション内の文字列Content Controlは、明細ごとにも存在を検証します。
                 /// 文書の生成、返却、解放は呼び出し元のOpenで行います。
                 /// </summary>
                 /// <exception cref="DocumentMappingException">
@@ -118,6 +119,9 @@ static class DocumentWrapperComponents
                 [.. from datePicker in document.DatePickers select datePicker.Tag],
                 "DatePickers.Select(it => it.Tag)",
                 "DatePicker")}}
+            {{ForEach(
+                from section in document.RepeatingSections
+                select RepeatingSectionValidation(section))}}
                 }
 
                 /// <summary>
@@ -192,6 +196,22 @@ static class DocumentWrapperComponents
             }
         """;
     }
+
+    /// <summary>
+    /// 各明細の文字列Content Controlを、生成元の最初の明細と照合する検査を生成します。
+    /// </summary>
+    /// <param name="section">必要な項目の見本を持つ生成元のセクション。</param>
+    /// <returns>各明細に既存の必須項目検査を適用するC#コード。</returns>
+    static string RepeatingSectionValidation(RepeatingSection section) =>
+        $$"""
+                foreach (var item in RepeatingSections[{{StringLiteral(section.Tag)}}].Items)
+                {
+        {{RequiredItemsValidation(
+            [.. from contentControl in section.Items[0].ContentControls select contentControl.Tag],
+            "item.ContentControls.Select(it => it.Tag)",
+            "文字列Content Control")}}
+                }
+        """;
 
     /// <summary>
     /// パス版とStream版に共通するOpenの本体を生成します。

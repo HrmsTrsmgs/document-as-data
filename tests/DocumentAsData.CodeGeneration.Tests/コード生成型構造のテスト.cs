@@ -16,7 +16,7 @@ public sealed class コード生成型構造のテスト
     const string DatePickerDocumentFilePath =
         @"TestData\コード生成\日付選択ContentControl.docx";
 
-    [Fact(Skip = "型付き繰り返し項目の生成後、Open時のセクション不足をレビューします。")]
+    [Fact]
     public void 生成されたDocument型は必要な繰り返しセクションが不足するとOpenに失敗します()
     {
         var generatedType = GeneratedCodeInspection
@@ -32,7 +32,7 @@ public sealed class コード生成型構造のテスト
             .WithInnerException<DocumentMappingException>();
     }
 
-    [Fact(Skip = "型付き繰り返し項目の生成後、全明細の必須項目をOpen時に検証する仕様をレビューします。")]
+    [Fact]
     public void 生成されたDocument型は一部の明細で必要な項目が不足するとOpenに失敗します()
     {
         // 生成元はItemNameを持つ1件の明細です。開く文書は2件で、2件目だけItemNameがありません。

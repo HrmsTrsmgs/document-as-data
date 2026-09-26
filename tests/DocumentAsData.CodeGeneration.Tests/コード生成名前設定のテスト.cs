@@ -16,7 +16,7 @@ public sealed class コード生成名前設定のテスト
     const string DatePickerDocumentFilePath =
         @"TestData\コード生成\日付選択ContentControl.docx";
 
-    [Fact(Skip = "型付き繰り返し項目の生成後、セクション名と明細内の名前変換をレビューします。")]
+    [Fact]
     public void NameMappingsは繰り返しセクションと明細データのプロパティ名へ適用されます()
     {
         using var document = GeneratedCodeInspection
@@ -35,7 +35,7 @@ public sealed class コード生成名前設定のテスト
         items.Select(it => it.ProductName as object).Should().Equal("商品A");
     }
 
-    [Fact(Skip = "生成された明細の名前変換のGreen後、元のTagへの書き込みをレビューします。")]
+    [Fact]
     public void NameMappingsで変更した明細データのプロパティから元のTagへ書き込めます()
     {
         var assembly = GeneratedCodeInspection.AssemblyFrom(
@@ -63,7 +63,7 @@ public sealed class コード生成名前設定のテスト
             .Should().Equal("商品C");
     }
 
-    [Fact(Skip = "明細の範囲を区別する生成のGreen後、同じ明細内だけの名前衝突をレビューします。")]
+    [Fact]
     public void 生成時に同じ明細内で重複した名前は診断します()
     {
         GeneratedCodeInspection.GenerateDiagnostics(@"TestData\コード生成\repeatingDuplicateItem.docx")
