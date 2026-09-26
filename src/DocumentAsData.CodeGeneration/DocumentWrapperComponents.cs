@@ -141,10 +141,43 @@ static class DocumentWrapperComponents
                 .. from checkBox in document.CheckBoxes
                    select CheckBoxPropertyDeclaration(checkBox, options),
                 .. from datePicker in document.DatePickers
-                   select DatePickerPropertyDeclaration(datePicker, options)
+                   select DatePickerPropertyDeclaration(datePicker, options),
+                .. from section in document.RepeatingSections
+                   select RepeatingSectionDeclaration(section, options)
             ])}}
             }
             """;
+    }
+
+    /// <summary>
+    /// 繰り返しセクションの明細データ型と、既存の明細読み取りAPIへ委譲するプロパティを生成します。
+    /// 最初の明細を、生成する文字列プロパティの見本として使用します。
+    /// </summary>
+    /// <param name="section">生成元の繰り返しセクション。</param>
+    /// <param name="options">コード生成時に適用する設定。</param>
+    /// <returns>明細データ型と列挙プロパティのC#コード。</returns>
+    static string RepeatingSectionDeclaration(RepeatingSection section, CodeGenerationOptions options)
+    {
+        var dataTypeName = options.DataTypeName(section.Tag);
+
+        return $$"""
+
+            /// <summary>
+            /// 繰り返しセクション「{{section.Tag.EscapeAmpersands().EscapeLineBreaks()}}」の明細を読み取ります。
+            /// </summary>
+            public System.Collections.Generic.IEnumerable<{{dataTypeName}}> {{options.GeneratedName(section.Tag)}} =>
+                RepeatingSections[{{StringLiteral(section.Tag)}}].Read<{{dataTypeName}}>();
+
+            /// <summary>
+            /// 繰り返しセクション「{{section.Tag.EscapeAmpersands().EscapeLineBreaks()}}」の明細1件分のデータです。
+            /// </summary>
+            public class {{dataTypeName}}
+            {
+            {{ForEach(
+                from contentControl in section.Items[0].ContentControls
+                select DataTextPropertyDeclaration(contentControl.Tag, options))}}
+            }
+        """;
     }
 
     /// <summary>

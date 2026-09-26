@@ -303,7 +303,7 @@ public class ContentControlCollectionのテスト
         }
     }
 
-    [Fact(Skip = "明細内の検索APIと比較して、既存の文書全体検索を維持することをレビューします。")]
+    [Fact]
     public void ContentControlsは繰り返し内に1件だけあるTagを文書全体から取得できます()
     {
         using var document = Document.Open(RepeatingSectionContentControlPath);
@@ -311,7 +311,7 @@ public class ContentControlCollectionのテスト
         document.ContentControls["ItemName"].Text.Should().Be("商品A");
     }
 
-    [Fact(Skip = "明細内の検索APIと比較して、既存の文書全体検索の重複判定をレビューします。")]
+    [Fact]
     public void ContentControlsは繰り返し内の複数の明細に同じTagがあると失敗します()
     {
         using var document = Document.Open(

@@ -24,7 +24,7 @@ public sealed class コード生成名前付き項目のテスト : IDisposable
 
     readonly TemporaryDocumentFiles temporaryFiles = new();
 
-    [Fact(Skip = "明細の読み取りAPIのGreen後、1件のテンプレートから型付きコレクションを生成する仕様をレビューします。")]
+    [Fact]
     public void 生成された繰り返し項目は明細が1件でもコレクションとして読み取れます()
     {
         using var document = GeneratedCodeInspection

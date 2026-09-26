@@ -229,7 +229,7 @@ public class RepeatingSectionのテスト
             .Should().OnlyHaveUniqueItems();
     }
 
-    [Fact(Skip = "明細のReadのGreen後、XMLマッピング済みセクションの拒否をレビューします。")]
+    [Fact]
     public void ReadはXMLマッピングされたセクションを拒否します()
     {
         using var document = Document.Open(
@@ -240,7 +240,7 @@ public class RepeatingSectionのテスト
         action.Should().Throw<NotSupportedException>();
     }
 
-    [Fact(Skip = "明細のReplaceのGreen後、XMLマッピング済みセクションの拒否をレビューします。")]
+    [Fact]
     public void ReplaceはXMLマッピングされたセクションを拒否します()
     {
         using var document = Document.Open(
