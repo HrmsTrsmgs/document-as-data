@@ -185,7 +185,9 @@ static class DocumentWrapperComponents
                 .. from mergeField in section.Items[0].MergeFields
                    select DataTextPropertyDeclaration(mergeField.Name, options),
                 .. from checkBox in section.Items[0].CheckBoxes
-                   select DataCheckBoxPropertyDeclaration(checkBox, options)
+                   select DataCheckBoxPropertyDeclaration(checkBox, options),
+                .. from datePicker in section.Items[0].DatePickers
+                   select DataDatePickerPropertyDeclaration(datePicker, options)
             ])}}
             }
         """;

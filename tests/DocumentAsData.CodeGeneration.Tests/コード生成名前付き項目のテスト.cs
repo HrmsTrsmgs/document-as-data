@@ -148,7 +148,7 @@ public sealed class コード生成名前付き項目のテスト : IDisposable
         items.Select(it => it.Agreement as object).Should().Equal(true, true);
     }
 
-    [Fact(Skip = "型付き繰り返し項目の生成後、明細内日付選択のデータ生成への接続をレビューします。")]
+    [Fact]
     public void 生成された明細データで日時を読み取れます()
     {
         using var document = GeneratedCodeInspection
