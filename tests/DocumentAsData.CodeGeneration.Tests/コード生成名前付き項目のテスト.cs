@@ -106,7 +106,7 @@ public sealed class コード生成名前付き項目のテスト : IDisposable
         items.Select(it => it.ItemName as object).Should().Equal("商品A", "商品B");
     }
 
-    [Fact(Skip = "型付き繰り返し項目の生成後、明細データが文書と直接連動しないことをレビューします。")]
+    [Fact]
     public void 生成された明細データの変更はReplaceするまで文書へ反映されません()
     {
         using var document = GeneratedCodeInspection
@@ -122,7 +122,7 @@ public sealed class コード生成名前付き項目のテスト : IDisposable
         document.ContentControls["ItemName"].Text.Should().Be("商品A");
     }
 
-    [Fact(Skip = "型付き繰り返し項目の生成後、明細内MERGEFIELDのデータ生成への接続をレビューします。")]
+    [Fact]
     public void 生成された明細データでMERGEFIELDの文字列を読み取れます()
     {
         using var document = GeneratedCodeInspection

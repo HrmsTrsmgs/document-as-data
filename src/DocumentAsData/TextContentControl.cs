@@ -27,12 +27,6 @@ public class TextContentControl : ContentControl, IDocumentTextItem
         $"TextContentControl {{ Tag = {QuoteName(Tag)} }}";
 
     /// <summary>
-    /// 繰り返しセクション内の項目であるかを取得します。
-    /// </summary>
-    public bool IsInRepeatingSection =>
-        Element.Ancestors<Wordprocessing.SdtElement>().Any(it => it.IsRepeatingSection);
-
-    /// <summary>
     /// Content Controlの文字列を取得または設定します。
     /// </summary>
     /// <remarks>

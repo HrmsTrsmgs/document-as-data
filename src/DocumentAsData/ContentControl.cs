@@ -8,6 +8,12 @@ namespace Marimo.DocumentAsData;
 public abstract class ContentControl : DocumentItem
 {
     /// <summary>
+    /// 繰り返しセクション内の項目であるかを取得します。
+    /// </summary>
+    public bool IsInRepeatingSection =>
+        Element.Ancestors<Wordprocessing.SdtElement>().Any(it => it.IsRepeatingSection);
+
+    /// <summary>
     /// 各種Content Controlが値を読み書きするOOXML要素を取得します。
     /// 公開APIにOpen XML SDKの型を露出させないよう、同じアセンブリの派生型だけが利用できます。
     /// </summary>

@@ -27,6 +27,7 @@ public class MergeField : DocumentItem, IDocumentTextItem
     {
         content = new SimpleFieldContent(field);
         Name = name;
+        IsInRepeatingSection = field.Ancestors<Wordprocessing.SdtElement>().Any(it => it.IsRepeatingSection);
     }
 
     /// <summary>
@@ -53,7 +54,13 @@ public class MergeField : DocumentItem, IDocumentTextItem
             fieldEnd,
             valueElements);
         Name = name;
+        IsInRepeatingSection = fieldStart.Ancestors<Wordprocessing.SdtElement>().Any(it => it.IsRepeatingSection);
     }
+
+    /// <summary>
+    /// 明細内のフィールドを文書直下にも重複生成しないため、所属範囲を保持します。
+    /// </summary>
+    internal bool IsInRepeatingSection { get; }
 
     /// <summary>
     /// MERGEFIELDの名前を取得します。

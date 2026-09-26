@@ -135,6 +135,7 @@ static class DocumentWrapperComponents
                     base.Replace(data);
             {{ForEach([
                 .. from mergeField in document.MergeFields
+                   where !mergeField.IsInRepeatingSection
                    select MergeFieldPropertyDeclaration(mergeField, options),
                 .. from contentControl in document.ContentControls
                    where !contentControl.IsInRepeatingSection
@@ -142,8 +143,10 @@ static class DocumentWrapperComponents
                        contentControl,
                        options),
                 .. from checkBox in document.CheckBoxes
+                   where !checkBox.IsInRepeatingSection
                    select CheckBoxPropertyDeclaration(checkBox, options),
                 .. from datePicker in document.DatePickers
+                   where !datePicker.IsInRepeatingSection
                    select DatePickerPropertyDeclaration(datePicker, options),
                 .. from section in document.RepeatingSections
                    select RepeatingSectionDeclaration(section, options)
@@ -176,9 +179,12 @@ static class DocumentWrapperComponents
             /// </summary>
             public class {{dataTypeName}}
             {
-            {{ForEach(
-                from contentControl in section.Items[0].ContentControls
-                select DataTextPropertyDeclaration(contentControl.Tag, options))}}
+            {{ForEach([
+                .. from contentControl in section.Items[0].ContentControls
+                   select DataTextPropertyDeclaration(contentControl.Tag, options),
+                .. from mergeField in section.Items[0].MergeFields
+                   select DataTextPropertyDeclaration(mergeField.Name, options)
+            ])}}
             }
         """;
     }
@@ -257,13 +263,16 @@ static class DocumentWrapperComponents
             {
             {{ForEach([
                 .. from mergeField in document.MergeFields
+                   where !mergeField.IsInRepeatingSection
                    select DataTextPropertyDeclaration(mergeField.Name, options),
                 .. from contentControl in document.ContentControls
                    where !contentControl.IsInRepeatingSection
                    select DataTextPropertyDeclaration(contentControl.Tag, options),
                 .. from checkBox in document.CheckBoxes
+                   where !checkBox.IsInRepeatingSection
                    select DataCheckBoxPropertyDeclaration(checkBox, options),
                 .. from datePicker in document.DatePickers
+                   where !datePicker.IsInRepeatingSection
                    select DataDatePickerPropertyDeclaration(datePicker, options)
             ])}}
             }
