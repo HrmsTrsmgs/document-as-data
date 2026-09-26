@@ -78,7 +78,7 @@ public class RepeatingSectionItemのテスト
             .Should().Equal(false, true);
     }
 
-    [Fact(Skip = "明細内の値アクセスのGreen後、親セクションのXMLマッピングを無視しないことをレビューします。")]
+    [Fact]
     public void 明細内の文字列読み取りはXMLマッピングされた親セクションを拒否します()
     {
         // dataBindingは内側のItemNameではなく、外側のItemsのw:sdtPrにあります。

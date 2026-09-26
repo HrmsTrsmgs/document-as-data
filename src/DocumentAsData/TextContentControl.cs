@@ -40,7 +40,7 @@ public class TextContentControl : ContentControl, IDocumentTextItem
     /// 値の設定時に文字列要素が存在しない場合。
     /// </exception>
     /// <exception cref="NotSupportedException">
-    /// このContent ControlがWordのXMLマッピングを使用している場合。
+    /// このContent Controlまたは親の繰り返しセクションがWordのXMLマッピングを使用している場合。
     /// </exception>
     public string Text
     {

@@ -430,6 +430,7 @@ WordのXMLマッピングでデータに連結されたContent Controlは未対�
 DocumentAsDataは連結先のデータを読み書きしません。
 対象は列挙とTag検索ができますが、`Text`、`IsChecked`、`SelectedDateTime`の読み書きは`NotSupportedException`になります。
 読み書きする項目にはWordのデータ連結を設定しないでください。
+親の繰り返しセクションがデータ連結されている場合も、その内側のContent Controlでは同じ制約が適用されます。
 
 コンボボックス、ドロップダウン、画像、繰り返しセクションなどを文字列Content Controlとしては扱いません。
 繰り返し行の追加・削除APIもありません。

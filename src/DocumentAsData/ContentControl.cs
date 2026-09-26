@@ -37,11 +37,18 @@ public abstract class ContentControl : DocumentItem
 
     /// <summary>
     /// Custom XMLに連結された項目では、表示値だけを読み書きしても連結先と同期できないため拒否します。
+    /// 親の繰り返しセクションが連結されている場合も、Wordが明細を作り直すため対象に含めます。
     /// </summary>
     /// <exception cref="NotSupportedException">Custom XMLへのデータ連結がある場合。</exception>
     private protected void EnsureNotDataBound()
     {
-        if (Element.PropertyElements<Wordprocessing.DataBinding>().Any())
+        if (
+            (
+                from element in Element.Ancestors<Wordprocessing.SdtElement>().Prepend(Element)
+                where element == Element || element.IsRepeatingSection
+                from binding in element.PropertyElements<Wordprocessing.DataBinding>()
+                select binding
+            ).Any())
         {
             throw new NotSupportedException();
         }

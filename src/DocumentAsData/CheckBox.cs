@@ -34,7 +34,7 @@ public class CheckBox : ContentControl
     /// 設定時は、文書に定義されたチェック状態の表示文字も更新します。
     /// </remarks>
     /// <exception cref="NotSupportedException">
-    /// このContent ControlがWordのXMLマッピングを使用している場合。
+    /// このContent Controlまたは親の繰り返しセクションがWordのXMLマッピングを使用している場合。
     /// </exception>
     public bool IsChecked
     {

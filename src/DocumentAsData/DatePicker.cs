@@ -42,7 +42,7 @@ public partial class DatePicker : ContentControl
     /// 表示設定の値または表示文字列が欠落しているか、必要な要素が複数存在する場合。
     /// </exception>
     /// <exception cref="NotSupportedException">
-    /// このContent ControlがWordのXMLマッピングを使用している場合。
+    /// このContent Controlまたは親の繰り返しセクションがWordのXMLマッピングを使用している場合。
     /// </exception>
     public DateTimeOffset SelectedDateTime
     {
