@@ -37,7 +37,7 @@ public sealed class コード生成名前付き項目のテスト : IDisposable
         items.Select(it => it.ItemName as object).Should().Equal("商品A");
     }
 
-    [Fact(Skip = "型付き繰り返し項目の生成後、実行時の明細数がテンプレートと異なる場合をレビューします。")]
+    [Fact]
     public void 明細1件から生成した繰り返し項目で複数の明細を読み取れます()
     {
         using var document = GeneratedCodeInspection
@@ -50,7 +50,7 @@ public sealed class コード生成名前付き項目のテスト : IDisposable
         items.Select(it => it.ItemName as object).Should().Equal("商品A", "商品B");
     }
 
-    [Fact(Skip = "型付き繰り返し項目の生成後、複数の明細を持つ文書を生成元にする仕様をレビューします。")]
+    [Fact]
     public void 複数の明細から生成しても同じ項目名を文書全体の重複として扱いません()
     {
         using var document = GeneratedCodeInspection

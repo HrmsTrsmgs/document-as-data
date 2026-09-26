@@ -138,6 +138,7 @@ static class DocumentWrapperComponents
                 .. from mergeField in document.MergeFields
                    select MergeFieldPropertyDeclaration(mergeField, options),
                 .. from contentControl in document.ContentControls
+                   where !contentControl.IsInRepeatingSection
                    select TextContentControlPropertyDeclaration(
                        contentControl,
                        options),
@@ -259,6 +260,7 @@ static class DocumentWrapperComponents
                 .. from mergeField in document.MergeFields
                    select DataTextPropertyDeclaration(mergeField.Name, options),
                 .. from contentControl in document.ContentControls
+                   where !contentControl.IsInRepeatingSection
                    select DataTextPropertyDeclaration(contentControl.Tag, options),
                 .. from checkBox in document.CheckBoxes
                    select DataCheckBoxPropertyDeclaration(checkBox, options),

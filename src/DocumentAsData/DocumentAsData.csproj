@@ -17,6 +17,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="DocumentAsData.CodeGeneration" />
+    <InternalsVisibleTo Include="DocumentAsData.CodeGeneration.Tests" />
     <Compile Include="..\DocumentAsData.CodeGeneration\CSharpIdentifier.cs" Link="CSharpIdentifier.cs" />
   </ItemGroup>
 

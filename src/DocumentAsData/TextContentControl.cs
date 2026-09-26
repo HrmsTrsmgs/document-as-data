@@ -27,6 +27,12 @@ public class TextContentControl : ContentControl, IDocumentTextItem
         $"TextContentControl {{ Tag = {QuoteName(Tag)} }}";
 
     /// <summary>
+    /// コード生成で、明細内の項目を文書直下のプロパティとしても生成しないための所属判定です。
+    /// </summary>
+    internal bool IsInRepeatingSection =>
+        Element.Ancestors<Wordprocessing.SdtElement>().Any(it => it.IsRepeatingSection);
+
+    /// <summary>
     /// Content Controlの文字列を取得または設定します。
     /// </summary>
     /// <remarks>
