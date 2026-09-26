@@ -56,6 +56,7 @@ public class Document : IDisposable
         ContentControls = new(this);
         CheckBoxes = new(this);
         DatePickers = new(this);
+        RepeatingSections = new(this);
         objectMapper = new(this);
     }
 
@@ -191,6 +192,11 @@ public class Document : IDisposable
     /// 文書内の日付選択Content Controlを取得するコレクションを取得します。
     /// </summary>
     public DatePickerCollection DatePickers { get; }
+
+    /// <summary>
+    /// 文書内の繰り返しセクションを取得します。
+    /// </summary>
+    public RepeatingSectionCollection RepeatingSections { get; }
 
     /// <summary>
     /// 開いた元のファイルへ変更を保存します。Streamから開いた文書には使用できません。
