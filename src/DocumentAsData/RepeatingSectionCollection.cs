@@ -11,7 +11,7 @@ public class RepeatingSectionCollection : ContentControlCollection<RepeatingSect
     /// <param name="document">繰り返しセクションを取得する文書。</param>
     internal RepeatingSectionCollection(Document document)
         : base(
-            document,
+            document.Elements,
             element => element.IsRepeatingSection,
             element => new RepeatingSection(document, element))
     {

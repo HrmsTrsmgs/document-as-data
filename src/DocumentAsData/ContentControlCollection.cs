@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using DocumentFormat.OpenXml;
 using Wordprocessing = DocumentFormat.OpenXml.Wordprocessing;
 
 namespace Marimo.DocumentAsData;
@@ -11,9 +12,9 @@ public abstract class ContentControlCollection<T> : IEnumerable<T>
     where T : ContentControl
 {
     /// <summary>
-    /// Content Controlを列挙する文書です。
+    /// 文書全体または明細内など、Content Controlを検索する範囲の要素列です。
     /// </summary>
-    readonly Document document;
+    readonly IEnumerable<OpenXmlElement> elements;
 
     /// <summary>
     /// OOXML要素がこのコレクションで扱う種類かを判定します。
@@ -31,17 +32,17 @@ public abstract class ContentControlCollection<T> : IEnumerable<T>
     readonly OpenXmlElementCache<T> cache = new();
 
     /// <summary>
-    /// 指定した文書から、対象種類のContent Controlを取得するコレクションを作成します。
+    /// 指定した範囲から、対象種類のContent Controlを取得するコレクションを作成します。
     /// </summary>
-    /// <param name="document">Content Controlを取得する文書。</param>
+    /// <param name="elements">Content Controlを検索する範囲の要素列。</param>
     /// <param name="isTarget">対象種類のOOXML要素かを判定する処理。</param>
     /// <param name="create">OOXML要素からContent Controlを生成する処理。</param>
     private protected ContentControlCollection(
-        Document document,
+        IEnumerable<OpenXmlElement> elements,
         Func<Wordprocessing.SdtElement, bool> isTarget,
         Func<Wordprocessing.SdtElement, T> create)
     {
-        this.document = document;
+        this.elements = elements;
         this.isTarget = isTarget;
         this.create = create;
     }
@@ -66,7 +67,7 @@ public abstract class ContentControlCollection<T> : IEnumerable<T>
     /// <returns>Content Controlを列挙する列挙子。</returns>
     public IEnumerator<T> GetEnumerator() =>
         (
-            from element in document.Elements.OfType<Wordprocessing.SdtElement>()
+            from element in elements.OfType<Wordprocessing.SdtElement>()
             where element.HasTag && isTarget(element)
             select cache.GetOrAdd(element, () => create(element))
         ).GetEnumerator();
@@ -87,8 +88,18 @@ public class ContentControlCollection
     /// </summary>
     /// <param name="document">文字列Content Controlを取得する文書。</param>
     internal ContentControlCollection(Document document)
+        : this(document, document.Elements)
+    {
+    }
+
+    /// <summary>
+    /// 指定した範囲を文字列Content Controlの列挙対象にします。
+    /// </summary>
+    /// <param name="document">文字列Content Controlが属する文書。</param>
+    /// <param name="elements">文字列Content Controlを検索する範囲の要素列。</param>
+    internal ContentControlCollection(Document document, IEnumerable<OpenXmlElement> elements)
         : base(
-            document,
+            elements,
             element => element.IsText,
             element => new TextContentControl(document, element))
     {

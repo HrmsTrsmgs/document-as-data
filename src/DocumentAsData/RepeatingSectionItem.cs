@@ -15,13 +15,13 @@ public class RepeatingSectionItem : ContentControl
     internal RepeatingSectionItem(Document document, Wordprocessing.SdtElement element)
         : base(document, element)
     {
+        ContentControls = new(document, element.Descendants());
     }
 
     /// <summary>
     /// この明細内の文字列Content Controlを取得します。
     /// </summary>
-    public ContentControlCollection ContentControls =>
-        throw new NotImplementedException();
+    public ContentControlCollection ContentControls { get; }
 
     /// <summary>
     /// この明細内のMERGEFIELDを取得します。

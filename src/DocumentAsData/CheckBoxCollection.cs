@@ -11,7 +11,7 @@ public class CheckBoxCollection : ContentControlCollection<CheckBox>
     /// <param name="document">チェックボックスを取得する文書。</param>
     internal CheckBoxCollection(Document document)
         : base(
-            document,
+            document.Elements,
             element => element.IsCheckBox,
             element => new CheckBox(document, element))
     {

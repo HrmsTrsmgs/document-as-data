@@ -11,7 +11,7 @@ public class DatePickerCollection : ContentControlCollection<DatePicker>
     /// <param name="document">日付選択Content Controlを取得する文書。</param>
     internal DatePickerCollection(Document document)
         : base(
-            document,
+            document.Elements,
             element => element.IsDatePicker,
             element => new DatePicker(document, element))
     {

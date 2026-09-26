@@ -4,7 +4,7 @@ namespace Marimo.DocumentAsData.Test;
 
 public class RepeatingSectionItemのテスト
 {
-    [Fact(Skip = "明細列挙のGreen後、明細単位のTag検索をレビューします。")]
+    [Fact]
     public void ContentControlsは別の明細にある同じTagを区別して読み取れます()
     {
         // Items配下の2つのw15:repeatingSectionItemは、どちらもItemNameを持ちます。
