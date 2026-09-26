@@ -65,7 +65,7 @@ public class RepeatingSectionItemのテスト
             .Should().Equal("変更後", "B001");
     }
 
-    [Fact(Skip = "明細内の文字列Content ControlのGreen後、チェックボックスへの接続をレビューします。")]
+    [Fact]
     public void CheckBoxesは明細ごとに同じTagを読み書きできます()
     {
         using var document = Document.Open(

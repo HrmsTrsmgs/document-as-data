@@ -1,6 +1,6 @@
 # 繰り返しセクションの対応計画
 
-この文書は繰り返しセクション対応のレビュー用です。現在はセクションの列挙・Tag検索、明細の取得、明細ごとの文字列Content ControlとMERGEFIELDの読み書きまで確認しています。
+この文書は繰り返しセクション対応のレビュー用です。現在はセクションの列挙・Tag検索、明細の取得、明細ごとの文字列Content Control・MERGEFIELD・チェックボックスの読み書きまで確認しています。
 明細内の他の種類の項目の取得、`Read`・`Replace`、コード生成APIは案であり、現時点では利用できません。
 実装予定はSkip付きテストで管理し、一件ずつSkipを外してRedを確認してからGreenへ進めます。
 
@@ -37,9 +37,9 @@ section.Replace(data);
 
 ## 予定テストの内訳
 
-合計50件のうち、セクションの列挙・Tag検索7件、明細取得1件、明細内の文字列Content Control4件、MERGEFIELD1件が成功しています。
-最初の列挙・明細取得・明細ごとの文字列読み取り・MERGEFIELDの読み書きはRedからGreenにし、残り9件は既存実装で成功しました。
-残り37件はSkip中です。36件は期待結果を記述した未レビューの仕様案、1件は契約が未決定の検討メモです。
+合計50件のうち、セクションの列挙・Tag検索7件、明細取得1件、明細内の文字列Content Control4件、MERGEFIELD1件、チェックボックス1件が成功しています。
+最初の列挙・明細取得・明細ごとの文字列読み取り・MERGEFIELDとチェックボックスの読み書きはRedからGreenにし、残り9件は既存実装で成功しました。
+残り36件はSkip中です。35件は期待結果を記述した未レビューの仕様案、1件は契約が未決定の検討メモです。
 Skipを外す際には、そのテストが要求するAPIと振る舞いを改めてレビューします。
 
 | 対象 | 件数 | 主な観点 |
@@ -93,5 +93,5 @@ Skipを外す際には、そのテストが要求するAPIと振る舞いを改�
 * [README](../README.md)とこの計画書：未実装であること、レビュー対象、未決定事項を説明。
 * `tests/DocumentAsData.Tests/TestData/` 配下の上記DOCX10ファイル。
 
-`Read`・`Replace` と明細内の `CheckBoxes`・`DatePickers` は `NotImplementedException` のままです。
+`Read`・`Replace` と明細内の `DatePickers` は `NotImplementedException` のままです。
 コード生成本体への先行実装は行っていません。

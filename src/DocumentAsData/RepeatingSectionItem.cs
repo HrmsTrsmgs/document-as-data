@@ -17,6 +17,7 @@ public class RepeatingSectionItem : ContentControl
     {
         ContentControls = new(document, element.Descendants());
         MergeFields = new(document, element.Descendants());
+        CheckBoxes = new(document, element.Descendants());
     }
 
     /// <summary>
@@ -32,8 +33,7 @@ public class RepeatingSectionItem : ContentControl
     /// <summary>
     /// この明細内のチェックボックスを取得します。
     /// </summary>
-    public CheckBoxCollection CheckBoxes =>
-        throw new NotImplementedException();
+    public CheckBoxCollection CheckBoxes { get; }
 
     /// <summary>
     /// この明細内の日付選択Content Controlを取得します。
