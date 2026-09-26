@@ -91,7 +91,7 @@ public class RepeatingSectionItemのテスト
         action.Should().Throw<NotSupportedException>();
     }
 
-    [Fact(Skip = "明細内の値アクセスのGreen後、親セクションのXMLマッピングを無視しないことをレビューします。")]
+    [Fact]
     public void 明細内の文字列書き込みはXMLマッピングされた親セクションを拒否します()
     {
         using var document = Document.Open(
@@ -102,7 +102,7 @@ public class RepeatingSectionItemのテスト
         action.Should().Throw<NotSupportedException>();
     }
 
-    [Fact(Skip = "明細内の文字列Content ControlのGreen後、日付選択への接続をレビューします。")]
+    [Fact]
     public void DatePickersは明細ごとに同じTagを読み書きできます()
     {
         using var document = Document.Open(
