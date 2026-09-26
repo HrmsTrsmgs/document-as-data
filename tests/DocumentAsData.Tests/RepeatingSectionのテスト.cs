@@ -64,7 +64,7 @@ public class RepeatingSectionのテスト
             .Should().Equal("文書全体の商品名", "商品C", "商品D");
     }
 
-    [Fact(Skip = "同件数のReplaceのGreen後、文書項目名を指定する既存属性との接続をレビューします。")]
+    [Fact]
     public void Replaceは属性で指定した明細内のTagへ書き込みます()
     {
         using var document = Document.Open(
@@ -76,7 +76,7 @@ public class RepeatingSectionのテスト
         document.ContentControls.Select(it => it.Text).Should().Equal("商品C", "商品D");
     }
 
-    [Fact(Skip = "明細内MERGEFIELDのGreen後、自作クラスからの書き込みへの接続をレビューします。")]
+    [Fact]
     public void Replaceは明細内のMERGEFIELDへ対応するプロパティを書き込みます()
     {
         using var document = Document.Open(
@@ -89,7 +89,7 @@ public class RepeatingSectionのテスト
             .Should().Equal("C001", "D001");
     }
 
-    [Fact(Skip = "明細内チェックボックスのGreen後、自作クラスからの書き込みへの接続をレビューします。")]
+    [Fact]
     public void Replaceは明細内のチェックボックスへboolプロパティを書き込みます()
     {
         using var document = Document.Open(
@@ -102,7 +102,7 @@ public class RepeatingSectionのテスト
             .Should().Equal(false, true);
     }
 
-    [Fact(Skip = "明細内日付選択のGreen後、自作クラスからの書き込みへの接続をレビューします。")]
+    [Fact]
     public void Replaceは明細内の日付選択へ日時プロパティを書き込みます()
     {
         using var document = Document.Open(
@@ -120,7 +120,7 @@ public class RepeatingSectionのテスト
                 new DateTimeOffset(2026, 10, 2, 0, 0, 0, TimeSpan.Zero));
     }
 
-    [Fact(Skip = "同件数のReplaceのGreen後、既存の明細をもとに件数を増やす仕様をレビューします。")]
+    [Fact]
     public void Replaceは入力データに合わせて明細を増やします()
     {
         using var document = Document.Open(

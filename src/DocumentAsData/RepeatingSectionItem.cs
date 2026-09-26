@@ -62,4 +62,11 @@ public class RepeatingSectionItem : ContentControl
     /// <param name="data">明細へ書き込むデータ。</param>
     internal void Replace<T>(T data) =>
         objectMapper.Replace(data);
+
+    /// <summary>
+    /// w15:repeatingSectionItemを持つ明細の枠を内容ごと複製し、同じ親の直後へ挿入します。
+    /// 内側の入力項目だけでなく明細の枠も残すことで、追加分を明細として取得できます。
+    /// </summary>
+    internal void InsertCopyAfter() =>
+        Element.InsertAfterSelf(Element.CloneNode(true));
 }
