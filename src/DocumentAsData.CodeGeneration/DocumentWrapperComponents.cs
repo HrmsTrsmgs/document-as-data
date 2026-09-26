@@ -20,7 +20,6 @@ static class DocumentWrapperComponents
         Document document) =>
         $$"""
         using System;
-        using System.Collections.Generic;
         using System.IO;
         using System.Linq;
         using Marimo.DocumentAsData;
@@ -154,7 +153,7 @@ static class DocumentWrapperComponents
     }
 
     /// <summary>
-    /// 繰り返しセクションの明細データ型と、既存の明細読み取りAPIへ委譲するプロパティを生成します。
+    /// 繰り返しセクションの明細データ型と、型付きで列挙・置換するプロパティを生成します。
     /// 最初の明細を、生成する文字列プロパティの見本として使用します。
     /// </summary>
     /// <param name="section">生成元の繰り返しセクション。</param>
@@ -167,10 +166,10 @@ static class DocumentWrapperComponents
         return $$"""
 
             /// <summary>
-            /// 繰り返しセクション「{{section.Tag.EscapeAmpersands().EscapeLineBreaks()}}」の明細を読み取ります。
+            /// 繰り返しセクション「{{section.Tag.EscapeAmpersands().EscapeLineBreaks()}}」を型付きで取得します。
             /// </summary>
-            public IEnumerable<{{dataTypeName}}> {{options.GeneratedName(section.Tag)}} =>
-                RepeatingSections[{{StringLiteral(section.Tag)}}].Read<{{dataTypeName}}>();
+            public RepeatingSection<{{dataTypeName}}> {{options.GeneratedName(section.Tag)}} =>
+                new(RepeatingSections[{{StringLiteral(section.Tag)}}]);
 
             /// <summary>
             /// 繰り返しセクション「{{section.Tag.EscapeAmpersands().EscapeLineBreaks()}}」の明細1件分のデータです。

@@ -63,7 +63,7 @@ public sealed class コード生成名前付き項目のテスト : IDisposable
         items.Select(it => it.ItemName as object).Should().Equal("商品A", "商品B");
     }
 
-    [Fact(Skip = "明細の件数変更と型付き生成のGreen後、生成された明細データによるReplaceをレビューします。")]
+    [Fact]
     public void 生成された繰り返し項目へ明細データを書き込んで件数を変更できます()
     {
         var assembly = GeneratedCodeInspection.AssemblyFrom(

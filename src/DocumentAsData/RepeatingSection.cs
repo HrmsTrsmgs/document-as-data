@@ -21,6 +21,15 @@ public class RepeatingSection : ContentControl
     }
 
     /// <summary>
+    /// 型付きセクションでも同じ文書とOOXML要素を扱うため、元の参照を引き継ぎます。
+    /// </summary>
+    /// <param name="source">参照を共有するセクション。</param>
+    private protected RepeatingSection(RepeatingSection source)
+        : this(source.Document, source.Element)
+    {
+    }
+
+    /// <summary>
     /// セクション内の明細を文書に現れる順で取得します。
     /// </summary>
     public IReadOnlyList<RepeatingSectionItem> Items =>
