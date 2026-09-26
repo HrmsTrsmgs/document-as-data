@@ -157,7 +157,7 @@ static class DocumentWrapperComponents
 
     /// <summary>
     /// 繰り返しセクションの明細データ型と、型付きで列挙・置換するプロパティを生成します。
-    /// 最初の明細を、生成する文字列プロパティの見本として使用します。
+    /// 最初の明細を、生成するプロパティの見本として使用します。
     /// </summary>
     /// <param name="section">生成元の繰り返しセクション。</param>
     /// <param name="options">コード生成時に適用する設定。</param>
@@ -183,7 +183,9 @@ static class DocumentWrapperComponents
                 .. from contentControl in section.Items[0].ContentControls
                    select DataTextPropertyDeclaration(contentControl.Tag, options),
                 .. from mergeField in section.Items[0].MergeFields
-                   select DataTextPropertyDeclaration(mergeField.Name, options)
+                   select DataTextPropertyDeclaration(mergeField.Name, options),
+                .. from checkBox in section.Items[0].CheckBoxes
+                   select DataCheckBoxPropertyDeclaration(checkBox, options)
             ])}}
             }
         """;

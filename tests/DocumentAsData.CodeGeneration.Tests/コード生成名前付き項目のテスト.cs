@@ -135,7 +135,7 @@ public sealed class コード生成名前付き項目のテスト : IDisposable
         items.Select(it => it.Code as object).Should().Equal("A001", "B001");
     }
 
-    [Fact(Skip = "型付き繰り返し項目の生成後、明細内チェックボックスのデータ生成への接続をレビューします。")]
+    [Fact]
     public void 生成された明細データでチェック状態を読み取れます()
     {
         using var document = GeneratedCodeInspection
