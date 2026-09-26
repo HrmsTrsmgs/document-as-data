@@ -21,8 +21,18 @@ public partial class MergeFieldCollection : IEnumerable<MergeField>
     /// </summary>
     /// <param name="document">MERGEFIELDを取得する文書。</param>
     internal MergeFieldCollection(Document document)
+        : this(document, document.Elements)
     {
-        reader = new(document);
+    }
+
+    /// <summary>
+    /// 指定した範囲の解析処理と生成済みMERGEFIELDのキャッシュを保持します。
+    /// </summary>
+    /// <param name="document">MERGEFIELDが属する文書。</param>
+    /// <param name="elements">MERGEFIELDを検索する範囲の要素列。</param>
+    internal MergeFieldCollection(Document document, IEnumerable<OpenXmlElement> elements)
+    {
+        reader = new(document, elements);
     }
 
     /// <summary>
@@ -53,13 +63,19 @@ public partial class MergeFieldCollection : IEnumerable<MergeField>
     /// <summary>
     /// MERGEFIELDの列挙にだけ必要なOOXML依存の解析処理を集約します。
     /// </summary>
-    /// <param name="document">読み取り対象の文書。</param>
-    sealed partial class MergeFieldReader(Document document)
+    /// <param name="document">MERGEFIELDが属する文書。</param>
+    /// <param name="elements">文書順に解析する対象範囲の要素列。</param>
+    sealed partial class MergeFieldReader(Document document, IEnumerable<OpenXmlElement> elements)
     {
         /// <summary>
-        /// OOXML要素の取得元と、生成するMERGEFIELDの所属先です。
+        /// 生成するMERGEFIELDの所属先です。
         /// </summary>
         readonly Document document = document;
+
+        /// <summary>
+        /// 文書全体または明細内など、MERGEFIELDを解析する範囲の要素列です。
+        /// </summary>
+        readonly IEnumerable<OpenXmlElement> elements = elements;
 
         /// <summary>
         /// 同じOOXML要素からは、列挙方法にかかわらず同じMERGEFIELDを返すために保持します。
@@ -76,7 +92,7 @@ public partial class MergeFieldCollection : IEnumerable<MergeField>
             var complexFieldReader = new ComplexFieldReader();
 
             return
-                from element in document.Elements
+                from element in elements
                 from mergeField in GetMergeFields(element, complexFieldReader)
                 select mergeField;
         }

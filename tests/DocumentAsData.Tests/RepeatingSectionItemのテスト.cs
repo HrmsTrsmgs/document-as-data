@@ -17,7 +17,7 @@ public class RepeatingSectionItemのテスト
             .Should().Equal("商品A", "商品B");
     }
 
-    [Fact(Skip = "明細内の読み取りのGreen後、書き込み範囲をレビューします。")]
+    [Fact]
     public void ContentControlsへの書き込みは別の明細にある同じTagを変更しません()
     {
         using var document = Document.Open(
@@ -30,7 +30,7 @@ public class RepeatingSectionItemのテスト
             .Should().Equal("変更後", "商品B");
     }
 
-    [Fact(Skip = "明細内のTag検索のGreen後、セクション外の同名項目との区別をレビューします。")]
+    [Fact]
     public void ContentControlsは明細の外にある同じTagを含めません()
     {
         using var document = Document.Open(
@@ -41,7 +41,7 @@ public class RepeatingSectionItemのテスト
             .Should().Equal("商品A");
     }
 
-    [Fact(Skip = "明細内のTag検索のGreen後、同じ明細内の重複をレビューします。")]
+    [Fact]
     public void ContentControlsは同じ明細内に同じTagが複数あると失敗します()
     {
         using var document = Document.Open(
@@ -52,7 +52,7 @@ public class RepeatingSectionItemのテスト
         action.Should().Throw<InvalidOperationException>();
     }
 
-    [Fact(Skip = "明細内の文字列Content ControlのGreen後、MERGEFIELDへの接続をレビューします。")]
+    [Fact]
     public void MergeFieldsは明細ごとに同じ名前を読み書きできます()
     {
         using var document = Document.Open(

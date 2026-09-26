@@ -16,6 +16,7 @@ public class RepeatingSectionItem : ContentControl
         : base(document, element)
     {
         ContentControls = new(document, element.Descendants());
+        MergeFields = new(document, element.Descendants());
     }
 
     /// <summary>
@@ -26,8 +27,7 @@ public class RepeatingSectionItem : ContentControl
     /// <summary>
     /// この明細内のMERGEFIELDを取得します。
     /// </summary>
-    public MergeFieldCollection MergeFields =>
-        throw new NotImplementedException();
+    public MergeFieldCollection MergeFields { get; }
 
     /// <summary>
     /// この明細内のチェックボックスを取得します。
