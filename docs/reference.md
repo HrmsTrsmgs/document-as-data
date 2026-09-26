@@ -426,9 +426,10 @@ Stream版にも `validate` 引数があります。省略時は検証を実行�
 
 ### テンプレートで避けるもの
 
-`w:dataBinding` によりCustom XMLへデータバインドされたContent Controlは未対応です。
-表示内容とは別にCustom XML側にも値が保持されますが、DocumentAsDataは現在その同期を行いません。
-読み書き対象として使用しないでください。
+WordのXMLマッピングでデータに連結されたContent Controlは未対応です。
+DocumentAsDataは連結先のデータを読み書きしません。
+対象は列挙とTag検索ができますが、`Text`、`IsChecked`、`SelectedDateTime`の読み書きは`NotSupportedException`になります。
+読み書きする項目にはWordのデータ連結を設定しないでください。
 
 コンボボックス、ドロップダウン、画像、繰り返しセクションなどを文字列Content Controlとしては扱いません。
 繰り返し行の追加・削除APIもありません。

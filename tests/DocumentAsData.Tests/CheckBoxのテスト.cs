@@ -11,6 +11,8 @@ public class CheckBoxのテスト
         Path.Combine("TestData", "チェックボックスのContent Control.docx");
     static readonly string CheckedCheckBoxPath =
         Path.Combine("TestData", "チェック済みのチェックボックス.docx");
+    static readonly string BoundCheckBoxPath =
+        Path.Combine("TestData", "Custom XMLに連結されたチェックボックス.docx");
 
     [Fact]
     public void Documentプロパティはチェックボックスが属する文書を取得します()
@@ -87,6 +89,18 @@ public class CheckBoxのテスト
     }
 
     [Fact]
+    public void CustomXMLに連結されたチェックボックスの状態は読み取りません()
+    {
+        // w:sdtPrのw:dataBindingがCustom XMLを指すため、表示側の状態だけを信用しません。
+        using var document = Document.Open(BoundCheckBoxPath, true);
+        var tested = document.CheckBoxes["Agreement"];
+
+        var action = () => _ = tested.IsChecked;
+
+        action.Should().Throw<NotSupportedException>();
+    }
+
+    [Fact]
     public void IsCheckedプロパティはチェック状態を設定します()
     {
         var filePath =
@@ -101,6 +115,25 @@ public class CheckBoxのテスト
 
             tested.IsChecked = false;
             tested.IsChecked.Should().BeFalse();
+        }
+        finally
+        {
+            File.Delete(filePath);
+        }
+    }
+
+    [Fact]
+    public void CustomXMLに連結されたチェックボックスの状態は書き込みません()
+    {
+        var filePath = TestDocument.CreateTemporaryCopy(BoundCheckBoxPath);
+        try
+        {
+            using var document = Document.Open(filePath, true);
+            var tested = document.CheckBoxes["Agreement"];
+
+            var action = () => tested.IsChecked = true;
+
+            action.Should().Throw<NotSupportedException>();
         }
         finally
         {

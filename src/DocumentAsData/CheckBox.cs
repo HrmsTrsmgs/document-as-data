@@ -33,11 +33,19 @@ public class CheckBox : ContentControl
     /// <remarks>
     /// 設定時は、文書に定義されたチェック状態の表示文字も更新します。
     /// </remarks>
+    /// <exception cref="NotSupportedException">
+    /// このContent ControlがWordのXMLマッピングを使用している場合。
+    /// </exception>
     public bool IsChecked
     {
-        get => IsCheckedValue(CheckedValue.Val?.Value);
+        get
+        {
+            EnsureNotDataBound();
+            return IsCheckedValue(CheckedValue.Val?.Value);
+        }
         set
         {
+            EnsureNotDataBound();
             CheckedValue.Val = value
                 ? Word2010.OnOffValues.One
                 : Word2010.OnOffValues.Zero;

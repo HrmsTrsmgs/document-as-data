@@ -13,6 +13,8 @@ public class DatePickerのテスト
 
     static readonly string OffsetDatePickerContentControlPath =
         Path.Combine("TestData", "時差付き日付選択Content Control.docx");
+    static readonly string BoundDatePickerPath =
+        Path.Combine("TestData", "Custom XMLに連結された日付選択Content Control.docx");
 
     [Fact]
     public void Documentプロパティは日付選択ContentControlが属する文書を取得します()
@@ -93,6 +95,18 @@ public class DatePickerのテスト
     }
 
     [Fact]
+    public void CustomXMLに連結された日付選択の日時は読み取りません()
+    {
+        // w:dataBindingのある日付選択は、表示値とCustom XMLの同期をWordが管理します。
+        using var document = Document.Open(BoundDatePickerPath, true);
+        var tested = document.DatePickers["DeliveryDate"];
+
+        var action = () => _ = tested.SelectedDateTime;
+
+        action.Should().Throw<NotSupportedException>();
+    }
+
+    [Fact]
     public void SelectedDateTimeプロパティはfullDateの時差を保持します()
     {
         var filePath =
@@ -144,6 +158,26 @@ public class DatePickerのテスト
 
             tested.SelectedDateTime.Should().Be(value);
             tested.SelectedDateTime.Offset.Should().Be(value.Offset);
+        }
+        finally
+        {
+            File.Delete(filePath);
+        }
+    }
+
+    [Fact]
+    public void CustomXMLに連結された日付選択の日時は書き込みません()
+    {
+        var filePath = TestDocument.CreateTemporaryCopy(BoundDatePickerPath);
+        try
+        {
+            using var document = Document.Open(filePath, true);
+            var tested = document.DatePickers["DeliveryDate"];
+
+            var action = () => tested.SelectedDateTime =
+                new DateTimeOffset(2026, 9, 5, 0, 0, 0, TimeSpan.Zero);
+
+            action.Should().Throw<NotSupportedException>();
         }
         finally
         {

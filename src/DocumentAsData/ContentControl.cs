@@ -34,4 +34,16 @@ public abstract class ContentControl : DocumentItem
     /// </exception>
     public string Tag =>
         Element.Tag;
+
+    /// <summary>
+    /// Custom XMLに連結された項目では、表示値だけを読み書きしても連結先と同期できないため拒否します。
+    /// </summary>
+    /// <exception cref="NotSupportedException">Custom XMLへのデータ連結がある場合。</exception>
+    private protected void EnsureNotDataBound()
+    {
+        if (Element.PropertyElements<Wordprocessing.DataBinding>().Any())
+        {
+            throw new NotSupportedException();
+        }
+    }
 }

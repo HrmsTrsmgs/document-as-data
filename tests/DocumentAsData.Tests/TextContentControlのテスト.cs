@@ -17,6 +17,8 @@ public class TextContentControlのテスト
         Path.Combine("TestData", "プレースホルダー表示中のContent Control.docx");
     static readonly string MultilineContentControlPath =
         Path.Combine("TestData", "複数行のContent Control.docx");
+    static readonly string BoundContentControlPath =
+        Path.Combine("TestData", "Custom XMLに連結された文字列Content Control.docx");
 
     [Fact]
     public void DocumentプロパティはContentControlが属する文書を取得します()
@@ -104,6 +106,38 @@ public class TextContentControlのテスト
             using var document = Document.Open(filePath);
 
             document.ContentControls["CustomerName"].Text.Should().Be("山田太郎");
+        }
+        finally
+        {
+            File.Delete(filePath);
+        }
+    }
+
+    [Fact]
+    public void CustomXMLに連結されたContentControlの文字列は読み取りません()
+    {
+        // w:sdtPrのw:dataBindingが、Custom XMLの/root/valueを指します。
+        // w:sdtContentの表示文字だけでは、連結先の現在値を保証できません。
+        using var document = Document.Open(BoundContentControlPath, true);
+        var tested = document.ContentControls["CustomerName"];
+
+        var action = () => _ = tested.Text;
+
+        action.Should().Throw<NotSupportedException>();
+    }
+
+    [Fact]
+    public void CustomXMLに連結されたContentControlの文字列は書き込みません()
+    {
+        var filePath = TestDocument.CreateTemporaryCopy(BoundContentControlPath);
+        try
+        {
+            using var document = Document.Open(filePath, true);
+            var tested = document.ContentControls["CustomerName"];
+
+            var action = () => tested.Text = "変更後";
+
+            action.Should().Throw<NotSupportedException>();
         }
         finally
         {

@@ -41,13 +41,21 @@ public partial class DatePicker : ContentControl
     /// 取得時に日時が欠落している場合。または日付選択のプロパティや、設定時に必要な
     /// 表示設定の値または表示文字列が欠落しているか、必要な要素が複数存在する場合。
     /// </exception>
+    /// <exception cref="NotSupportedException">
+    /// このContent ControlがWordのXMLマッピングを使用している場合。
+    /// </exception>
     public DateTimeOffset SelectedDateTime
     {
-        get => XmlConvert.ToDateTimeOffset(
-            DateProperties.FullDate?.InnerText
-                ?? throw new InvalidOperationException());
+        get
+        {
+            EnsureNotDataBound();
+            return XmlConvert.ToDateTimeOffset(
+                DateProperties.FullDate?.InnerText
+                    ?? throw new InvalidOperationException());
+        }
         set
         {
+            EnsureNotDataBound();
             var properties = DateProperties;
             var culture = ResolveDisplayCulture(properties);
             var format = ResolveDisplayFormat(properties, culture);

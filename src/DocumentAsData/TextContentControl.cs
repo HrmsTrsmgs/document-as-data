@@ -39,13 +39,23 @@ public class TextContentControl : ContentControl, IDocumentTextItem
     /// <exception cref="InvalidOperationException">
     /// 値の設定時に文字列要素が存在しない場合。
     /// </exception>
+    /// <exception cref="NotSupportedException">
+    /// このContent ControlがWordのXMLマッピングを使用している場合。
+    /// </exception>
     public string Text
     {
-        get => IsShowingPlaceholder
-            ? ""
-            : ReadText();
+        get
+        {
+            EnsureNotDataBound();
+
+            return IsShowingPlaceholder
+                ? ""
+                : ReadText();
+        }
         set
         {
+            EnsureNotDataBound();
+
             var texts = Element.Descendants<Wordprocessing.Text>().ToArray();
 
             RemovePlaceholderState();
