@@ -27,9 +27,9 @@ public class TextContentControl : ContentControl, IDocumentTextItem
         $"TextContentControl {{ Tag = {QuoteName(Tag)} }}";
 
     /// <summary>
-    /// コード生成で、明細内の項目を文書直下のプロパティとしても生成しないための所属判定です。
+    /// 繰り返しセクション内の項目であるかを取得します。
     /// </summary>
-    internal bool IsInRepeatingSection =>
+    public bool IsInRepeatingSection =>
         Element.Ancestors<Wordprocessing.SdtElement>().Any(it => it.IsRepeatingSection);
 
     /// <summary>

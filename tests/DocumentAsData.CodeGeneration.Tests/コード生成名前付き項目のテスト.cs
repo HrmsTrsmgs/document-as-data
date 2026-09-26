@@ -92,7 +92,7 @@ public sealed class コード生成名前付き項目のテスト : IDisposable
             .Should().Equal("商品C", "商品D");
     }
 
-    [Fact(Skip = "型付き繰り返し項目の生成後、通常項目と明細内項目の名前の範囲をレビューします。")]
+    [Fact]
     public void 生成された通常項目と明細内の項目は同じ名前でも別々に読み取れます()
     {
         using var document = GeneratedCodeInspection
