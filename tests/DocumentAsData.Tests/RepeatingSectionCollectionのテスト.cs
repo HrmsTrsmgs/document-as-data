@@ -4,7 +4,7 @@ namespace Marimo.DocumentAsData.Test;
 
 public class RepeatingSectionCollectionのテスト
 {
-    [Fact(Skip = "繰り返しセクションのAPIレビュー後、このテストからRedを再開します。")]
+    [Fact]
     public void RepeatingSectionsは明細が1件でも繰り返しセクションを列挙します()
     {
         // Itemsはw15:repeatingSectionで繰り返し全体を表し、その内側に

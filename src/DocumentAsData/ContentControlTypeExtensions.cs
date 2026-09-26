@@ -30,6 +30,13 @@ static class ContentControlTypeExtensions
         /// </summary>
         internal bool IsDatePicker =>
             self.PropertyElements<Wordprocessing.SdtContentDate>().Any();
+
+        /// <summary>
+        /// w15:repeatingSectionを持つ、繰り返し全体のContent Controlかを取得します。
+        /// 個々の明細を示すw15:repeatingSectionItemとは区別します。
+        /// </summary>
+        internal bool IsRepeatingSection =>
+            self.PropertyElements<Word2013.SdtRepeatedSection>().Any();
     }
 
     /// <summary>

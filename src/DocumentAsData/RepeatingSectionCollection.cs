@@ -12,7 +12,7 @@ public class RepeatingSectionCollection : ContentControlCollection<RepeatingSect
     internal RepeatingSectionCollection(Document document)
         : base(
             document,
-            _ => throw new NotImplementedException(),
+            element => element.IsRepeatingSection,
             element => new RepeatingSection(document, element))
     {
     }
