@@ -154,7 +154,7 @@ public partial class MergeFieldCollection : IEnumerable<MergeField>
                 out var name))
             {
                 mergeField =
-                    GetOrCreateMergeField(
+                    cache.GetOrAdd(
                         field,
                         () => new(document, field, name));
                 return true;
@@ -178,7 +178,7 @@ public partial class MergeFieldCollection : IEnumerable<MergeField>
                 out var name))
             {
                 mergeField =
-                    GetOrCreateMergeField(
+                    cache.GetOrAdd(
                         field.FieldStart,
                         () => new(
                             document,
@@ -193,17 +193,6 @@ public partial class MergeFieldCollection : IEnumerable<MergeField>
             mergeField = null;
             return false;
         }
-
-        /// <summary>
-        /// OOXML要素を識別子として生成済みのMERGEFIELDを再利用し、列挙と名前検索の同一性を保ちます。
-        /// </summary>
-        /// <param name="field">MERGEFIELDを表すOOXML要素。</param>
-        /// <param name="create">未生成の場合にMERGEFIELDを作成する処理。</param>
-        /// <returns>既存または新しく生成したMERGEFIELD。</returns>
-        MergeField GetOrCreateMergeField(
-            OpenXmlElement field,
-            Func<MergeField> create) =>
-            cache.GetOrAdd(field, create);
 
         /// <summary>
         /// OOXMLのフィールド命令を解釈し、MERGEFIELDかどうかとその名前を読み取ります。
@@ -376,10 +365,8 @@ public partial class MergeFieldCollection : IEnumerable<MergeField>
             /// <param name="startElement">複合フィールドの開始要素。</param>
             void StartField(Wordprocessing.FieldChar startElement)
             {
+                Reset();
                 fieldStart = startElement;
-                fieldInstruction = null;
-                resultSeparator = null;
-                resultElements = null;
             }
 
             /// <summary>

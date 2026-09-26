@@ -29,8 +29,7 @@ static class CSharpIdentifier
         EnsureValidIdentifierStart(
             ContainsNonAscii(sourceName)
                 ? CapitalizeFirstLetter(
-                    ReplaceInvalidIdentifierPartCharacters(
-                        sourceName.Replace('-', '_').Replace(' ', '_')))
+                    ReplaceInvalidIdentifierPartCharacters(sourceName))
                 : AsciiIdentifier(sourceName));
 
     /// <summary>

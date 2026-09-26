@@ -69,9 +69,7 @@ public sealed class GenerateDocumentAsData : Microsoft.Build.Utilities.Task
     IEnumerable<ITaskItem> Generate(ITaskItem documentFile)
     {
         var documentFilePath = Path.GetFullPath(documentFile.ItemSpec);
-        var generatedFilePath = Path.Combine(
-            Path.GetDirectoryName(documentFilePath)!,
-            $"{Path.GetFileNameWithoutExtension(documentFilePath)}.DocumentAsData.g.cs");
+        var generatedFilePath = Path.ChangeExtension(documentFilePath, "DocumentAsData.g.cs");
         var nameMappings = LoadNameMappings(documentFilePath);
 
         foreach (var diagnostic in
@@ -187,11 +185,7 @@ public sealed class GenerateDocumentAsData : Microsoft.Build.Utilities.Task
     /// <returns>見つかった辞書ファイルのパス。存在しない場合は <see langword="null"/>。</returns>
     string? DictionaryFilePath(string documentFilePath)
     {
-        var dictionaryFileName =
-            $"{Path.GetFileNameWithoutExtension(documentFilePath)}.documentasdata.json";
-        var sameDirectoryDictionaryPath = Path.Combine(
-            Path.GetDirectoryName(documentFilePath)!,
-            dictionaryFileName);
+        var sameDirectoryDictionaryPath = Path.ChangeExtension(documentFilePath, "documentasdata.json");
 
         if (File.Exists(sameDirectoryDictionaryPath))
         {
@@ -200,7 +194,7 @@ public sealed class GenerateDocumentAsData : Microsoft.Build.Utilities.Task
 
         var projectDirectoryDictionaryPath = Path.Combine(
             ProjectDirectory,
-            dictionaryFileName);
+            Path.GetFileName(sameDirectoryDictionaryPath));
 
         return File.Exists(projectDirectoryDictionaryPath)
             ? projectDirectoryDictionaryPath

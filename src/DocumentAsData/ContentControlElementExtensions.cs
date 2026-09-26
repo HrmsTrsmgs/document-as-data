@@ -4,10 +4,20 @@ using Wordprocessing = DocumentFormat.OpenXml.Wordprocessing;
 namespace Marimo.DocumentAsData;
 
 /// <summary>
-/// Content Controlを表すOOXML要素からプロパティ要素を取得する処理を提供します。
+/// Content ControlのOOXMLプロパティと、要素の所属範囲を取得する処理を提供します。
 /// </summary>
 static class ContentControlElementExtensions
 {
+    extension(OpenXmlElement self)
+    {
+        /// <summary>
+        /// この要素を囲むContent Controlのいずれかが繰り返しセクションかを取得します。
+        /// 要素自身は含めず、通常項目と明細内の項目を区別します。
+        /// </summary>
+        internal bool IsInRepeatingSection =>
+            self.Ancestors<Wordprocessing.SdtElement>().Any(it => it.IsRepeatingSection);
+    }
+
     extension(Wordprocessing.SdtElement self)
     {
         /// <summary>

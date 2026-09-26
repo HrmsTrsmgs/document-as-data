@@ -55,11 +55,20 @@ public abstract class ContentControlCollection<T> : IEnumerable<T>
     /// <exception cref="KeyNotFoundException">指定したTagのContent Controlが存在しない場合。</exception>
     /// <exception cref="InvalidOperationException">指定したTagのContent Controlが複数存在する場合。</exception>
     public T this[string tag] =>
+        FindByTag(tag) ?? throw new KeyNotFoundException();
+
+    /// <summary>
+    /// 指定したTagの対象を一件だけ取得し、存在しない場合の扱いは呼び出し側に委ねます。
+    /// </summary>
+    /// <param name="tag">取得するContent ControlのTag。</param>
+    /// <returns>一致する対象。存在しない場合はnull。</returns>
+    /// <exception cref="InvalidOperationException">指定したTagの対象が複数存在する場合。</exception>
+    internal T? FindByTag(string tag) =>
         (
             from contentControl in this
             where contentControl.Tag == tag
             select contentControl
-        ).SingleOrDefault() ?? throw new KeyNotFoundException();
+        ).SingleOrDefault();
 
     /// <summary>
     /// 対象種類のContent Controlを列挙する列挙子を返します。

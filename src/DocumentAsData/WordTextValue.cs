@@ -11,21 +11,19 @@ static partial class WordTextValue
 {
     /// <summary>
     /// OOXMLの文字列、タブ、改行を公開APIの文字列表現へ戻します。
+    /// それ以外の要素は値に含めません。
     /// </summary>
     /// <param name="elements">値を構成するOOXML要素。</param>
     /// <returns>タブをタブ文字、改行をCRLFで表した値。</returns>
     internal static string Read(IEnumerable<OpenXmlElement> elements) =>
         string.Concat(
             from element in elements
-            where element is Wordprocessing.Text or
-                Wordprocessing.TabChar or
-                Wordprocessing.Break
             select element switch
             {
                 Wordprocessing.Text text => text.Text,
                 Wordprocessing.TabChar => "\t",
                 Wordprocessing.Break => "\r\n",
-                _ => throw new InvalidOperationException()
+                _ => ""
             });
 
     /// <summary>

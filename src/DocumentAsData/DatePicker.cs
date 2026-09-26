@@ -128,37 +128,35 @@ public partial class DatePicker : ContentControl
         // 引用部分を先に読み、その内部を書式記号として変換しません。午前午後指定はmやMへ分割しません。
         var convertedFormat = DateFormatTokens().Replace(
             format,
-            it =>
-            it.Value switch
-            {
-                "yyyyy" or "YYYYY" => "yyyy''yy",
-                "hhh" => "hh''h",
-                "HHH" => "HH''H",
-                "mmm" => "mm''m",
-                "sss" => "ss''s",
-                "MMMMM" => "MMMM''M", // 空の引用文字列で月名と月番号を分け、後続のMは月番号の桁数指定へ残します。
-                "ddddd" or "DDDDD" => "dddd''d", // 曜日名と日番号が一つの曜日指定へ結合されないよう区切ります。
-                "DDDDDD" => "dddd''dd",
-                "am/pm" or "AM/PM" => "tt",
-                "/" => "'/'",
-                ":" => "':'",
-                "'" => "\\'",
-                "\"" => "\\\"",
-                "\\" => "\\\\",
-                "%" => "\\%",
-                "f" => "\\f",
-                "F" => "\\F",
-                "K" => "\\K",
-                "zzz" => "'zzz'",
-                "t" => "\\t",
-                var token => token.StartsWith('\'')
-                    ? token.Replace("\\", "\\\\")
-                    : token.ToLowerInvariant(),
-            });
+            it => ConvertDateFormatToken(it.Value));
 
         // 一文字書式用の%は、文書に含まれる表示文字の%をエスケープした後で付けます。
         return convertedFormat.Length == 1 ? $"%{convertedFormat}" : convertedFormat;
     }
+
+    /// <summary>
+    /// Wordの書式記号を.NET用へ置き換え、文字として表示する記号はエスケープします。
+    /// 引用部分は書式記号を変換せず、.NETが解釈するバックスラッシュだけを保護します。
+    /// </summary>
+    /// <param name="token">正規表現で切り出した書式記号または引用文字列。</param>
+    /// <returns>.NETの日付書式へ組み込む文字列。</returns>
+    static string ConvertDateFormatToken(string token) => token switch
+    {
+        "yyyyy" or "YYYYY" => "yyyy''yy",
+        "hhh" => "hh''h",
+        "HHH" => "HH''H",
+        "mmm" => "mm''m",
+        "sss" => "ss''s",
+        "MMMMM" => "MMMM''M", // 空の引用文字列で月名と月番号を分け、後続のMは月番号の桁数指定へ残します。
+        "ddddd" or "DDDDD" => "dddd''d", // 曜日名と日番号が一つの曜日指定へ結合されないよう区切ります。
+        "DDDDDD" => "dddd''dd",
+        "am/pm" or "AM/PM" => "tt",
+        "/" or ":" or "zzz" => $"'{token}'",
+        "'" or "\"" or "\\" or "%" or "f" or "F" or "K" or "t" => $"\\{token}",
+        _ => token.StartsWith('\'')
+            ? token.Replace("\\", "\\\\")
+            : token.ToLowerInvariant()
+    };
 
     /// <summary>
     /// 引用文字列と、.NET用に変換するWordの日付書式記号を識別します。

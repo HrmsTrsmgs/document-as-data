@@ -9,17 +9,18 @@
 
   <!-- 通常評価とデザイン時の両方で、文書の隣の生成済みソースをコンパイル対象として参照します。 -->
   <ItemGroup>
-    <!-- 生成ソースへのパス変換前に、親となる元文書のファイル名を保持します。 -->
+    <!-- 元文書と生成ソースの対応を保持し、同じ評価内の項目登録・除外で共有します。 -->
     <DocumentAsData Update="@(DocumentAsData)">
       <DocumentAsDataDependentUpon>%(Filename)%(Extension)</DocumentAsDataDependentUpon>
       <LastGenOutput>%(Filename).DocumentAsData.g.cs</LastGenOutput>
+      <DocumentAsDataGeneratedFilePath>%(RootDir)%(Directory)%(Filename).DocumentAsData.g.cs</DocumentAsDataGeneratedFilePath>
     </DocumentAsData>
     <!-- SDKの既定Compile項目に含まれる場合も、対象の生成ファイルを一度だけ登録します。 -->
-    <Compile Remove="@(DocumentAsData->'%(RootDir)%(Directory)%(Filename).DocumentAsData.g.cs')" />
-    <None Remove="@(DocumentAsData->'%(RootDir)%(Directory)%(Filename).DocumentAsData.g.cs')" />
-    <Content Remove="@(DocumentAsData->'%(RootDir)%(Directory)%(Filename).DocumentAsData.g.cs')" />
+    <Compile Remove="@(DocumentAsData->'%(DocumentAsDataGeneratedFilePath)')" />
+    <None Remove="@(DocumentAsData->'%(DocumentAsDataGeneratedFilePath)')" />
+    <Content Remove="@(DocumentAsData->'%(DocumentAsDataGeneratedFilePath)')" />
     <Compile
-      Include="@(DocumentAsData->'%(RootDir)%(Directory)%(Filename).DocumentAsData.g.cs')"
+      Include="@(DocumentAsData->'%(DocumentAsDataGeneratedFilePath)')"
       DependentUpon="%(DocumentAsDataDependentUpon)" />
   </ItemGroup>
 
@@ -36,6 +37,7 @@
 
   <!-- 標準Cleanはbin/obj外を削除しないため、現在の対象文書に対応する生成ソースだけを削除します。 -->
   <Target Name="CleanDocumentAsDataSources" AfterTargets="CoreClean">
+    <!-- 評価後に追加・変更された項目も反映するため、実行時の対象文書から生成先を計算します。 -->
     <Delete Files="@(DocumentAsData->'%(RootDir)%(Directory)%(Filename).DocumentAsData.g.cs')" />
   </Target>
 </Project>

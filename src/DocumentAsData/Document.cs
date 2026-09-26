@@ -457,7 +457,7 @@ public class Document : IDisposable
                 }
                 else
                 {
-                    CreateWorkingCopy();
+                    GetOrCreateWorkingCopy();
                 }
             }
 
@@ -499,11 +499,11 @@ public class Document : IDisposable
 
             /// <inheritdoc />
             public override void Write(byte[] buffer, int offset, int count) =>
-                CreateWorkingCopy().Write(buffer, offset, count);
+                GetOrCreateWorkingCopy().Write(buffer, offset, count);
 
             /// <inheritdoc />
             public override void SetLength(long value) =>
-                CreateWorkingCopy().SetLength(value);
+                GetOrCreateWorkingCopy().SetLength(value);
 
             /// <inheritdoc />
             public override void Flush() => workingCopy?.Flush();
@@ -513,7 +513,7 @@ public class Document : IDisposable
             /// 以後は同じ作業領域を使い、元Streamへ書き戻しません。
             /// </summary>
             /// <returns>このラッパーが所有する拡張可能な作業領域。</returns>
-            MemoryStream CreateWorkingCopy()
+            MemoryStream GetOrCreateWorkingCopy()
             {
                 if (workingCopy is null)
                 {

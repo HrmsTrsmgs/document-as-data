@@ -5,7 +5,7 @@ namespace Marimo.DocumentAsData.CodeGeneration;
 /// <summary>
 /// Documentラッパー生成で使用するテンプレート部品です。
 /// </summary>
-static class DocumentWrapperComponents
+static partial class DocumentWrapperComponents
 {
     /// <summary>
     /// 生成するC#ソースファイル全体を表すテンプレート部品です。
@@ -92,37 +92,7 @@ static class DocumentWrapperComponents
             {{OpenMethodBody(typeName, "stream")}}
                 }
 
-                /// <summary>
-                /// 生成元の文書にあったMERGEFIELD、文字列Content Control、CheckBox、DatePickerが存在することを検証します。
-                /// 文字列項目は同名のMERGEFIELDと文字列Content Controlを読み取り先として認めます。
-                /// 繰り返しセクション内の文字列Content Controlは、明細ごとにも存在を検証します。
-                /// 文書の生成、返却、解放は呼び出し元のOpenで行います。
-                /// </summary>
-                /// <exception cref="DocumentMappingException">
-                /// 生成元の文書に対応する項目が不足している場合。
-                /// </exception>
-                void ValidateRequiredItems()
-                {
-            {{RequiredItemsValidation(
-                [.. from mergeField in document.MergeFields select mergeField.Name],
-                "[.. MergeFields.Select(it => it.Name), .. ContentControls.Select(it => it.Tag)]",
-                "MERGEFIELD")}}
-            {{RequiredItemsValidation(
-                [.. from contentControl in document.ContentControls select contentControl.Tag],
-                "[.. ContentControls.Select(it => it.Tag), .. MergeFields.Select(it => it.Name)]",
-                "文字列Content Control")}}
-            {{RequiredItemsValidation(
-                [.. from checkBox in document.CheckBoxes select checkBox.Tag],
-                "CheckBoxes.Select(it => it.Tag)",
-                "CheckBox")}}
-            {{RequiredItemsValidation(
-                [.. from datePicker in document.DatePickers select datePicker.Tag],
-                "DatePickers.Select(it => it.Tag)",
-                "DatePicker")}}
-            {{ForEach(
-                from section in document.RepeatingSections
-                select RepeatingSectionValidation(section))}}
-                }
+            {{Validation.Declaration(document)}}
 
                 /// <summary>
                 /// Word文書全体のデータを読み込みます。
@@ -138,19 +108,15 @@ static class DocumentWrapperComponents
                 public void Replace({{dataTypeName}} data) =>
                     base.Replace(data);
             {{ForEach([
-                .. from mergeField in document.MergeFields
-                   where !mergeField.IsInRepeatingSection
+                .. from mergeField in TopLevel(document.MergeFields)
                    select MergeFieldPropertyDeclaration(mergeField, options),
-                .. from contentControl in document.ContentControls
-                   where !contentControl.IsInRepeatingSection
+                .. from contentControl in TopLevel(document.ContentControls)
                    select TextContentControlPropertyDeclaration(
                        contentControl,
                        options),
-                .. from checkBox in document.CheckBoxes
-                   where !checkBox.IsInRepeatingSection
+                .. from checkBox in TopLevel(document.CheckBoxes)
                    select CheckBoxPropertyDeclaration(checkBox, options),
-                .. from datePicker in document.DatePickers
-                   where !datePicker.IsInRepeatingSection
+                .. from datePicker in TopLevel(document.DatePickers)
                    select DatePickerPropertyDeclaration(datePicker, options),
                 .. from section in document.RepeatingSections
                    select RepeatingSectionDeclaration(section, options)
@@ -169,6 +135,7 @@ static class DocumentWrapperComponents
     static string RepeatingSectionDeclaration(RepeatingSection section, CodeGenerationOptions options)
     {
         var dataTypeName = options.DataTypeName(section.Tag);
+        var templateItem = section.Items[0];
 
         return $$"""
 
@@ -183,35 +150,17 @@ static class DocumentWrapperComponents
             /// </summary>
             public class {{dataTypeName}}
             {
-            {{ForEach([
-                .. from contentControl in section.Items[0].ContentControls
-                   select DataTextPropertyDeclaration(contentControl.Tag, options),
-                .. from mergeField in section.Items[0].MergeFields
-                   select DataTextPropertyDeclaration(mergeField.Name, options),
-                .. from checkBox in section.Items[0].CheckBoxes
-                   select DataCheckBoxPropertyDeclaration(checkBox, options),
-                .. from datePicker in section.Items[0].DatePickers
-                   select DataDatePickerPropertyDeclaration(datePicker, options)
-            ])}}
+            {{DataPropertyDeclarations(
+                [
+                    .. templateItem.ContentControls.Select(it => it.Tag),
+                    .. templateItem.MergeFields.Select(it => it.Name)
+                ],
+                templateItem.CheckBoxes,
+                templateItem.DatePickers,
+                options)}}
             }
         """;
     }
-
-    /// <summary>
-    /// 各明細の文字列Content Controlを、生成元の最初の明細と照合する検査を生成します。
-    /// </summary>
-    /// <param name="section">必要な項目の見本を持つ生成元のセクション。</param>
-    /// <returns>各明細に既存の必須項目検査を適用するC#コード。</returns>
-    static string RepeatingSectionValidation(RepeatingSection section) =>
-        $$"""
-                foreach (var item in RepeatingSections[{{StringLiteral(section.Tag)}}].Items)
-                {
-        {{RequiredItemsValidation(
-            [.. from contentControl in section.Items[0].ContentControls select contentControl.Tag],
-            "item.ContentControls.Select(it => it.Tag)",
-            "文字列Content Control")}}
-                }
-        """;
 
     /// <summary>
     /// パス版とStream版に共通するOpenの本体を生成します。
@@ -237,33 +186,6 @@ static class DocumentWrapperComponents
         """;
 
     /// <summary>
-    /// 不足した名前と種類を例外メッセージへ含める検査コードを生成します。
-    /// </summary>
-    /// <param name="requiredNames">生成元の文書に存在する、その種類の項目名またはTag。</param>
-    /// <param name="actualNamesExpression">開いた文書から同じ種類の名前を列挙するC#式。</param>
-    /// <param name="itemKind">メッセージに表示する項目の種類。</param>
-    /// <returns>詳細メッセージ付きの検査コード。対象が0件なら空文字列。</returns>
-    static string RequiredItemsValidation(
-        string[] requiredNames,
-        string actualNamesExpression,
-        string itemKind) =>
-        requiredNames.Length == 0
-            ? ""
-            : $$"""
-                      {
-                          var missingNames = new[] { {{string.Join(", ", requiredNames.Select(StringLiteral))}} }
-                              .Except({{actualNamesExpression}})
-                              .ToArray();
-
-                          if (missingNames.Length > 0)
-                          {
-                              throw new DocumentMappingException(
-                                  {{StringLiteral($"{itemKind}が不足しています: ")}} + string.Join(", ", missingNames));
-                          }
-                      }
-              """;
-
-    /// <summary>
     /// Word文書全体のデータを表す型の宣言を生成します。
     /// </summary>
     /// <param name="filePath">生成元のWord文書のパス。</param>
@@ -276,32 +198,71 @@ static class DocumentWrapperComponents
         Document document)
     {
         var documentName = Path.GetFileNameWithoutExtension(filePath);
-        var typeName = options.DataTypeName(documentName);
 
         return
             $$"""
             /// <summary>
             /// Word文書「{{documentName.EscapeAmpersands()}}」のデータを表します。
             /// </summary>
-            public partial class {{typeName}}
+            public partial class {{options.DataTypeName(documentName)}}
             {
-            {{ForEach([
-                .. from mergeField in document.MergeFields
-                   where !mergeField.IsInRepeatingSection
-                   select DataTextPropertyDeclaration(mergeField.Name, options),
-                .. from contentControl in document.ContentControls
-                   where !contentControl.IsInRepeatingSection
-                   select DataTextPropertyDeclaration(contentControl.Tag, options),
-                .. from checkBox in document.CheckBoxes
-                   where !checkBox.IsInRepeatingSection
-                   select DataCheckBoxPropertyDeclaration(checkBox, options),
-                .. from datePicker in document.DatePickers
-                   where !datePicker.IsInRepeatingSection
-                   select DataDatePickerPropertyDeclaration(datePicker, options)
-            ])}}
+            {{DataPropertyDeclarations(
+                [
+                    .. TopLevel(document.MergeFields).Select(it => it.Name),
+                    .. TopLevel(document.ContentControls).Select(it => it.Tag)
+                ],
+                TopLevel(document.CheckBoxes),
+                TopLevel(document.DatePickers),
+                options)}}
             }
             """;
     }
+
+    /// <summary>
+    /// 文書全体と明細のデータ型に共通する、値プロパティの並びを生成します。
+    /// 文字列項目の順序と対象範囲は呼び出し元で決め、ここでは種類ごとの部品へ接続します。
+    /// </summary>
+    /// <param name="textItemNames">生成順に並べた文字列項目の元名。</param>
+    /// <param name="checkBoxes">生成対象のチェックボックス。</param>
+    /// <param name="datePickers">生成対象の日付選択。</param>
+    /// <param name="options">名前変換の設定。</param>
+    /// <returns>データ型の値プロパティ宣言。</returns>
+    static string DataPropertyDeclarations(
+        IEnumerable<string> textItemNames,
+        IEnumerable<CheckBox> checkBoxes,
+        IEnumerable<DatePicker> datePickers,
+        CodeGenerationOptions options) =>
+        ForEach([
+            .. from name in textItemNames
+               select DataTextPropertyDeclaration(name, options),
+            .. from checkBox in checkBoxes
+               select DataCheckBoxPropertyDeclaration(checkBox, options),
+            .. from datePicker in datePickers
+               select DataDatePickerPropertyDeclaration(datePicker, options)
+        ]);
+
+    /// <summary>
+    /// 文書直下の生成プロパティに含めるMERGEFIELDを選びます。
+    /// 全体検索を使う検証・診断には、この選別を適用しません。
+    /// </summary>
+    /// <param name="items">文書全体のMERGEFIELD。</param>
+    /// <returns>明細に属さないMERGEFIELD。</returns>
+    static IEnumerable<MergeField> TopLevel(IEnumerable<MergeField> items) =>
+        from item in items
+        where !item.IsInRepeatingSection
+        select item;
+
+    /// <summary>
+    /// 文書直下の生成プロパティに含めるContent Controlを選びます。
+    /// 種類ごとに同じ所属条件を繰り返し記述しないための選別です。
+    /// </summary>
+    /// <typeparam name="T">生成対象のContent Controlの種類。</typeparam>
+    /// <param name="items">文書全体のContent Control。</param>
+    /// <returns>明細に属さないContent Control。</returns>
+    static IEnumerable<T> TopLevel<T>(IEnumerable<T> items) where T : ContentControl =>
+        from item in items
+        where !item.IsInRepeatingSection
+        select item;
 
     /// <summary>
     /// 文書データ型に、文字列項目を表すプロパティ宣言を生成します。

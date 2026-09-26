@@ -92,10 +92,10 @@ sealed class DocumentObjectMapper
     /// <returns>文書から読み込んだ値。</returns>
     object ReadValue(string name, Type propertyType) =>
         propertyType == typeof(DateTimeOffset)
-            ? (FindDatePicker(name) ?? throw new DocumentMappingException())
+            ? (datePickers.FindByTag(name) ?? throw new DocumentMappingException())
                 .SelectedDateTime
         : propertyType == typeof(bool)
-            ? (FindCheckBox(name) ?? throw new DocumentMappingException())
+            ? (checkBoxes.FindByTag(name) ?? throw new DocumentMappingException())
                 .IsChecked
         : propertyType == typeof(string)
             ? (FindValueTarget(name) ?? throw new InvalidOperationException())
@@ -201,12 +201,12 @@ sealed class DocumentObjectMapper
         switch (value)
         {
             case DateTimeOffset dateTime:
-                (FindDatePicker(name) ?? throw new DocumentMappingException())
+                (datePickers.FindByTag(name) ?? throw new DocumentMappingException())
                     .SelectedDateTime = dateTime;
                 return;
 
             case bool isChecked:
-                (FindCheckBox(name) ?? throw new DocumentMappingException())
+                (checkBoxes.FindByTag(name) ?? throw new DocumentMappingException())
                     .IsChecked = isChecked;
                 return;
 
@@ -237,30 +237,4 @@ sealed class DocumentObjectMapper
 
         return targets.SingleOrDefault();
     }
-
-    /// <summary>
-    /// 同じTagの日付選択Content Controlから、一件だけある対象を取得します。
-    /// </summary>
-    /// <param name="tag">取得するTag。</param>
-    /// <returns>取得した日付選択Content Control。存在しない場合はnull。</returns>
-    /// <exception cref="InvalidOperationException">同じTagの対象が複数存在する場合。</exception>
-    DatePicker? FindDatePicker(string tag) =>
-        (
-            from datePicker in datePickers
-            where datePicker.Tag == tag
-            select datePicker
-        ).SingleOrDefault();
-
-    /// <summary>
-    /// 同じTagのCheckBoxから、一件だけある対象を取得します。
-    /// </summary>
-    /// <param name="tag">取得するTag。</param>
-    /// <returns>取得したCheckBox。存在しない場合はnull。</returns>
-    /// <exception cref="InvalidOperationException">同じTagの対象が複数存在する場合。</exception>
-    CheckBox? FindCheckBox(string tag) =>
-        (
-            from checkBox in checkBoxes
-            where checkBox.Tag == tag
-            select checkBox
-        ).SingleOrDefault();
 }

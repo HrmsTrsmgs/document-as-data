@@ -58,21 +58,32 @@ public class RepeatingSection : ContentControl
     public void Replace<T>(IEnumerable<T> items)
     {
         var dataItems = items.ToArray();
-        var existingItems = Items;
 
-        foreach (var item in existingItems.Skip(dataItems.Length))
-        {
-            item.Remove();
-        }
-
-        foreach (var _ in dataItems.Skip(existingItems.Count))
-        {
-            existingItems[^1].InsertCopyAfter();
-        }
+        ResizeItems(dataItems.Length);
 
         foreach (var (item, data) in Items.Zip(dataItems))
         {
             item.Replace(data);
+        }
+    }
+
+    /// <summary>
+    /// 余った明細を削除し、不足分は変更前の最後の明細から複製します。
+    /// 値の書き込みは、件数を調整した後に明細を取り直して行います。
+    /// </summary>
+    /// <param name="count">置き換え後の明細件数。</param>
+    void ResizeItems(int count)
+    {
+        var existingItems = Items;
+
+        foreach (var item in existingItems.Skip(count))
+        {
+            item.Remove();
+        }
+
+        foreach (var _ in Enumerable.Range(0, count).Skip(existingItems.Count))
+        {
+            existingItems[^1].InsertCopyAfter();
         }
     }
 }

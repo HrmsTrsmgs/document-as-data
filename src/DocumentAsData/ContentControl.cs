@@ -11,7 +11,7 @@ public abstract class ContentControl : DocumentItem
     /// 繰り返しセクション内の項目であるかを取得します。
     /// </summary>
     public bool IsInRepeatingSection =>
-        Element.Ancestors<Wordprocessing.SdtElement>().Any(it => it.IsRepeatingSection);
+        Element.IsInRepeatingSection;
 
     /// <summary>
     /// 各種Content Controlが値を読み書きするOOXML要素を取得します。
@@ -48,13 +48,10 @@ public abstract class ContentControl : DocumentItem
     /// <exception cref="NotSupportedException">Custom XMLへのデータ連結がある場合。</exception>
     private protected void EnsureNotDataBound()
     {
-        if (
-            (
-                from element in Element.Ancestors<Wordprocessing.SdtElement>().Prepend(Element)
-                where element == Element || element.IsRepeatingSection
-                from binding in element.PropertyElements<Wordprocessing.DataBinding>()
-                select binding
-            ).Any())
+        if (Element.Ancestors<Wordprocessing.SdtElement>().Prepend(Element)
+            .Any(it =>
+                (it == Element || it.IsRepeatingSection)
+                && it.PropertyElements<Wordprocessing.DataBinding>().Any()))
         {
             throw new NotSupportedException();
         }

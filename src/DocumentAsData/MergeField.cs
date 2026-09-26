@@ -27,7 +27,7 @@ public class MergeField : DocumentItem, IDocumentTextItem
     {
         content = new SimpleFieldContent(field);
         Name = name;
-        IsInRepeatingSection = field.Ancestors<Wordprocessing.SdtElement>().Any(it => it.IsRepeatingSection);
+        IsInRepeatingSection = field.IsInRepeatingSection;
     }
 
     /// <summary>
@@ -54,7 +54,7 @@ public class MergeField : DocumentItem, IDocumentTextItem
             fieldEnd,
             valueElements);
         Name = name;
-        IsInRepeatingSection = fieldStart.Ancestors<Wordprocessing.SdtElement>().Any(it => it.IsRepeatingSection);
+        IsInRepeatingSection = fieldStart.IsInRepeatingSection;
     }
 
     /// <summary>
