@@ -9,7 +9,7 @@ namespace Marimo.DocumentAsData.Test;
 
 public class RepeatingSectionのテスト
 {
-    [Fact(Skip = "セクション取得のGreen後、1件でも明細をコレクションとして扱うAPIをレビューします。")]
+    [Fact]
     public void Itemsは明細が1件でもコレクションとして取得できます()
     {
         using var document = Document.Open(

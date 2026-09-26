@@ -19,7 +19,7 @@ public class RepeatingSectionCollectionのテスト
             .Should().Equal("Items");
     }
 
-    [Fact(Skip = "セクション列挙のGreen後、文書順と別セクションの識別をレビューします。")]
+    [Fact]
     public void RepeatingSectionsは複数のセクションを文書順に列挙します()
     {
         using var document = Document.Open(
@@ -28,7 +28,7 @@ public class RepeatingSectionCollectionのテスト
         document.RepeatingSections.Select(it => it.Tag).Should().Equal("Items", "Options");
     }
 
-    [Fact(Skip = "セクション列挙のGreen後、通常の入力項目との区別をレビューします。")]
+    [Fact]
     public void RepeatingSectionsは通常のContentControlを含めません()
     {
         using var document = Document.Open(Path.Combine("TestData", "単一のContent Control.docx"));
@@ -36,7 +36,7 @@ public class RepeatingSectionCollectionのテスト
         document.RepeatingSections.Should().BeEmpty();
     }
 
-    [Fact(Skip = "セクション列挙のGreen後、Tagによる取得をレビューします。")]
+    [Fact]
     public void RepeatingSectionsはTagでセクションを取得します()
     {
         using var document = Document.Open(
@@ -45,7 +45,7 @@ public class RepeatingSectionCollectionのテスト
         document.RepeatingSections["Options"].Tag.Should().Be("Options");
     }
 
-    [Fact(Skip = "Tagによる取得のGreen後、存在しないセクションの扱いをレビューします。")]
+    [Fact]
     public void RepeatingSectionsは存在しないTagで失敗します()
     {
         using var document = Document.Open(
@@ -56,7 +56,7 @@ public class RepeatingSectionCollectionのテスト
         action.Should().Throw<KeyNotFoundException>();
     }
 
-    [Fact(Skip = "Tagによる取得のGreen後、セクション自体の同名重複をレビューします。")]
+    [Fact]
     public void RepeatingSectionsは同じTagのセクションが複数あると失敗します()
     {
         using var document = Document.Open(
@@ -67,7 +67,7 @@ public class RepeatingSectionCollectionのテスト
         action.Should().Throw<InvalidOperationException>();
     }
 
-    [Fact(Skip = "セクション列挙のGreen後、Tagなしの枠を名前付き項目から除く仕様をレビューします。")]
+    [Fact]
     public void RepeatingSectionsはTagのないセクションを列挙しません()
     {
         using var document = Document.Open(

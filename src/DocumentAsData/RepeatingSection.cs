@@ -1,4 +1,5 @@
-﻿using Wordprocessing = DocumentFormat.OpenXml.Wordprocessing;
+﻿using Word2013 = DocumentFormat.OpenXml.Office2013.Word;
+using Wordprocessing = DocumentFormat.OpenXml.Wordprocessing;
 
 namespace Marimo.DocumentAsData;
 
@@ -23,7 +24,13 @@ public class RepeatingSection : ContentControl
     /// セクション内の明細を文書に現れる順で取得します。
     /// </summary>
     public IReadOnlyList<RepeatingSectionItem> Items =>
-        throw new NotImplementedException();
+    [
+        // w15:repeatingSectionItemは明細1件の枠を示します。
+        // その内側にある通常の入力項目は明細として数えません。
+        .. from element in Element.Descendants<Wordprocessing.SdtElement>()
+           where element.PropertyElements<Word2013.SdtRepeatedSectionItem>().Any()
+           select new RepeatingSectionItem(Document, element)
+    ];
 
     /// <summary>
     /// 各明細の名前付き項目を、指定した型へ対応付けて読み込みます。
