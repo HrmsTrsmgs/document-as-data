@@ -133,7 +133,7 @@ public class RepeatingSectionのテスト
             .Select(it => it.ItemName).Should().Equal("商品C", "商品D");
     }
 
-    [Fact(Skip = "同件数のReplaceのGreen後、不要な明細を除いて件数を減らす仕様をレビューします。")]
+    [Fact]
     public void Replaceは入力データに合わせて明細を減らします()
     {
         using var document = Document.Open(

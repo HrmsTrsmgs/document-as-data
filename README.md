@@ -165,7 +165,7 @@ document.SaveAs("output.docx");
 * `Open(Stream)` は入力用Streamを借用し、内容を変更したり閉じたりしません。Streamで開いた文書の `Save()` は使用できません。`SaveAs(Stream)` で別の書き込み・シーク・長さ変更が可能なStreamへ出力できます。現在位置によらず先頭から全体を置き換え、出力先も閉じません。[Stream入出力の使い方](docs/tutorial.md#streamから開く)を参照してください。
 * MERGEFIELDやContent Controlを普通のテキストに変換・除去する処理、PDF化、レイアウト編集、OCR、自由文章からの推測抽出は行いません。
 * カスタムXMLとデータ連結されたContent Control、選択リスト、画像コントロール、繰り返し項目などには制約があります。詳細は機能リファレンスを参照してください。
-  繰り返しセクションは対応途中です。既存明細内の文字列Content Control・MERGEFIELD・チェックボックス・日付選択は個別に読み書きでき、`Read<T>()` で各明細を自作クラスへ読み取れます。`Replace<T>()` は同件数の書き込みと明細追加の基本ケースまで対応しています。件数削減、追加時の識別ID調整、コード生成は未実装です。[対応計画とSkipテスト](docs/repeating-sections-plan.md)をレビュー中です。
+  繰り返しセクションは対応途中です。既存明細内の文字列Content Control・MERGEFIELD・チェックボックス・日付選択は個別に読み書きでき、`Read<T>()` で各明細を自作クラスへ読み取れます。`Replace<T>()` は同件数の書き込みと、1件以上の明細の増減の基本ケースまで対応しています。0件の契約は未決定で、追加時の識別ID調整とコード生成は未実装です。[対応計画とSkipテスト](docs/repeating-sections-plan.md)をレビュー中です。
 
 ## 開発する
 

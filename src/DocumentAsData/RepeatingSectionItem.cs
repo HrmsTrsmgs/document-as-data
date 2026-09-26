@@ -69,4 +69,10 @@ public class RepeatingSectionItem : ContentControl
     /// </summary>
     internal void InsertCopyAfter() =>
         Element.InsertAfterSelf(Element.CloneNode(true));
+
+    /// <summary>
+    /// 明細の枠を親から取り除き、内側の入力項目も文書の検索対象から外します。
+    /// </summary>
+    internal void Remove() =>
+        Element.Remove();
 }
