@@ -83,7 +83,7 @@ public sealed class コード生成コメントのテスト
         GeneratedCodeInspection
             .GenerateSources(BasicStructureDocumentFilePath)
             .TypeDeclaration("BasicStructureDocument")
-            .MethodDeclaration("Open", "System.IO.Stream")
+            .MethodDeclaration("Open", "Stream")
             .SummaryText()
             .Should().Be("指定したStream上のWord文書を型付きで開きます。");
     }

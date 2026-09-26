@@ -191,19 +191,20 @@ sealed class MSBuild連携テストプロジェクト : IDisposable
             File.WriteAllText(
                 Path.Combine(DirectoryPath, sharedLibrary ? "App" : "", "Program.cs"),
                 """
+                using System;
                 using Generated;
 
                 using (var document = BasicStructureDocument.Open("BasicStructure.docx"))
                 {
                     var data = document.Read();
-                    System.Console.WriteLine($"before:{data.CustomerName}/{data.Address}");
+                    Console.WriteLine($"before:{data.CustomerName}/{data.Address}");
                     data.CustomerName = "更新後";
                     data.Address = "大阪府";
                     document.Replace(data);
                     document.SaveAs("output.docx");
                 }
                 using var saved = BasicStructureDocument.Open("output.docx");
-                System.Console.WriteLine($"after:{saved.CustomerName}/{saved.Address}");
+                Console.WriteLine($"after:{saved.CustomerName}/{saved.Address}");
                 """);
         }
         var consumerProject = sharedLibrary ? "App/App.csproj" : "PackageReference.csproj";

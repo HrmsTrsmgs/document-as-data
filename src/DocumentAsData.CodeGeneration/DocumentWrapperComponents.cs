@@ -19,6 +19,9 @@ static class DocumentWrapperComponents
         CodeGenerationOptions options,
         Document document) =>
         $$"""
+        using System;
+        using System.Collections.Generic;
+        using System.IO;
         using System.Linq;
         using Marimo.DocumentAsData;
 
@@ -71,7 +74,7 @@ static class DocumentWrapperComponents
             {{OpenMethodBody(typeName, "filePath")}}
                 }
 
-                {{typeName}}(System.IO.Stream stream)
+                {{typeName}}(Stream stream)
                     : base(stream)
                 {
                 }
@@ -85,7 +88,7 @@ static class DocumentWrapperComponents
                 /// 生成元の文書に対応する項目が不足している場合。
                 /// 文字列項目は同名のMERGEFIELDまたは文字列Content Controlで読み取れます。
                 /// </exception>
-                public static new {{typeName}} Open(System.IO.Stream stream)
+                public static new {{typeName}} Open(Stream stream)
                 {
             {{OpenMethodBody(typeName, "stream")}}
                 }
@@ -165,7 +168,7 @@ static class DocumentWrapperComponents
             /// <summary>
             /// 繰り返しセクション「{{section.Tag.EscapeAmpersands().EscapeLineBreaks()}}」の明細を読み取ります。
             /// </summary>
-            public System.Collections.Generic.IEnumerable<{{dataTypeName}}> {{options.GeneratedName(section.Tag)}} =>
+            public IEnumerable<{{dataTypeName}}> {{options.GeneratedName(section.Tag)}} =>
                 RepeatingSections[{{StringLiteral(section.Tag)}}].Read<{{dataTypeName}}>();
 
             /// <summary>
@@ -325,7 +328,7 @@ static class DocumentWrapperComponents
             /// <summary>
             /// DatePicker「{{datePicker.Tag.EscapeLineFeed()}}」の日時を取得または設定します。
             /// </summary>
-            {{DataItemNameAttributeDeclaration(datePicker.Tag, propertyName)}}public System.DateTimeOffset {{propertyName}} { get; set; }
+            {{DataItemNameAttributeDeclaration(datePicker.Tag, propertyName)}}public DateTimeOffset {{propertyName}} { get; set; }
         """;
     }
 
@@ -382,7 +385,7 @@ static class DocumentWrapperComponents
             /// <summary>
             /// DatePicker「{{datePicker.Tag.EscapeLineFeed()}}」の日時を取得または設定します。
             /// </summary>
-            public System.DateTimeOffset {{options.GeneratedName(datePicker.Tag)}}
+            public DateTimeOffset {{options.GeneratedName(datePicker.Tag)}}
             {
                 get => DatePickers[{{StringLiteral(datePicker.Tag)}}].SelectedDateTime;
                 set => DatePickers[{{StringLiteral(datePicker.Tag)}}].SelectedDateTime = value;
