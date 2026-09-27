@@ -382,7 +382,7 @@ static partial class DocumentWrapperComponents
             /// </summary>
             public DateTimeOffset {{options.GeneratedName(datePicker.Tag)}}
             {
-                get => DatePickers[{{StringLiteral(datePicker.Tag)}}].SelectedDateTime;
+                get => DatePickers.Single(it => !it.IsInRepeatingSection && it.Tag == {{StringLiteral(datePicker.Tag)}}).SelectedDateTime;
                 set => DatePickers[{{StringLiteral(datePicker.Tag)}}].SelectedDateTime = value;
             }
         """;

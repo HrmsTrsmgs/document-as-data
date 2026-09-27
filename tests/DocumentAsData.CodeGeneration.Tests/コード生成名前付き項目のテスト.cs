@@ -178,7 +178,7 @@ public sealed class コード生成名前付き項目のテスト : IDisposable
         document.CheckBoxes.Select(it => it.IsChecked).Should().Equal(false, true, false);
     }
 
-    [Fact(Skip = "RS-03: 通常項目と明細内の検索範囲を分離する読み取り仕様。レビュー後にRedへ移す。")]
+    [Fact]
     public void 生成された通常DatePickerは明細内の同名項目ではなく通常項目を読み取れます()
     {
         using var document = GeneratedCodeInspection
