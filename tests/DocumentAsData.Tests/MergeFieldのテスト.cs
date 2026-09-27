@@ -263,6 +263,23 @@ public class MergeFieldのテスト
     }
 
     [Fact]
+    public void 明細内の複合MERGEFIELDを書き換えると文書全体から取得済みの同じ項目にも反映されます()
+    {
+        using var document = Document.Open(
+            Path.Combine("TestData", "明細内に複合MERGEFIELDを持つ繰り返しセクション.docx"));
+
+        // 明細内のフィールドはbegin/instrText/separate/result/endで構成します。
+        // 文書全体と明細内の検索は、同じOOXMLフィールドへ到達します。
+        var fieldFromDocument = document.MergeFields["CustomerName"];
+        var fieldFromItem = document.RepeatingSections["Items"]
+            .Items[0].MergeFields["CustomerName"];
+
+        fieldFromItem.Text = "変更後";
+
+        fieldFromDocument.Text.Should().Be("変更後");
+    }
+
+    [Fact]
     public void Textプロパティは複合MERGEFIELDの結果を設定したとき古い結果の印を解除します()
     {
         var sourcePath =
