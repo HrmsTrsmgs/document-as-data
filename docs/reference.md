@@ -14,6 +14,7 @@ DocumentAsDataは、DOCXの本文に名前を付けた項目とプログラム�
 | 自分で定義したデータ型を使う | `Document.Read<T>()`・`Replace(data)` | プロパティ名や属性で文書項目と対応付ける |
 | 実行時に決まる名前で読み書きする | `MergeFields` などのコレクション | 名前やTagで項目を指定する |
 | 文書にある項目を調べる | 各コレクションの列挙 | 名前・Tagと現在の値を取り出す |
+| 複数件の明細を読み書きする | 生成された `RepeatingSection<T>`・`Document.RepeatingSections` | Wordの繰り返しセクションを明細ごとに扱う。基本対応の範囲は後述 |
 | ファイルパスを使わず入出力する | `Document.Open(Stream)`・`SaveAs(Stream)` | 非シーク入力も扱う。出力にはシーク・長さ変更が必要 |
 | OOXMLの構造を検証して開く | `Document.Open(..., validate: true)` | 名前の有無や業務データの検査とは別の検証 |
 
@@ -21,7 +22,7 @@ DocumentAsDataは、DOCXの本文に名前を付けた項目とプログラム�
 
 現在は `.NET 10`（`net10.0`）が対象で、名前空間は `Marimo.DocumentAsData` です。
 ライブラリの実行にWordのインストールは必要ありません。
-この文書は開発中のソースを対象とします。Stream出力と生成用依存の分離は、公開済み `0.3.0` には含まれません。NuGetからの導入手順は[README](../README.md)を参照してください。
+この文書は `0.4.0` のソースを対象とします。NuGetからの導入手順は[README](../README.md)を参照してください。
 
 | パッケージ | 用途 |
 | --- | --- |
@@ -35,12 +36,12 @@ DocumentAsDataは、DOCXの本文に名前を付けた項目とプログラム�
 #### 共用ライブラリで生成する場合
 
 DOCXと生成コードを持つクラスライブラリでは、Coreを通常参照し、Buildを `PrivateAssets="all"` で参照すると、生成用のMSBuild設定を利用アプリへ渡さずに済みます。
-以下のバージョンは、開発版をローカルに梱包した場合の設定例です。
+0.4.0では次のように設定します。
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Marimo.DocumentAsData.Core" Version="0.3.0" />
-  <PackageReference Include="Marimo.DocumentAsData.Build" Version="0.3.0" PrivateAssets="all" />
+  <PackageReference Include="Marimo.DocumentAsData.Core" Version="0.4.0" />
+  <PackageReference Include="Marimo.DocumentAsData.Build" Version="0.4.0" PrivateAssets="all" />
   <DocumentAsData Include="template.docx" />
   <EmbeddedResource Include="template.docx" />
 </ItemGroup>
@@ -65,8 +66,9 @@ BuildだけをPrivateAssetsにするとCoreの依存まで隠れるため、上�
 | `TemplateDocument` | `Document` を継承し、文書を直接読み書きするプロパティを公開する |
 | `TemplateData` | 文書のデータを保持する通常のオブジェクト。文書とは自動連動しない |
 
-生成Documentのプロパティは、文字列・`bool`・`DateTimeOffset` の値を直接公開します。
+生成Documentの通常項目のプロパティは、文字列・`bool`・`DateTimeOffset` の値を直接公開します。
 MERGEFIELDやContent Controlのオブジェクトを取得するためのプロパティではありません。
+繰り返しセクションには、明細データを列挙・置換する `RepeatingSection<T>` のプロパティを生成します。
 
 ```csharp
 using MyDocuments;
@@ -102,12 +104,13 @@ CheckBoxとDatePickerは、それぞれ同じTagの同じ種類が必要です�
 テンプレートでは、生成する項目の名前を一意にしておくとこの違いを意識せずに使えます。
 
 必須項目検査は、[OOXMLの検証](#ooxmlの検証)とは別です。生成型のOpenにOOXML検証オプションは生成しません。
+繰り返しセクションを含む場合の検査範囲には、[別途制約](#繰り返しセクションの制約)があります。
 
 ### MSBuildで自動生成する
 
 SDK形式の利用側プロジェクトで `Marimo.DocumentAsData` を参照し、
 生成対象のDOCXを `DocumentAsData` 項目として指定します。
-ローカルパッケージの復元元を設定したうえで、例えば次のように記述します。
+例えば次のように記述します。公開前のパッケージを試す場合は、[ローカルの復元元](build-and-release.md#公開前にローカルパッケージを使う)を設定してください。
 
 ```xml
 <Project Sdk="Microsoft.NET.Sdk">
@@ -116,7 +119,7 @@ SDK形式の利用側プロジェクトで `Marimo.DocumentAsData` を参照し�
     <RootNamespace>MyDocuments</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Marimo.DocumentAsData" Version="0.3.0" />
+    <PackageReference Include="Marimo.DocumentAsData" Version="0.4.0" />
     <DocumentAsData Include="template.docx" />
   </ItemGroup>
 </Project>
@@ -329,6 +332,7 @@ TagのないContent Controlはコレクションへ含めません。ネスト�
 
 * MERGEFIELDは単純フィールドと、Wordが通常作る複合フィールドに対応します。
 * `Text` は保存された表示結果を読み書きします。Word標準の差し込み印刷、CSV連携、フィールド計算は実行しません。
+* 文書全体の `MergeFields` と繰り返しセクションの明細内の `MergeFields` から同じ複合MERGEFIELDを取得した場合、一方で `Text` を書き換えると、取得済みのもう一方にも反映されます。
 * MERGEFIELDの`Text`を書き込むと、そのフィールドをWordの更新からロックします。Word側で再計算するにはロックの解除が必要です。読み取りだけではロックを変更しません。
 * `ContentControls` は文字列用だけのコレクションです。プレーンテキストとリッチテキストを扱います。
 * 文字列Content Control内に複数の段落がある場合、`Text`は段落をCRLF（`\r\n`）で区切って読み取ります。
@@ -359,6 +363,66 @@ document.DatePickers["DeliveryDate"].SelectedDateTime = new DateTimeOffset(
 Word独自の表示形式すべてとの互換性はありません。自動テストは保存したOOXMLの表示文字列を確認します。Word実機で確認した範囲と未対応の書式は[日付書式の対応整理](date-format-compatibility.md)を参照してください。
 `DateOnly` へ自動変換したり、日本標準時へ一律に変換したりはしません。
 誕生日・期日などの業務上の意味付けは利用側で行ってください。
+
+## 繰り返しセクション
+
+Wordで明示的に設定された繰り返しセクションを、明細のまとまりとして扱います。
+セクション全体のTagで検索し、明細が1件でもコレクションを使います。同じTagの項目が並ぶだけの文書から繰り返しを推測しません。
+
+### 生成された型で扱う
+
+Tagが `Items` のセクションがある `template.docx` からは、`TemplateDocument.Items` が生成されます。
+型は `RepeatingSection<TemplateDocument.ItemsData>` です。明細データのプロパティは、生成元の最初の明細を見本にします。
+文字列Content ControlとMERGEFIELDは `string`、チェックボックスは `bool`、日付選択は `DateTimeOffset` です。
+
+```csharp
+var items = document.Items.ToArray();
+items[0].ItemName = "変更後";
+document.Items.Replace(items);
+```
+
+この例は各明細に `ItemName` の文字列Content Controlがある場合です。
+取得した明細データは読み取った時点の値を保持し、変更は `Replace` するまで文書へ反映されません。
+保存には別途 `Save` または `SaveAs` を呼びます。
+
+`NameMappings` によるセクション・明細プロパティの名前変更と、元のTagへの書き戻しにも対応します。
+生成される通常項目のプロパティは、明細内の同名項目を除いて読み書きします。文字列項目をMERGEFIELDとContent Controlの間で代用するときも同様です。
+生成された文書全体のData型は明細リストを含みません。明細はセクションのプロパティから別に読み書きしてください。
+
+### 名前を指定して扱う
+
+```csharp
+var section = document.RepeatingSections["Items"];
+section.Items[0].ContentControls["ItemName"].Text = "変更後";
+var items = section.Read<ItemData>().ToArray();
+section.Replace(items);
+```
+
+`ItemData` は `ItemName` などの対応プロパティを持つ自作クラスです。
+各明細の `ContentControls`、`MergeFields`、`CheckBoxes`、`DatePickers` は、その明細内を検索します。
+同じ名前が別の明細にあっても区別できます。同じコレクション内で名前が複数一致する場合は例外になります。
+`Read<T>()` と `Replace(data)` は明細ごとに[オブジェクトとの対応付け](#オブジェクトとの対応付け)を行います。
+`Replace` では渡したデータの件数へ明細を増減し、不足分は変更前の最後の明細を複製します。表行の構造・書式の保持と、複製したContent Controlの識別ID調整は基本ケースをテストしています。
+件数を変えた後は `section.Items` から明細を取り直してください。
+
+文書全体の低レイヤーコレクションは、明細内の項目も含めます。
+例えば `document.ContentControls["ItemName"]` は、文書全体に同名が複数あれば例外になります。
+`ContentControl.IsInRepeatingSection` と `MergeField.IsInRepeatingSection` で明細への所属を判定できます。
+汎用の `Document.Read<T>()`／`Replace(data)` と生成Documentの `Read()`／`Replace(data)` も文書全体を検索し、生成プロパティとは検索範囲が異なります。
+
+### 繰り返しセクションの制約
+
+0.4.0では基本対応として、次の範囲で利用してください。
+
+* テンプレートと置換データは1件以上が必要です。0件の表現や再追加の契約は未決定です。空の列挙を `Replace` へ渡さないでください。個別の `Add`・`Remove` APIもありません。
+* 明細は同じ項目構成を前提にします。繰り返しの入れ子や、画像・ブックマーク等を含む任意構造の複製は対応範囲に含めません。
+* `Replace` 失敗時に、既に行った件数変更や値の変更を戻す保証はありません。失敗した文書を保存せず、元の文書を開き直してから再試行してください。
+* 生成型の `Open` は各明細の文字列Content Control不足を検査します。他の3種類の明細別不足検査と、明細内でのMERGEFIELD・文字列Content Controlの置き換え互換性は未対応です。通常項目と明細のどちらに必須の名前があるかを、完全に検査するものでもありません。
+* 名前の診断は通常項目と明細を分けます。明細間の同名は衝突とせず、セクションと通常項目・予約メンバーの衝突、セクション間の明細データ型名の衝突を検出します。明細内の診断は最初の明細の文字列Content Controlが対象で、他の3種類の重複診断や、すべての生成型名の衝突検出は保証しません。
+* `Open(..., validate: true)` はOffice 2010向けの検証です。繰り返しセクションのOffice 2013要素の検証には対応していません。通常の `Open(path)`／`Open(stream)` を使ってください。
+* 自動テストでは固定DOCXの構造、値、保存後の再読み込みを確認しています。繰り返し部分のWord上での表示・編集は未確認です。
+
+検討中の論点とテスト範囲の詳細は[対応計画](repeating-sections-plan.md#精査で確認した残課題)に記録しています。
 
 ## 開く・保存する・閉じる
 
@@ -433,7 +497,7 @@ DocumentAsDataは連結先のデータを読み書きしません。
 親の繰り返しセクションがデータ連結されている場合も、その内側のContent Controlでは同じ制約が適用されます。
 
 コンボボックス、ドロップダウン、画像、繰り返しセクションなどを文字列Content Controlとしては扱いません。
-繰り返し行の追加・削除APIもありません。
+繰り返しセクションは `RepeatingSections` から取得し、`Replace(data)` で1件以上の明細へ置き換えられます。明細単位の `Add`・`Remove` APIはありません。
 文字列項目に別の種類の機能があることを期待せず、対応する項目をテンプレートで明示してください。
 
 ### ライブラリの対象外

@@ -2,8 +2,9 @@
 
 ## 今回の到達点
 
-リリース対象は `0.3.0`。この手引きのスクリプトは検証と梱包までを行い、公開操作は別に実施する。
+リリース対象は `0.4.0`。この手引きのスクリプトは検証と梱包までを行い、公開操作は別に実施する。
 リリース候補の成果物を作ったことと、公開済みであることは区別する。
+利用者向けの変更点は[更新履歴](../CHANGELOG.md)、移行手順は[READMEの0.4.0への更新](../README.md#040への更新)にまとめる。
 
 この文書は、ビルドまわりを後から復習するための読み順も兼ねる。
 最初は次の関係だけ押さえればよい。
@@ -38,10 +39,11 @@ IDEがソースの一覧を知るだけのときにもCompile項目は必要だ�
 
 * `Marimo.DocumentAsData.Core`：DOCXを読み書きする本体。
 * `Marimo.DocumentAsData.CodeGeneration`：Coreに依存する生成器。
-* `Marimo.DocumentAsData.Build`：生成器に依存し、ビルドへ組み込む設定とタスクを配布する。
-* `Marimo.DocumentAsData`：通常の利用者向けの統合パッケージ。Buildに依存し、上記3パッケージをまとめて導入する。
+* `Marimo.DocumentAsData.Build`：Coreに依存し、ビルドへ組み込む設定とタスク、生成用DLLを配布する。
+* `Marimo.DocumentAsData`：通常の利用者向けの統合パッケージ。Buildと、その依存先のCoreを導入する。
 
-Coreだけでも通常のライブラリとして使える。Buildを参照した場合は、依存関係として生成器とCoreも復元される。
+Coreだけでも通常のライブラリとして使える。0.4.0では生成器をBuildのtools内へ同梱し、アプリの実行時依存には渡さない。
+生成APIをアプリから直接呼ぶ場合は、CodeGenerationパッケージを明示的に参照する。
 統合パッケージ自身にはDLLやビルド設定を重複して梱包せず、Buildの`buildTransitive`設定を利用する。
 
 Buildパッケージでは、タスク本体と実行に必要なDLLを `tools/net10.0/` へ梱包する。
@@ -52,7 +54,7 @@ Buildパッケージでは、タスク本体と実行に必要なDLLを `tools/n
 参照DLLを追加せずに.NET 10の依存関係と対象フレームワークを対応付け、NuGetのNU5128を解消する。
 警告を抑制する設定ではない。[NuGet公式説明](https://learn.microsoft.com/en-us/nuget/reference/errors-and-warnings/nu5128)
 
-## TDDで確認したこと
+## 初版のビルド連携をTDDで確認したこと
 
 テスト本体は `tests/DocumentAsData.CodeGeneration.Tests/MSBuild連携タスクのテスト.cs`、
 一時プロジェクト作成は同プロジェクトの `テスト補助/MSBuild連携テストプロジェクト.cs` にある。
@@ -70,7 +72,7 @@ Buildパッケージでは、タスク本体と実行に必要なDLLを `tools/n
 
 Visual Studio版MSBuildとパッケージ実行の確認など、最初から通ったものをRedだったとは扱わない。
 本体に新しい振る舞いを追加した箇所は、失敗を確認してから必要な実装を入れている。
-今回の梱包作業ではコレクションや文書読み書きの公開APIは変更していない。
+初版の梱包整備では、コレクションや文書読み書きの公開APIは変更していない。0.4.0のAPI追加・変更はREADMEの更新案内を参照する。
 
 標準Cleanは主に `bin`／`obj` の出力を片付けるため、文書隣の生成ファイルには別の指定が必要だった。
 現在の対象から外された文書の古い生成ソースは、このCleanでも削除しない。既定Compileからの除外だけを行う。
@@ -112,7 +114,7 @@ pwsh -NoProfile -File ./scripts/Prepare-Release.ps1 -VisualStudioMSBuild '<MSBui
 スクリプトは先にdotnet版で全テストを実行し、その後、指定したホストでパッケージ関連テストを再実行する。
 常に新しい `artifacts/release/<実行ID>/` を作るため、以前の結果を削除したり混在させたりしない。
 
-* `packages/`：3つの `.nupkg`
+* `packages/`：4つの `.nupkg`
 * `tests/`：Release全テストのTRX
 * `visual-studio-tests/`：指定した場合の追加テスト結果
 * `SHA256SUMS.txt`：配布物のSHA-256
@@ -135,7 +137,7 @@ GitHub Actions上での実行結果はpush後に別途確認する。ローカ�
 </configuration>
 ```
 
-そのうえで、読み書きだけならCore、自動生成も使うならBuildをVersion="0.3.0"で参照する。
+そのうえで、読み書きだけならCore、自動生成も使うならBuildをVersion="0.4.0"で参照する。
 初めて試す場合は[READMEのコード生成入門](../README.md#はじめて使うコード生成でdocxを読み書きする)を参照する。
 設定の詳細は[機能リファレンスのMSBuild連携](reference.md#msbuildで自動生成する)を参照する。
 同じバージョンを再作成した際は、古いパッケージキャッシュを再利用していないことに注意する。
@@ -145,11 +147,11 @@ GitHub Actions上での実行結果はpush後に別途確認する。ローカ�
 
 1. PackageIdの所有権・利用可否、公開先、MITの著作権表示、最終バージョンを確認する。公開済みとは仮定しない。
 2. バージョンを変える場合は `src/Directory.Build.props` と対応する配布検査の期待値・READMEを揃える。
-3. READMEの「公開前」表記と利用例を最終確認し、必要な変更をコミットする。
+3. `CHANGELOG.md` に前版からの追加機能・動作変更・修正を記録する。READMEの更新案内、利用例、対応範囲も実装と照合し、破壊的な変更や既知の制約を記載してコミットする。公開前の版は公開準備中と明記し、公開確認後に実際の公開日へ更新する。
 4. クリーンな作業ツリーからPrepare-Releaseを再実行し、TRXとVERIFICATION.mdを確認する。
 5. 4パッケージ、依存関係、README、MIT、SHA-256を確認する。未実行環境の保証を加えない。
 6. GitHub Actions上の検証結果も確認する。公開権限・認証は別途用意する。
-7. 承認したコミット・バージョン・成果物だけでタグ、GitHub Release、NuGet公開を行う。
+7. 承認したコミット・バージョン・成果物だけでタグ、GitHub Release、NuGet公開を行う。GitHub Releaseの説明にも該当バージョンの更新履歴を掲載する。
 
 この準備スクリプトにはpush、タグ、Release作成、NuGet公開のコマンドを含めていない。
 公開時は依存順（Core → CodeGeneration → Build → 統合パッケージ）と、NuGet側で各バージョンが利用可能になったことを確認する。

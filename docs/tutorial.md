@@ -6,7 +6,7 @@
 ここでは同じサンプルを起点に、必要に応じて低レイヤーのAPIへ進みます。
 すべての使い方を覚えてから利用を始める必要はありません。
 
-以下のStream出力は開発版の機能で、公開済み `0.3.0` にはまだ含まれません。
+以下のStream出力は `0.4.0` の機能です。
 
 ## 1. 自分のテンプレートを使う
 
@@ -247,6 +247,76 @@ using var document = Document.Open("template.docx", validate: true);
 Stream版にも同じオプションがあります。違反が見つかると `InvalidDataException` になります。
 これはWord上の見た目や入力内容の正しさを保証する検査ではありません。
 生成型の必須項目検査とも別の機能です。
+
+## 6. 繰り返し明細を扱う
+
+明細を扱うには、Word側で繰り返しセクションを設定します。明細が1件でも同じコレクション用のAPIを使います。
+同じTagを持つ入力欄を並べただけでは繰り返しセクションにはなりません。
+
+まず既存のサンプルで試します。READMEで作ったプロジェクトの `template.docx` を、
+`tests/DocumentAsData.Tests/TestData/繰り返しセクションに2件の明細.docx` のコピーに差し替えてください。
+リポジトリを取得していない場合は、プロジェクトのフォルダーで次を実行してサンプルを取得できます。既存の `template.docx` は置き換わります。
+
+```powershell
+Invoke-WebRequest "https://raw.githubusercontent.com/HrmsTrsmgs/document-as-data/main/tests/DocumentAsData.Tests/TestData/繰り返しセクションに2件の明細.docx" -OutFile template.docx
+```
+
+この文書にはTagが `Items` のセクションと、`ItemName` が商品A・商品Bの明細があります。
+コピー先の名前を `template.docx` にするので、生成型名は `TemplateDocument` のままです。
+
+`Program.cs` を次の内容に置き換え、通常のビルドと実行を行います。
+
+```csharp
+using DocumentAsDataDemo;
+
+using var document = TemplateDocument.Open(
+    Path.Combine(AppContext.BaseDirectory, "template.docx"));
+
+foreach (var item in document.Items)
+{
+    Console.WriteLine(item.ItemName);
+}
+
+// 明細はデータとして読み取ります。変更しただけでは文書は変わりません。
+var items = document.Items.ToArray();
+items[0].ItemName = "商品C";
+document.Items.Replace(items);
+
+// 1件のデータを渡すと、文書の明細も1件になります。
+document.Items.Replace([new() { ItemName = "商品D" }]);
+document.SaveAs(Path.Combine(AppContext.BaseDirectory, "output.docx"));
+```
+
+コンソールには商品A・商品Bが表示され、保存した文書には商品Dの明細が1件残ります。
+セクションのTagから `Items` プロパティと、明細1件分の `TemplateDocument.ItemsData` 型が生成されます。
+上の `new()` はその明細データ型です。文書全体の `Read()`／`Replace(data)` へ明細リストを渡す方式ではありません。
+
+コード生成を使わない場合は、同じテンプレートを次のように扱えます。
+
+```csharp
+using Marimo.DocumentAsData;
+
+using var document = Document.Open(
+    Path.Combine(AppContext.BaseDirectory, "template.docx"));
+var section = document.RepeatingSections["Items"];
+
+section.Items[0].ContentControls["ItemName"].Text = "商品C";
+var items = section.Read<ItemData>().ToArray();
+items[1].ItemName = "商品D";
+section.Replace(items);
+document.SaveAs(Path.Combine(AppContext.BaseDirectory, "output.docx"));
+
+public sealed class ItemData
+{
+    public string ItemName { get; set; } = "";
+}
+```
+
+文書全体の `document.ContentControls["ItemName"]` では同名が複数になり、一意に取得できません。
+`section.Items[0].ContentControls["ItemName"]` と指定すると、最初の明細内だけを検索できます。
+
+この機能は1件以上の明細の基本対応です。空のデータでの置き換えや入れ子などには対応していません。
+失敗時の部分変更や生成型の検査範囲についても、[繰り返しセクションの制約](reference.md#繰り返しセクションの制約)を確認してください。
 
 ## 次に調べる
 

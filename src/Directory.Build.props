@@ -1,7 +1,7 @@
 <Project>
   <!-- 配布するプロジェクトだけに共通の公開情報を設定します。 -->
   <PropertyGroup>
-    <Version>0.3.0</Version>
+    <Version>0.4.0</Version>
     <Authors>HrmsTrsmgs</Authors>
     <PackageProjectUrl>https://github.com/HrmsTrsmgs/document-as-data</PackageProjectUrl>
     <RepositoryUrl>https://github.com/HrmsTrsmgs/document-as-data</RepositoryUrl>

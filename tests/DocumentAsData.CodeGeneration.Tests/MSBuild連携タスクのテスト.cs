@@ -22,7 +22,7 @@ public sealed class MSBuild連携タスクのテスト
         buildReference.SetAttributeValue("PrivateAssets", "all");
         buildReference.AddAfterSelf(new XElement("PackageReference",
             new XAttribute("Include", "Marimo.DocumentAsData.Core"),
-            new XAttribute("Version", "0.3.0")));
+            new XAttribute("Version", "0.4.0")));
         projectXml.Save(projectPath);
 
         var tested = PowerShell実行結果.Run(script, project.DirectoryPath);
@@ -47,7 +47,7 @@ public sealed class MSBuild連携タスクのテスト
         packed.ExitCode.Should().Be(0, packed.Output);
         var script = project.AddPowerShellPackageReferenceSample(
             build: true, run: true,
-            packageFilePattern: "Marimo.DocumentAsData.0.3.0.nupkg", sharedLibrary: true);
+            packageFilePattern: "Marimo.DocumentAsData.0.4.0.nupkg", sharedLibrary: true);
 
         var tested = PowerShell実行結果.Run(script, project.DirectoryPath);
 
@@ -68,7 +68,7 @@ public sealed class MSBuild連携タスクのテスト
         var packed = PowerShell実行結果.Run(packScriptFilePath, project.DirectoryPath);
         packed.ExitCode.Should().Be(0, packed.Output);
         var scriptFilePath = project.AddPowerShellPackageReferenceSample(
-            build: true, run: true, packageFilePattern: "Marimo.DocumentAsData.0.3.0.nupkg");
+            build: true, run: true, packageFilePattern: "Marimo.DocumentAsData.0.4.0.nupkg");
 
         var tested = PowerShell実行結果.Run(scriptFilePath, project.DirectoryPath);
 
@@ -88,10 +88,10 @@ public sealed class MSBuild連携タスクのテスト
         tested.ExitCode.Should().Be(0, tested.Output);
         Directory.GetFiles(Path.Combine(project.DirectoryPath, "packages"), "*.nupkg")
             .Select(Path.GetFileName).Should().BeEquivalentTo([
-                "Marimo.DocumentAsData.Core.0.3.0.nupkg",
-                "Marimo.DocumentAsData.CodeGeneration.0.3.0.nupkg",
-                "Marimo.DocumentAsData.Build.0.3.0.nupkg",
-                "Marimo.DocumentAsData.0.3.0.nupkg"]);
+                "Marimo.DocumentAsData.Core.0.4.0.nupkg",
+                "Marimo.DocumentAsData.CodeGeneration.0.4.0.nupkg",
+                "Marimo.DocumentAsData.Build.0.4.0.nupkg",
+                "Marimo.DocumentAsData.0.4.0.nupkg"]);
         foreach (var packagePath in Directory.GetFiles(Path.Combine(project.DirectoryPath, "packages"), "*.nupkg"))
         {
             using var package = ZipFile.OpenRead(packagePath);

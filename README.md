@@ -3,7 +3,7 @@
 Word文書（DOCX）の名前付き項目を、C#のプロパティとして読み書きする.NETライブラリです。
 Open XML SDKの型やXML構造を扱わずに、文書とプログラムの間でデータを交換できます。
 
-開発中の変更として、Stream出力と生成用依存の分離を追加しています。これらは公開済み `0.3.0` には含まれません。
+このソースのバージョンは `0.4.0` です。バージョンごとの変更は[更新履歴](https://github.com/HrmsTrsmgs/document-as-data/blob/main/CHANGELOG.md)、既存利用者向けの手順は[0.4.0への更新](#040への更新)を参照してください。
 
 たとえば、テンプレートから生成した型を使うと、次のように書けます。
 
@@ -25,6 +25,7 @@ document.SaveAs("output.docx");
 * **帳票を作る**：Wordの差し込みフィールド（MERGEFIELD）へ、プログラムから値を書き込む。
 * **入力済みの文書を読む**：Content Control（コンテンツコントロール）に人が入力した内容を、プログラムへ取り込む。
 * **フォームの値を文書へ戻す**：文字列、チェック状態、日付選択の値を読み書きする。
+* **複数件の明細を扱う**：Wordの繰り返しセクションを、型付きの明細コレクションとして読み書きする（基本対応）。
 
 基本契約は「データとして扱いたい場所に、Word側で明示的な構造と名前を付ける」ことです。
 自由な文章から氏名や住所を推測して抽出するライブラリではありません。
@@ -32,7 +33,7 @@ document.SaveAs("output.docx");
 
 ## はじめて使う：コード生成でDOCXを読み書きする
 
-現在の対象は **.NET 10** です。以下はバージョン `0.3.0` の導入手順です。
+現在の対象は **.NET 10** です。以下はバージョン `0.4.0` の導入手順です。
 通常は全部入りの [Marimo.DocumentAsData](https://www.nuget.org/packages/Marimo.DocumentAsData) を参照します。
 公開バージョンの一覧も、このNuGetパッケージページで確認できます。
 
@@ -67,7 +68,7 @@ Invoke-WebRequest "https://raw.githubusercontent.com/HrmsTrsmgs/document-as-data
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Marimo.DocumentAsData" Version="0.3.0" />
+    <PackageReference Include="Marimo.DocumentAsData" Version="0.4.0" />
     <DocumentAsData Include="template.docx" />
     <None Update="template.docx" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
@@ -75,7 +76,7 @@ Invoke-WebRequest "https://raw.githubusercontent.com/HrmsTrsmgs/document-as-data
 ```
 
 `DocumentAsData` はコード生成の対象、`None` の設定は実行時に使うDOCXのコピーを指定します。
-`Marimo.DocumentAsData` は読み書き用Coreとビルド連携用Buildを導入します。開発版では生成用DLLをBuildのツール内へ分離し、利用アプリの実行時依存には含めません。
+`Marimo.DocumentAsData` は読み書き用Coreとビルド連携用Buildを導入します。生成用DLLはBuildのツール内へ分離し、利用アプリの実行時依存には含めません。
 生成APIをプログラムから直接呼ぶ場合は `Marimo.DocumentAsData.CodeGeneration` を明示的に参照してください。
 サーバーとBlazorで共用するライブラリへの導入は、[共用ライブラリの設定](docs/reference.md#共用ライブラリで生成する場合)を参照してください。
 
@@ -129,9 +130,30 @@ Wordなどで開くと、名前が `株式会社サンプル`、住所が `大�
 1. [チュートリアル](https://github.com/HrmsTrsmgs/document-as-data/blob/main/docs/tutorial.md)：自分のテンプレート、生成したデータ型、手書きの型、名前指定のAPIの順に進みます。
 2. [機能リファレンス](https://github.com/HrmsTrsmgs/document-as-data/blob/main/docs/reference.md)：項目の種類、保存とStream、検証、コード生成、MSBuild設定、制限事項を調べます。
 3. [ビルドとリリースの手引き](https://github.com/HrmsTrsmgs/document-as-data/blob/main/docs/build-and-release.md)：ライブラリ開発や公開前検証の手順です。
+4. [更新履歴](https://github.com/HrmsTrsmgs/document-as-data/blob/main/CHANGELOG.md)：バージョンごとの追加機能、動作変更、不具合修正です。
 
 ソースを取得している場合は、リポジトリ内の `docs/tutorial.md`、
 `docs/reference.md`、`docs/build-and-release.md` でも読めます。
+
+## 0.4.0への更新
+
+0.3.0から更新する場合は、直接参照しているDocumentAsDataの各パッケージを `0.4.0` に揃え、
+通常のビルドでDOCXからコードを再生成してください。.NET 10、パッケージID、名前空間 `Marimo.DocumentAsData` は変わりません。
+
+主な追加機能は `SaveAs(Stream)` と、繰り返しセクションの読み書き・型付きコード生成です。
+機能追加・動作変更・修正の一覧は[更新履歴](https://github.com/HrmsTrsmgs/document-as-data/blob/main/CHANGELOG.md)にまとめています。
+
+使い方は[Stream入出力](https://github.com/HrmsTrsmgs/document-as-data/blob/main/docs/tutorial.md#streamから開く)と
+[繰り返し明細のチュートリアル](https://github.com/HrmsTrsmgs/document-as-data/blob/main/docs/tutorial.md#6-繰り返し明細を扱う)を参照してください。
+
+### 更新時の注意点
+
+* **生成APIの直接参照**：Buildと統合パッケージは、生成用DLLを利用アプリの実行時依存へ渡さなくなりました。`DocumentWrapperGenerator` をアプリから呼ぶ場合は、`Marimo.DocumentAsData.CodeGeneration` を明示的に参照してください。MSBuildで自動生成するだけなら追加の参照は不要です。
+* **Wordでのフィールド更新**：MERGEFIELDの `Text` に書き込むと、そのフィールドをロックし、古い結果としての更新要求を解除します。Word側で再計算したい場合はロックを解除してください。読み取りだけでは変更しません。
+* **データ連結されたContent Control**：WordのXMLマッピングがある項目では、`Text`・`IsChecked`・`SelectedDateTime` の読み書きが `NotSupportedException` になります。親の繰り返しセクションに連結がある場合も対象です。テンプレートの連結設定を確認してください。
+* **繰り返しを含む生成コード**：明細内の項目は、文書直下のプロパティやData型には生成しません。生成されたセクションのプロパティから扱ってください。通常項目のプロパティは明細外だけを検索しますが、汎用の `Read<T>()`／`Replace(data)` と生成型の `Read()`／`Replace(data)` は文書全体を検索します。
+
+繰り返しセクションは基本対応です。空の明細、検証範囲、失敗時の扱いなどは[繰り返しセクションの制約](https://github.com/HrmsTrsmgs/document-as-data/blob/main/docs/reference.md#繰り返しセクションの制約)を確認してください。
 
 ## 利用方法を選ぶ
 
@@ -164,12 +186,8 @@ document.SaveAs("output.docx");
 * 日付選択はテンプレートの言語・書式に従って表示を更新しますが、Word独自の全書式に対応するものではありません。省略時の扱いと確認済みの範囲は[機能リファレンス](docs/reference.md#チェックボックスと日時)と[日付書式の対応整理](docs/date-format-compatibility.md)を参照してください。
 * `Open(Stream)` は入力用Streamを借用し、内容を変更したり閉じたりしません。Streamで開いた文書の `Save()` は使用できません。`SaveAs(Stream)` で別の書き込み・シーク・長さ変更が可能なStreamへ出力できます。現在位置によらず先頭から全体を置き換え、出力先も閉じません。[Stream入出力の使い方](docs/tutorial.md#streamから開く)を参照してください。
 * MERGEFIELDやContent Controlを普通のテキストに変換・除去する処理、PDF化、レイアウト編集、OCR、自由文章からの推測抽出は行いません。
-* カスタムXMLとデータ連結されたContent Control、選択リスト、画像コントロール、繰り返し項目などには制約があります。詳細は機能リファレンスを参照してください。
-  繰り返しセクションは対応途中です。既存明細内の文字列Content Control・MERGEFIELD・チェックボックス・日付選択は個別に読み書きでき、`Read<T>()` で各明細を自作クラスへ読み取れます。`Replace<T>()` は1件以上の明細の増減、保存後の件数と値の保持、表行の構造・書式の保持、複製時のContent Control識別ID調整まで基本ケースを確認しています。コード生成は文字列Content Controlを持つ明細の列挙と、生成データによる `Replace` の基本ケースまで対応しています。繰り返しを考慮した生成診断などは未対応で、0件の契約も未決定です。[対応計画とSkipテスト](docs/repeating-sections-plan.md)をレビュー中です。
-
-生成された通常項目のプロパティは、明細内の同名項目を除外して読み書きします。文字列Content Control・MERGEFIELD・チェックボックス・日付選択が対象で、文字列Content ControlとMERGEFIELDを相互に代用する場合も同様です。`ContentControl.IsInRepeatingSection` と `MergeField.IsInRepeatingSection` で所属を判定できます。低レイヤーのコレクションや、生成Data経由の `Read()`／`Replace(data)` が文書全体を検索する契約は変更していません。
-生成された明細データではMERGEFIELDの文字列、チェックボックスのチェック状態、日付選択の日時（`DateTimeOffset`）も読み取れます。明細データの変更は、`Replace` するまで文書へ反映されません。
-`NameMappings` によるセクション・明細プロパティの名前変更と、変更後の名前から元のTagへの書き戻しにも対応しています。型付きの `Open` は各明細の文字列Content Control不足を検査します。他の種類の明細内不足や、文字列Content ControlとMERGEFIELDの置き換え互換性は、この明細別検査ではまだ扱っていません。
+* データ連結されたContent Control、選択リスト、画像コントロールには[制約](docs/reference.md#テンプレートで避けるもの)があります。
+* 繰り返しセクションは1件以上の明細を持つテンプレートが対象です。0件への置き換え、入れ子、任意の文書構造の複製は対応範囲に含めません。[使い方と制約](docs/reference.md#繰り返しセクション)を確認してください。
 
 ## 開発する
 
