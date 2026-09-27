@@ -263,7 +263,7 @@ public sealed class コード生成診断のテスト
             .Should().NotContain(it => it.GeneratedName == "Code");
     }
 
-    [Fact(Skip = "RS-02: 異なる明細にある同名CheckBoxの診断をレビューしてからRedにします。")]
+    [Fact]
     public void 異なる明細の同名CheckBoxを生成名の衝突と診断しません()
     {
         // 二つの明細には、それぞれAgreementというCheckBoxが一つずつあります。

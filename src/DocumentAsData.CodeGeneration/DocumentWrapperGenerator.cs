@@ -67,6 +67,7 @@ public static class DocumentWrapperGenerator
                where !contentControl.IsInRepeatingSection
                select contentControl.Tag,
             .. from checkBox in document.CheckBoxes
+               where !checkBox.IsInRepeatingSection
                select checkBox.Tag,
             .. from datePicker in document.DatePickers
                select datePicker.Tag,
