@@ -404,7 +404,7 @@ static partial class DocumentWrapperComponents
             public bool {{options.GeneratedName(checkBox.Tag)}}
             {
                 get => CheckBoxes.Single(it => !it.IsInRepeatingSection && it.Tag == {{StringLiteral(checkBox.Tag)}}).IsChecked;
-                set => CheckBoxes[{{StringLiteral(checkBox.Tag)}}].IsChecked = value;
+                set => CheckBoxes.Single(it => !it.IsInRepeatingSection && it.Tag == {{StringLiteral(checkBox.Tag)}}).IsChecked = value;
             }
         """;
 

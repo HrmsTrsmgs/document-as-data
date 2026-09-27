@@ -163,7 +163,7 @@ public sealed class コード生成名前付き項目のテスト : IDisposable
         (documentAccessor.Agreement as object).Should().Be(true);
     }
 
-    [Fact(Skip = "RS-03: 通常項目の書き込みが明細内に影響しない仕様。レビュー後にRedへ移す。")]
+    [Fact]
     public void 生成された通常CheckBoxへの書き込みは同名の明細内項目を変更しません()
     {
         using var document = GeneratedCodeInspection
