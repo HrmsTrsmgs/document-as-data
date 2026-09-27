@@ -356,6 +356,7 @@ static partial class DocumentWrapperComponents
             /// </summary>
             /// <remarks>
             /// 読み取りと書き込みはMERGEFIELDを優先し、存在しない場合に同名の文字列Content Controlを使用します。
+            /// どちらの種類も繰り返しセクション内の項目は対象にしません。
             /// </remarks>
             public string {{options.GeneratedName(mergeField.Name)}}
             {
@@ -380,6 +381,7 @@ static partial class DocumentWrapperComponents
             /// <summary>
             /// DatePicker「{{datePicker.Tag.EscapeLineFeed()}}」の日時を取得または設定します。
             /// </summary>
+            /// <remarks>繰り返しセクション内の項目は対象にしません。</remarks>
             public DateTimeOffset {{options.GeneratedName(datePicker.Tag)}}
             {
                 get => DatePickers.Single(it => !it.IsInRepeatingSection && it.Tag == {{StringLiteral(datePicker.Tag)}}).SelectedDateTime;
@@ -401,6 +403,7 @@ static partial class DocumentWrapperComponents
             /// <summary>
             /// CheckBox「{{checkBox.Tag.EscapeLineFeed()}}」のチェック状態を取得または設定します。
             /// </summary>
+            /// <remarks>繰り返しセクション内の項目は対象にしません。</remarks>
             public bool {{options.GeneratedName(checkBox.Tag)}}
             {
                 get => CheckBoxes.Single(it => !it.IsInRepeatingSection && it.Tag == {{StringLiteral(checkBox.Tag)}}).IsChecked;
@@ -424,13 +427,14 @@ static partial class DocumentWrapperComponents
             /// </summary>
             /// <remarks>
             /// 読み取りと書き込みは文字列Content Controlを優先し、存在しない場合に同名のMERGEFIELDを使用します。
+            /// どちらの種類も繰り返しセクション内の項目は対象にしません。
             /// </remarks>
             public string {{options.GeneratedName(contentControl.Tag)}}
             {
                 get => (ContentControls.SingleOrDefault(it => !it.IsInRepeatingSection && it.Tag == {{StringLiteral(contentControl.Tag)}}) as IDocumentTextItem
                     ?? MergeFields.Single(it => !it.IsInRepeatingSection && it.Name == {{StringLiteral(contentControl.Tag)}})).Text;
                 set => (ContentControls.SingleOrDefault(it => !it.IsInRepeatingSection && it.Tag == {{StringLiteral(contentControl.Tag)}}) as IDocumentTextItem
-                    ?? MergeFields[{{StringLiteral(contentControl.Tag)}}]).Text = value;
+                    ?? MergeFields.Single(it => !it.IsInRepeatingSection && it.Name == {{StringLiteral(contentControl.Tag)}})).Text = value;
             }
         """;
 

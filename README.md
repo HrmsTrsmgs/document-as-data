@@ -167,7 +167,7 @@ document.SaveAs("output.docx");
 * カスタムXMLとデータ連結されたContent Control、選択リスト、画像コントロール、繰り返し項目などには制約があります。詳細は機能リファレンスを参照してください。
   繰り返しセクションは対応途中です。既存明細内の文字列Content Control・MERGEFIELD・チェックボックス・日付選択は個別に読み書きでき、`Read<T>()` で各明細を自作クラスへ読み取れます。`Replace<T>()` は1件以上の明細の増減、保存後の件数と値の保持、表行の構造・書式の保持、複製時のContent Control識別ID調整まで基本ケースを確認しています。コード生成は文字列Content Controlを持つ明細の列挙と、生成データによる `Replace` の基本ケースまで対応しています。繰り返しを考慮した生成診断などは未対応で、0件の契約も未決定です。[対応計画とSkipテスト](docs/repeating-sections-plan.md)をレビュー中です。
 
-生成プロパティでは、文書直下と明細内の同名の文字列Content Controlを別々に読み取れます。`ContentControl.IsInRepeatingSection` で所属を判定できます。同名が内外にある場合の文書直下への書き込みは、まだ未対応です。
+生成された通常項目のプロパティは、明細内の同名項目を除外して読み書きします。文字列Content Control・MERGEFIELD・チェックボックス・日付選択が対象で、文字列Content ControlとMERGEFIELDを相互に代用する場合も同様です。`ContentControl.IsInRepeatingSection` と `MergeField.IsInRepeatingSection` で所属を判定できます。低レイヤーのコレクションや、生成Data経由の `Read()`／`Replace(data)` が文書全体を検索する契約は変更していません。
 生成された明細データではMERGEFIELDの文字列、チェックボックスのチェック状態、日付選択の日時（`DateTimeOffset`）も読み取れます。明細データの変更は、`Replace` するまで文書へ反映されません。
 `NameMappings` によるセクション・明細プロパティの名前変更と、変更後の名前から元のTagへの書き戻しにも対応しています。型付きの `Open` は各明細の文字列Content Control不足を検査します。他の種類の明細内不足や、文字列Content ControlとMERGEFIELDの置き換え互換性は、この明細別検査ではまだ扱っていません。
 
