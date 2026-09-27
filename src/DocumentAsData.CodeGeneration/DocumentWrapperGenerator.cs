@@ -102,6 +102,14 @@ public static class DocumentWrapperGenerator
                select new CodeGenerationDiagnostic(
                    true,
                    sourceNames.Key,
+                   [.. sourceNames]),
+            .. from section in document.RepeatingSections
+               group section.Tag by options.DataTypeName(section.Tag).IdentifierComparisonKey
+               into sourceNames
+               where sourceNames.Count() > 1
+               select new CodeGenerationDiagnostic(
+                   true,
+                   sourceNames.Key,
                    [.. sourceNames])
         ];
     }

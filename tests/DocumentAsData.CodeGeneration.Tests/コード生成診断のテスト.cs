@@ -301,7 +301,7 @@ public sealed class コード生成診断のテスト
                 new CodeGenerationDiagnostic(true, "RepeatingSections", ["Items"]));
     }
 
-    [Fact(Skip = "RS-02: セクションと通常項目の生成名が同じ場合の診断をレビューしてからRedにします。")]
+    [Fact]
     public void 繰り返しセクションと通常項目の生成プロパティ名が衝突すると診断します()
     {
         GeneratedCodeInspection
@@ -314,7 +314,7 @@ public sealed class コード生成診断のテスト
                 && it.SourceNames.Contains("ItemName"));
     }
 
-    [Fact(Skip = "RS-02: 二つのセクションが同じ明細データ型名を生成する場合の診断をレビューしてからRedにします。")]
+    [Fact]
     public void 異なるセクションの明細データ型名が衝突すると診断します()
     {
         GeneratedCodeInspection
