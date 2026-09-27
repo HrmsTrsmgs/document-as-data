@@ -328,6 +328,15 @@ public sealed class コード生成診断のテスト
     }
 
     [Fact]
+    public void 異なる明細データ型名を生成する二つのセクションは衝突と診断しません()
+    {
+        // 固定文書にはItemsとOptionsという二つの繰り返しセクションがあります。
+        GeneratedCodeInspection
+            .GenerateDiagnostics(@"TestData\コード生成\repeatingSections.docx")
+            .Should().BeEmpty();
+    }
+
+    [Fact]
     public void 同じ生成名に三つ以上の文書項目が対応した場合にすべての元名を一つの診断へ含めます()
     {
         // 固定文書にはCustomerName・Address・Telephoneの単純MERGEFIELDが一つずつあります。
