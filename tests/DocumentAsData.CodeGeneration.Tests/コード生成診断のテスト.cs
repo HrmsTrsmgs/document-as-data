@@ -254,7 +254,7 @@ public sealed class コード生成診断のテスト
             .Should().BeEmpty();
     }
 
-    [Fact(Skip = "RS-02: 異なる明細にある同名MERGEFIELDの診断をレビューしてからRedにします。")]
+    [Fact]
     public void 異なる明細の同名MERGEFIELDを生成名の衝突と診断しません()
     {
         // 二つの明細には、それぞれCodeというMERGEFIELDが一つずつあります。

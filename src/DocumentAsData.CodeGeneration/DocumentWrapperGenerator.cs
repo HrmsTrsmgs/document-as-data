@@ -61,6 +61,7 @@ public static class DocumentWrapperGenerator
         string[] propertySourceNames =
         [
             .. from mergeField in document.MergeFields
+               where !mergeField.IsInRepeatingSection
                select mergeField.Name,
             .. from contentControl in document.ContentControls
                where !contentControl.IsInRepeatingSection
