@@ -150,7 +150,7 @@ public sealed class コード生成名前付き項目のテスト : IDisposable
         document.MergeFields.Select(it => it.Text).Should().Equal("A001", "B001", "変更後のコード");
     }
 
-    [Fact(Skip = "RS-03: 通常項目と明細内の検索範囲を分離する読み取り仕様。レビュー後にRedへ移す。")]
+    [Fact]
     public void 生成された通常CheckBoxは明細内の同名項目ではなく通常項目を読み取れます()
     {
         // 最初の明細はfalse、通常項目はtrueなので、文書順の先頭を選ぶだけでは一致しません。
