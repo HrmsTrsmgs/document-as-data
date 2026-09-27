@@ -63,11 +63,15 @@ public static class DocumentWrapperGenerator
             .. from mergeField in document.MergeFields
                select mergeField.Name,
             .. from contentControl in document.ContentControls
+               where !contentControl.IsInRepeatingSection
                select contentControl.Tag,
             .. from checkBox in document.CheckBoxes
                select checkBox.Tag,
             .. from datePicker in document.DatePickers
-               select datePicker.Tag
+               select datePicker.Tag,
+            .. from section in document.RepeatingSections
+               from contentControl in section.Items[0].ContentControls
+               select contentControl.Tag
         ];
         var documentName = Path.GetFileNameWithoutExtension(filePath);
         string[] reservedNames =

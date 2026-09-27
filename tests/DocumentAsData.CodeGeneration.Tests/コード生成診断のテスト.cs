@@ -245,13 +245,40 @@ public sealed class コード生成診断のテスト
                 && it.SourceNames.Contains("customer-id"));
     }
 
-    [Fact(Skip = "RS-02: 別々の明細で同じTagを使う場合の診断範囲をレビューしてからRedにします。")]
+    [Fact]
     public void 異なる明細に同じTagがあっても生成名の衝突と診断しません()
     {
         // Itemsの二つの明細には、それぞれItemNameが一つずつあります。
         GeneratedCodeInspection
             .GenerateDiagnostics(@"TestData\コード生成\repeatingItems.docx")
             .Should().BeEmpty();
+    }
+
+    [Fact(Skip = "RS-02: 異なる明細にある同名MERGEFIELDの診断をレビューしてからRedにします。")]
+    public void 異なる明細の同名MERGEFIELDを生成名の衝突と診断しません()
+    {
+        // 二つの明細には、それぞれCodeというMERGEFIELDが一つずつあります。
+        GeneratedCodeInspection
+            .GenerateDiagnostics(@"TestData\コード生成\repeatingKinds.docx")
+            .Should().NotContain(it => it.GeneratedName == "Code");
+    }
+
+    [Fact(Skip = "RS-02: 異なる明細にある同名CheckBoxの診断をレビューしてからRedにします。")]
+    public void 異なる明細の同名CheckBoxを生成名の衝突と診断しません()
+    {
+        // 二つの明細には、それぞれAgreementというCheckBoxが一つずつあります。
+        GeneratedCodeInspection
+            .GenerateDiagnostics(@"TestData\コード生成\repeatingKinds.docx")
+            .Should().NotContain(it => it.GeneratedName == "Agreement");
+    }
+
+    [Fact(Skip = "RS-02: 異なる明細にある同名DatePickerの診断をレビューしてからRedにします。")]
+    public void 異なる明細の同名DatePickerを生成名の衝突と診断しません()
+    {
+        // 二つの明細には、それぞれDeliveryDateというDatePickerが一つずつあります。
+        GeneratedCodeInspection
+            .GenerateDiagnostics(@"TestData\コード生成\repeatingKinds.docx")
+            .Should().NotContain(it => it.GeneratedName == "DeliveryDate");
     }
 
     [Fact(Skip = "RS-02: 通常項目と明細内項目の名前を別の範囲として扱う仕様をレビューしてからRedにします。")]
