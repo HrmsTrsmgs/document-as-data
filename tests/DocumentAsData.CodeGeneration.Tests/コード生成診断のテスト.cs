@@ -281,7 +281,7 @@ public sealed class コード生成診断のテスト
             .Should().NotContain(it => it.GeneratedName == "DeliveryDate");
     }
 
-    [Fact(Skip = "RS-02: 通常項目と明細内項目の名前を別の範囲として扱う仕様をレビューしてからRedにします。")]
+    [Fact]
     public void 通常項目と明細内項目が同名でも生成名の衝突と診断しません()
     {
         // 外側のItemNameと、Items内の各明細のItemNameは別の生成データ型に属します。

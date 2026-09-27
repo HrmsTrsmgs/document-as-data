@@ -58,23 +58,25 @@ public static class DocumentWrapperGenerator
         configure?.Invoke(options);
 
         using var document = Document.Open(filePath);
-        string[] propertySourceNames =
+        IEnumerable<string>[] propertySourceNameScopes =
         [
-            .. from mergeField in document.MergeFields
-               where !mergeField.IsInRepeatingSection
-               select mergeField.Name,
-            .. from contentControl in document.ContentControls
-               where !contentControl.IsInRepeatingSection
-               select contentControl.Tag,
-            .. from checkBox in document.CheckBoxes
-               where !checkBox.IsInRepeatingSection
-               select checkBox.Tag,
-            .. from datePicker in document.DatePickers
-               where !datePicker.IsInRepeatingSection
-               select datePicker.Tag,
+            [
+                .. from mergeField in document.MergeFields
+                   where !mergeField.IsInRepeatingSection
+                   select mergeField.Name,
+                .. from contentControl in document.ContentControls
+                   where !contentControl.IsInRepeatingSection
+                   select contentControl.Tag,
+                .. from checkBox in document.CheckBoxes
+                   where !checkBox.IsInRepeatingSection
+                   select checkBox.Tag,
+                .. from datePicker in document.DatePickers
+                   where !datePicker.IsInRepeatingSection
+                   select datePicker.Tag
+            ],
             .. from section in document.RepeatingSections
-               from contentControl in section.Items[0].ContentControls
-               select contentControl.Tag
+               select from contentControl in section.Items[0].ContentControls
+                      select contentControl.Tag
         ];
         var documentName = Path.GetFileNameWithoutExtension(filePath);
         string[] reservedNames =
@@ -87,9 +89,10 @@ public static class DocumentWrapperGenerator
         return
         [
             .. InvalidDocumentNameDiagnostics(filePath, options),
-            .. from sourceName in propertySourceNames
-               group sourceName by options.GeneratedName(sourceName).IdentifierComparisonKey
-               into sourceNames
+            .. from scope in propertySourceNameScopes
+               from sourceNames in
+                   (from sourceName in scope
+                    group sourceName by options.GeneratedName(sourceName).IdentifierComparisonKey)
                where sourceNames.Count() > 1
                    || sourceNames.Key.IsEmpty()
                    || reservedNames.Contains(sourceNames.Key)
