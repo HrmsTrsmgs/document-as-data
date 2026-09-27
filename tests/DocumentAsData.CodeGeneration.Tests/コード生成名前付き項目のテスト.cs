@@ -209,7 +209,7 @@ public sealed class コード生成名前付き項目のテスト : IDisposable
                 new DateTimeOffset(2026, 10, 2, 0, 0, 0, TimeSpan.Zero));
     }
 
-    [Fact(Skip = "RS-03: 文字列項目の代替検索でも明細内を除外する読み取り仕様。レビュー後にRedへ移す。")]
+    [Fact]
     public void 生成された通常MERGEFIELDは明細内の同名項目を除いて通常の文字列ContentControlで代用して読み取れます()
     {
         // 生成元はMERGEFIELDだけ。実行時は通常項目を文字列Content Controlに置き換え、
