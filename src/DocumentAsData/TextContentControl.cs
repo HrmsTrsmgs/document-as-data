@@ -84,16 +84,28 @@ public class TextContentControl : ContentControl, IDocumentTextItem
                     Element.Elements<Wordprocessing.SdtContentBlock>()
                         .SelectMany(it => it.Elements<Wordprocessing.Paragraph>())
                         .Skip(1)
-                where paragraph.ChildElements.All(it =>
-                    it is Wordprocessing.ParagraphProperties
-                    || it is Wordprocessing.Run run && run.ChildElements.All(child =>
-                        child is Wordprocessing.RunProperties or Wordprocessing.Text))
+                where ContainsOnlyTextAndFormatting(paragraph)
                 select paragraph
             ).ToArray())
         {
             paragraph.Remove();
         }
     }
+
+    /// <summary>
+    /// 消去済みの文字列と書式だけの段落かを判定します。
+    /// 画像や入れ子のコントロールなど、残すべき内容があれば削除対象にしません。
+    /// </summary>
+    /// <param name="paragraph">先頭以外の、Content Control直下の段落。</param>
+    /// <returns>段落を除去しても文字列・書式以外の内容が失われない場合はtrue。</returns>
+    static bool ContainsOnlyTextAndFormatting(Wordprocessing.Paragraph paragraph) =>
+        paragraph.ChildElements.All(it => it switch
+        {
+            Wordprocessing.ParagraphProperties => true,
+            Wordprocessing.Run run => run.ChildElements.All(child =>
+                child is Wordprocessing.RunProperties or Wordprocessing.Text),
+            _ => false
+        });
 
     /// <summary>
     /// 段落を含む場合は各段落の値をCRLFで結合し、含まない場合は文字列を直接読み取ります。
