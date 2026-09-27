@@ -245,6 +245,61 @@ public sealed class コード生成診断のテスト
                 && it.SourceNames.Contains("customer-id"));
     }
 
+    [Fact(Skip = "RS-02: 別々の明細で同じTagを使う場合の診断範囲をレビューしてからRedにします。")]
+    public void 異なる明細に同じTagがあっても生成名の衝突と診断しません()
+    {
+        // Itemsの二つの明細には、それぞれItemNameが一つずつあります。
+        GeneratedCodeInspection
+            .GenerateDiagnostics(@"TestData\コード生成\repeatingItems.docx")
+            .Should().BeEmpty();
+    }
+
+    [Fact(Skip = "RS-02: 通常項目と明細内項目の名前を別の範囲として扱う仕様をレビューしてからRedにします。")]
+    public void 通常項目と明細内項目が同名でも生成名の衝突と診断しません()
+    {
+        // 外側のItemNameと、Items内の各明細のItemNameは別の生成データ型に属します。
+        GeneratedCodeInspection
+            .GenerateDiagnostics(@"TestData\コード生成\repeatingOutside.docx")
+            .Should().BeEmpty();
+    }
+
+    [Fact(Skip = "RS-02: 生成セクション名と既存メンバー名の衝突診断をレビューしてからRedにします。")]
+    public void 繰り返しセクションの生成プロパティ名が既存メンバー名と衝突すると診断します()
+    {
+        GeneratedCodeInspection
+            .GenerateDiagnostics(
+                @"TestData\コード生成\repeatingTemplate.docx",
+                options => options.NameMappings["Items"] = "RepeatingSections")
+            .Should().ContainEquivalentOf(
+                new CodeGenerationDiagnostic(true, "RepeatingSections", ["Items"]));
+    }
+
+    [Fact(Skip = "RS-02: セクションと通常項目の生成名が同じ場合の診断をレビューしてからRedにします。")]
+    public void 繰り返しセクションと通常項目の生成プロパティ名が衝突すると診断します()
+    {
+        GeneratedCodeInspection
+            .GenerateDiagnostics(
+                @"TestData\コード生成\repeatingOutside.docx",
+                options => options.NameMappings["Items"] = "ItemName")
+            .Should().Contain(it => it.IsError
+                && it.GeneratedName == "ItemName"
+                && it.SourceNames.Contains("Items")
+                && it.SourceNames.Contains("ItemName"));
+    }
+
+    [Fact(Skip = "RS-02: 二つのセクションが同じ明細データ型名を生成する場合の診断をレビューしてからRedにします。")]
+    public void 異なるセクションの明細データ型名が衝突すると診断します()
+    {
+        GeneratedCodeInspection
+            .GenerateDiagnostics(
+                @"TestData\コード生成\repeatingSections.docx",
+                options => options.NameMappings["Options"] = "Items")
+            .Should().Contain(it => it.IsError
+                && it.GeneratedName == "ItemsData"
+                && it.SourceNames.Contains("Items")
+                && it.SourceNames.Contains("Options"));
+    }
+
     [Fact]
     public void 同じ生成名に三つ以上の文書項目が対応した場合にすべての元名を一つの診断へ含めます()
     {
