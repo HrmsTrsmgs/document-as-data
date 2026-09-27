@@ -122,7 +122,7 @@ public sealed class コード生成名前付き項目のテスト : IDisposable
         items.Select(it => it.ItemName as object).Should().Equal("商品A", "商品B");
     }
 
-    [Fact(Skip = "RS-03: 通常項目と明細内の検索範囲を分離する読み取り仕様。レビュー後にRedへ移す。")]
+    [Fact]
     public void 生成された通常MERGEFIELDは明細内の同名項目ではなく通常項目を読み取れます()
     {
         // 固定データは明細2件を通常項目より先に置き、それぞれ異なる値を持たせています。

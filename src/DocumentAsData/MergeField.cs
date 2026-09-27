@@ -58,9 +58,9 @@ public class MergeField : DocumentItem, IDocumentTextItem
     }
 
     /// <summary>
-    /// 明細内のフィールドを文書直下にも重複生成しないため、所属範囲を保持します。
+    /// 繰り返しセクション内の項目であるかを取得します。
     /// </summary>
-    internal bool IsInRepeatingSection { get; }
+    public bool IsInRepeatingSection { get; }
 
     /// <summary>
     /// MERGEFIELDの名前を取得します。

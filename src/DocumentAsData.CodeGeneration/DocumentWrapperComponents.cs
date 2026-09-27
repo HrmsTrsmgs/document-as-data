@@ -359,7 +359,7 @@ static partial class DocumentWrapperComponents
             /// </remarks>
             public string {{options.GeneratedName(mergeField.Name)}}
             {
-                get => (MergeFields.SingleOrDefault(it => it.Name == {{StringLiteral(mergeField.Name)}}) as IDocumentTextItem
+                get => (MergeFields.SingleOrDefault(it => !it.IsInRepeatingSection && it.Name == {{StringLiteral(mergeField.Name)}}) as IDocumentTextItem
                     ?? ContentControls[{{StringLiteral(mergeField.Name)}}]).Text;
                 set => (MergeFields.SingleOrDefault(it => it.Name == {{StringLiteral(mergeField.Name)}}) as IDocumentTextItem
                     ?? ContentControls[{{StringLiteral(mergeField.Name)}}]).Text = value;
