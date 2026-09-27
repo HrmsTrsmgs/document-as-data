@@ -290,7 +290,7 @@ public sealed class コード生成診断のテスト
             .Should().BeEmpty();
     }
 
-    [Fact(Skip = "RS-02: 生成セクション名と既存メンバー名の衝突診断をレビューしてからRedにします。")]
+    [Fact]
     public void 繰り返しセクションの生成プロパティ名が既存メンバー名と衝突すると診断します()
     {
         GeneratedCodeInspection

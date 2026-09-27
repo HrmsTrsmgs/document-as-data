@@ -21,6 +21,7 @@ public static class DocumentWrapperGenerator
         nameof(Document.ContentControls),
         nameof(Document.CheckBoxes),
         nameof(Document.DatePickers),
+        nameof(Document.RepeatingSections),
         "ValidateRequiredItems"
     ];
 
@@ -72,7 +73,9 @@ public static class DocumentWrapperGenerator
                    select checkBox.Tag,
                 .. from datePicker in document.DatePickers
                    where !datePicker.IsInRepeatingSection
-                   select datePicker.Tag
+                   select datePicker.Tag,
+                .. from section in document.RepeatingSections
+                   select section.Tag
             ],
             .. from section in document.RepeatingSections
                select from contentControl in section.Items[0].ContentControls
