@@ -122,6 +122,152 @@ public sealed class コード生成名前付き項目のテスト : IDisposable
         items.Select(it => it.ItemName as object).Should().Equal("商品A", "商品B");
     }
 
+    [Fact(Skip = "RS-03: 通常項目と明細内の検索範囲を分離する読み取り仕様。レビュー後にRedへ移す。")]
+    public void 生成された通常MERGEFIELDは明細内の同名項目ではなく通常項目を読み取れます()
+    {
+        // 固定データは明細2件を通常項目より先に置き、それぞれ異なる値を持たせています。
+        using var document = GeneratedCodeInspection
+            .AssemblyFrom(GeneratedCodeInspection.GenerateSources(@"TestData\コード生成\repeatingOutsideMergeField.docx"))
+            .GeneratedType("RepeatingOutsideMergeFieldDocument")
+            .InvokeStaticMethod<Document>("Open", @"TestData\コード生成\repeatingOutsideMergeField.docx");
+        dynamic documentAccessor = document;
+
+        (documentAccessor.Code as object).Should().Be("文書全体のコード");
+    }
+
+    [Fact(Skip = "RS-03: 通常項目の書き込みが明細内に影響しない仕様。レビュー後にRedへ移す。")]
+    public void 生成された通常MERGEFIELDへの書き込みは同名の明細内項目を変更しません()
+    {
+        using var document = GeneratedCodeInspection
+            .AssemblyFrom(GeneratedCodeInspection.GenerateSources(@"TestData\コード生成\repeatingOutsideMergeField.docx"))
+            .GeneratedType("RepeatingOutsideMergeFieldDocument")
+            .InvokeStaticMethod<Document>("Open", @"TestData\コード生成\repeatingOutsideMergeField.docx");
+        dynamic documentAccessor = document;
+
+        documentAccessor.Code = "変更後のコード";
+
+        // 未対応の生成getterには依存せず、文書順（明細2件、通常項目）に全ての値を確認します。
+        document.MergeFields.Select(it => it.Text).Should().Equal("A001", "B001", "変更後のコード");
+    }
+
+    [Fact(Skip = "RS-03: 通常項目と明細内の検索範囲を分離する読み取り仕様。レビュー後にRedへ移す。")]
+    public void 生成された通常CheckBoxは明細内の同名項目ではなく通常項目を読み取れます()
+    {
+        // 最初の明細はfalse、通常項目はtrueなので、文書順の先頭を選ぶだけでは一致しません。
+        using var document = GeneratedCodeInspection
+            .AssemblyFrom(GeneratedCodeInspection.GenerateSources(@"TestData\コード生成\repeatingOutsideCheckBox.docx"))
+            .GeneratedType("RepeatingOutsideCheckBoxDocument")
+            .InvokeStaticMethod<Document>("Open", @"TestData\コード生成\repeatingOutsideCheckBox.docx");
+        dynamic documentAccessor = document;
+
+        (documentAccessor.Agreement as object).Should().Be(true);
+    }
+
+    [Fact(Skip = "RS-03: 通常項目の書き込みが明細内に影響しない仕様。レビュー後にRedへ移す。")]
+    public void 生成された通常CheckBoxへの書き込みは同名の明細内項目を変更しません()
+    {
+        using var document = GeneratedCodeInspection
+            .AssemblyFrom(GeneratedCodeInspection.GenerateSources(@"TestData\コード生成\repeatingOutsideCheckBox.docx"))
+            .GeneratedType("RepeatingOutsideCheckBoxDocument")
+            .InvokeStaticMethod<Document>("Open", @"TestData\コード生成\repeatingOutsideCheckBox.docx");
+        dynamic documentAccessor = document;
+
+        documentAccessor.Agreement = false;
+
+        // 明細2件はfalse・trueを保ち、その後にある通常項目だけfalseへ変わります。
+        document.CheckBoxes.Select(it => it.IsChecked).Should().Equal(false, true, false);
+    }
+
+    [Fact(Skip = "RS-03: 通常項目と明細内の検索範囲を分離する読み取り仕様。レビュー後にRedへ移す。")]
+    public void 生成された通常DatePickerは明細内の同名項目ではなく通常項目を読み取れます()
+    {
+        using var document = GeneratedCodeInspection
+            .AssemblyFrom(GeneratedCodeInspection.GenerateSources(@"TestData\コード生成\repeatingOutsideDatePicker.docx"))
+            .GeneratedType("RepeatingOutsideDatePickerDocument")
+            .InvokeStaticMethod<Document>("Open", @"TestData\コード生成\repeatingOutsideDatePicker.docx");
+        dynamic documentAccessor = document;
+
+        (documentAccessor.DeliveryDate as object).Should().Be(new DateTimeOffset(2026, 10, 1, 0, 0, 0, TimeSpan.Zero));
+    }
+
+    [Fact(Skip = "RS-03: 通常項目の書き込みが明細内に影響しない仕様。レビュー後にRedへ移す。")]
+    public void 生成された通常DatePickerへの書き込みは同名の明細内項目を変更しません()
+    {
+        using var document = GeneratedCodeInspection
+            .AssemblyFrom(GeneratedCodeInspection.GenerateSources(@"TestData\コード生成\repeatingOutsideDatePicker.docx"))
+            .GeneratedType("RepeatingOutsideDatePickerDocument")
+            .InvokeStaticMethod<Document>("Open", @"TestData\コード生成\repeatingOutsideDatePicker.docx");
+        dynamic documentAccessor = document;
+
+        documentAccessor.DeliveryDate = new DateTimeOffset(2026, 10, 2, 0, 0, 0, TimeSpan.Zero);
+
+        // 文書順に明細2件と通常項目を確認します。
+        document.DatePickers.Select(it => it.SelectedDateTime)
+            .Should().Equal(
+                new DateTimeOffset(2026, 9, 26, 0, 0, 0, TimeSpan.Zero),
+                new DateTimeOffset(2026, 9, 27, 0, 0, 0, TimeSpan.Zero),
+                new DateTimeOffset(2026, 10, 2, 0, 0, 0, TimeSpan.Zero));
+    }
+
+    [Fact(Skip = "RS-03: 文字列項目の代替検索でも明細内を除外する読み取り仕様。レビュー後にRedへ移す。")]
+    public void 生成された通常MERGEFIELDは明細内の同名項目を除いて通常の文字列ContentControlで代用して読み取れます()
+    {
+        // 生成元はMERGEFIELDだけ。実行時は通常項目を文字列Content Controlに置き換え、
+        // 明細内には元の種類と代替の種類を同名で残しています。両方の検索で明細を除外する必要があります。
+        using var document = GeneratedCodeInspection
+            .AssemblyFrom(GeneratedCodeInspection.GenerateSources(@"TestData\コード生成\単一項目.docx"))
+            .GeneratedType("単一項目Document")
+            .InvokeStaticMethod<Document>("Open", @"TestData\コード生成\repeatingFallbackContentControl.docx");
+        dynamic documentAccessor = document;
+
+        (documentAccessor.CustomerName as object).Should().Be("通常の文字列Content Control");
+    }
+
+    [Fact(Skip = "RS-03: 文字列項目の代替先への書き込みが明細内に影響しない仕様。レビュー後にRedへ移す。")]
+    public void 生成された通常MERGEFIELDを文字列ContentControlで代用して書き込んでも同名の明細内項目を変更しません()
+    {
+        using var document = GeneratedCodeInspection
+            .AssemblyFrom(GeneratedCodeInspection.GenerateSources(@"TestData\コード生成\単一項目.docx"))
+            .GeneratedType("単一項目Document")
+            .InvokeStaticMethod<Document>("Open", @"TestData\コード生成\repeatingFallbackContentControl.docx");
+        dynamic documentAccessor = document;
+
+        documentAccessor.CustomerName = "変更後の通常項目";
+
+        // 文字列Content Controlは明細、通常項目の順です。MERGEFIELDは明細内にだけあります。
+        document.ContentControls.Select(it => it.Text).Should().Equal("明細の文字列Content Control", "変更後の通常項目");
+        document.MergeFields.Select(it => it.Text).Should().Equal("明細のMERGEFIELD");
+    }
+
+    [Fact(Skip = "RS-03: 文字列項目の代替検索でも明細内を除外する読み取り仕様。レビュー後にRedへ移す。")]
+    public void 生成された通常文字列ContentControlは明細内の同名項目を除いて通常のMERGEFIELDで代用して読み取れます()
+    {
+        // 逆向きの代用です。明細内に同名の文字列Content ControlとMERGEFIELDが残っています。
+        using var document = GeneratedCodeInspection
+            .AssemblyFrom(GeneratedCodeInspection.GenerateSources(TextContentControlDocumentFilePath))
+            .GeneratedType("文字列ContentControlDocument")
+            .InvokeStaticMethod<Document>("Open", @"TestData\コード生成\repeatingFallbackMergeField.docx");
+        dynamic documentAccessor = document;
+
+        (documentAccessor.CustomerName as object).Should().Be("通常のMERGEFIELD");
+    }
+
+    [Fact(Skip = "RS-03: 文字列項目の代替先への書き込みが明細内に影響しない仕様。レビュー後にRedへ移す。")]
+    public void 生成された通常文字列ContentControlをMERGEFIELDで代用して書き込んでも同名の明細内項目を変更しません()
+    {
+        using var document = GeneratedCodeInspection
+            .AssemblyFrom(GeneratedCodeInspection.GenerateSources(TextContentControlDocumentFilePath))
+            .GeneratedType("文字列ContentControlDocument")
+            .InvokeStaticMethod<Document>("Open", @"TestData\コード生成\repeatingFallbackMergeField.docx");
+        dynamic documentAccessor = document;
+
+        documentAccessor.CustomerName = "変更後の通常項目";
+
+        // MERGEFIELDは明細、通常項目の順です。文字列Content Controlは明細内にだけあります。
+        document.MergeFields.Select(it => it.Text).Should().Equal("明細のMERGEFIELD", "変更後の通常項目");
+        document.ContentControls.Select(it => it.Text).Should().Equal("明細の文字列Content Control");
+    }
+
     [Fact]
     public void 生成された明細データの変更はReplaceするまで文書へ反映されません()
     {

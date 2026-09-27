@@ -48,6 +48,11 @@
     <None Include="..\DocumentAsData.Tests\TestData\繰り返しセクションに2件の明細.docx" Link="TestData\コード生成\repeatingItems.docx" CopyToOutputDirectory="PreserveNewest" />
     <None Include="..\DocumentAsData.Tests\TestData\異なるTagの繰り返しセクション.docx" Link="TestData\コード生成\repeatingSections.docx" CopyToOutputDirectory="PreserveNewest" />
     <None Include="..\DocumentAsData.Tests\TestData\明細の内外に同じTag.docx" Link="TestData\コード生成\repeatingOutside.docx" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\DocumentAsData.Tests\TestData\明細の内外に同名のMERGEFIELD.docx" Link="TestData\コード生成\repeatingOutsideMergeField.docx" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\DocumentAsData.Tests\TestData\明細の内外に同名のCheckBox.docx" Link="TestData\コード生成\repeatingOutsideCheckBox.docx" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\DocumentAsData.Tests\TestData\明細の内外に同名のDatePicker.docx" Link="TestData\コード生成\repeatingOutsideDatePicker.docx" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\DocumentAsData.Tests\TestData\通常は文字列Content Control 明細は同名の2種類.docx" Link="TestData\コード生成\repeatingFallbackContentControl.docx" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\DocumentAsData.Tests\TestData\通常はMERGEFIELD 明細は同名の2種類.docx" Link="TestData\コード生成\repeatingFallbackMergeField.docx" CopyToOutputDirectory="PreserveNewest" />
     <None Include="..\DocumentAsData.Tests\TestData\明細に4種類の項目.docx" Link="TestData\コード生成\repeatingKinds.docx" CopyToOutputDirectory="PreserveNewest" />
     <None Include="..\DocumentAsData.Tests\TestData\繰り返しセクションの明細に項目が不足.docx" Link="TestData\コード生成\repeatingMissingItem.docx" CopyToOutputDirectory="PreserveNewest" />
     <None Include="..\DocumentAsData.Tests\TestData\1件の明細内に同じTag.docx" Link="TestData\コード生成\repeatingDuplicateItem.docx" CopyToOutputDirectory="PreserveNewest" />
