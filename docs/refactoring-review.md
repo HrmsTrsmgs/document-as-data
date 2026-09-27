@@ -52,6 +52,10 @@ Core、CodeGeneration、Build・テスト補助を分担して読み直し、親
 
 ### 複合MERGEFIELDを別の検索範囲から取得した場合の不整合
 
+0.4.0の公開準備で対応しました。固定DOCX「明細内に複合MERGEFIELDを持つ繰り返しセクション.docx」と、
+[MergeFieldの回帰テスト](../tests/DocumentAsData.Tests/MergeFieldのテスト.cs)を追加してRedを確認後、同じOOXML要素のMERGEFIELDを文書単位で共有してGreenにしました。
+Release全体テストは595件成功、Skip 1件です。以下は修正前の精査記録です。
+
 * `MergeFieldCollection.MergeFieldReader`のキャッシュはコレクション単位です。文書全体と明細内のコレクションは、同じOOXML要素に対して別の`MergeField`を作ります。
 * 複合形式の`ComplexFieldContent`は表示要素の一覧を保持します。一方のオブジェクトから書き換えると、他方の一覧には削除済みの要素が残ります。
 * 公開APIで再現確認済み：文書全体と明細内から同じ複合フィールドを先に取得し、明細側から`Text`を更新すると、文書全体側は古い文字列を返しました。続けて文書全体側から書き込むと、`InvalidOperationException`（`The parent of this element is null.`）になりました。

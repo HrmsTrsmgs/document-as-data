@@ -12,12 +12,12 @@ namespace Marimo.DocumentAsData;
 public partial class MergeFieldCollection : IEnumerable<MergeField>
 {
     /// <summary>
-    /// 列挙方法と生成済みMERGEFIELDをコレクションの生存期間中共有します。
+    /// 列挙方法をコレクションの生存期間中共有します。
     /// </summary>
     readonly MergeFieldReader reader;
 
     /// <summary>
-    /// 文書の解析処理と生成済みMERGEFIELDのキャッシュを、コレクションの生存期間中共有できるようにします。
+    /// 文書の解析処理をコレクションの生存期間中共有できるようにします。
     /// </summary>
     /// <param name="document">MERGEFIELDを取得する文書。</param>
     internal MergeFieldCollection(Document document)
@@ -26,7 +26,7 @@ public partial class MergeFieldCollection : IEnumerable<MergeField>
     }
 
     /// <summary>
-    /// 指定した範囲の解析処理と生成済みMERGEFIELDのキャッシュを保持します。
+    /// 指定した範囲の解析処理を保持します。
     /// </summary>
     /// <param name="document">MERGEFIELDが属する文書。</param>
     /// <param name="elements">MERGEFIELDを検索する範囲の要素列。</param>
@@ -78,9 +78,9 @@ public partial class MergeFieldCollection : IEnumerable<MergeField>
         readonly IEnumerable<OpenXmlElement> elements = elements;
 
         /// <summary>
-        /// 同じOOXML要素からは、列挙方法にかかわらず同じMERGEFIELDを返すために保持します。
+        /// 同じOOXML要素からは、検索範囲にかかわらず同じMERGEFIELDを返すために保持します。
         /// </summary>
-        readonly OpenXmlElementCache<MergeField> cache = new();
+        readonly OpenXmlElementCache<MergeField> cache = document.MergeFieldCache;
 
         /// <summary>
         /// 文書要素を先頭から読み取り、認識できたMERGEFIELDを文書順に返します。

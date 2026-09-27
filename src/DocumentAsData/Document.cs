@@ -22,6 +22,11 @@ public class Document : IDisposable
     readonly DocumentObjectMapper objectMapper;
 
     /// <summary>
+    /// 同じOOXML要素を参照するMERGEFIELDを、文書内の各コレクションで共有します。
+    /// </summary>
+    internal OpenXmlElementCache<MergeField> MergeFieldCache { get; } = new();
+
+    /// <summary>
     /// 派生した型付き文書から、指定したDOCXファイルを開きます。
     /// </summary>
     /// <param name="filePath">開くDOCXファイルのパス。</param>
