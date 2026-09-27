@@ -146,7 +146,7 @@ public sealed class コード生成名前付き項目のテスト : IDisposable
 
         documentAccessor.Code = "変更後のコード";
 
-        // 未対応の生成getterには依存せず、文書順（明細2件、通常項目）に全ての値を確認します。
+        // 生成getterには依存せず、文書順（明細2件、通常項目）に全ての値を確認します。
         document.MergeFields.Select(it => it.Text).Should().Equal("A001", "B001", "変更後のコード");
     }
 

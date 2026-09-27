@@ -1,5 +1,7 @@
 ﻿using System.Globalization;
 
+using static Marimo.DocumentAsData.CodeGeneration.DocumentItemScopes;
+
 namespace Marimo.DocumentAsData.CodeGeneration;
 
 /// <summary>
@@ -242,29 +244,6 @@ static partial class DocumentWrapperComponents
         ]);
 
     /// <summary>
-    /// 文書直下の生成プロパティに含めるMERGEFIELDを選びます。
-    /// 全体検索を使う検証・診断には、この選別を適用しません。
-    /// </summary>
-    /// <param name="items">文書全体のMERGEFIELD。</param>
-    /// <returns>明細に属さないMERGEFIELD。</returns>
-    static IEnumerable<MergeField> TopLevel(IEnumerable<MergeField> items) =>
-        from item in items
-        where !item.IsInRepeatingSection
-        select item;
-
-    /// <summary>
-    /// 文書直下の生成プロパティに含めるContent Controlを選びます。
-    /// 種類ごとに同じ所属条件を繰り返し記述しないための選別です。
-    /// </summary>
-    /// <typeparam name="T">生成対象のContent Controlの種類。</typeparam>
-    /// <param name="items">文書全体のContent Control。</param>
-    /// <returns>明細に属さないContent Control。</returns>
-    static IEnumerable<T> TopLevel<T>(IEnumerable<T> items) where T : ContentControl =>
-        from item in items
-        where !item.IsInRepeatingSection
-        select item;
-
-    /// <summary>
     /// 文書データ型に、文字列項目を表すプロパティ宣言を生成します。
     /// </summary>
     /// <param name="itemName">プロパティとして公開する文書項目の名前。</param>
@@ -360,10 +339,11 @@ static partial class DocumentWrapperComponents
             /// </remarks>
             public string {{options.GeneratedName(mergeField.Name)}}
             {
-                get => (MergeFields.SingleOrDefault(it => !it.IsInRepeatingSection && it.Name == {{StringLiteral(mergeField.Name)}}) as IDocumentTextItem
-                    ?? ContentControls.Single(it => !it.IsInRepeatingSection && it.Tag == {{StringLiteral(mergeField.Name)}})).Text;
-                set => (MergeFields.SingleOrDefault(it => !it.IsInRepeatingSection && it.Name == {{StringLiteral(mergeField.Name)}}) as IDocumentTextItem
-                    ?? ContentControls.Single(it => !it.IsInRepeatingSection && it.Tag == {{StringLiteral(mergeField.Name)}})).Text = value;
+        {{PropertyAccessors(
+            $$"""
+            (MergeFields.SingleOrDefault(it => !it.IsInRepeatingSection && it.Name == {{StringLiteral(mergeField.Name)}}) as IDocumentTextItem
+                ?? ContentControls.Single(it => !it.IsInRepeatingSection && it.Tag == {{StringLiteral(mergeField.Name)}})).Text
+            """)}}
             }
         """;
 
@@ -384,8 +364,8 @@ static partial class DocumentWrapperComponents
             /// <remarks>繰り返しセクション内の項目は対象にしません。</remarks>
             public DateTimeOffset {{options.GeneratedName(datePicker.Tag)}}
             {
-                get => DatePickers.Single(it => !it.IsInRepeatingSection && it.Tag == {{StringLiteral(datePicker.Tag)}}).SelectedDateTime;
-                set => DatePickers.Single(it => !it.IsInRepeatingSection && it.Tag == {{StringLiteral(datePicker.Tag)}}).SelectedDateTime = value;
+        {{PropertyAccessors(
+            $"DatePickers.Single(it => !it.IsInRepeatingSection && it.Tag == {StringLiteral(datePicker.Tag)}).SelectedDateTime")}}
             }
         """;
 
@@ -406,8 +386,8 @@ static partial class DocumentWrapperComponents
             /// <remarks>繰り返しセクション内の項目は対象にしません。</remarks>
             public bool {{options.GeneratedName(checkBox.Tag)}}
             {
-                get => CheckBoxes.Single(it => !it.IsInRepeatingSection && it.Tag == {{StringLiteral(checkBox.Tag)}}).IsChecked;
-                set => CheckBoxes.Single(it => !it.IsInRepeatingSection && it.Tag == {{StringLiteral(checkBox.Tag)}}).IsChecked = value;
+        {{PropertyAccessors(
+            $"CheckBoxes.Single(it => !it.IsInRepeatingSection && it.Tag == {StringLiteral(checkBox.Tag)}).IsChecked")}}
             }
         """;
 
@@ -431,12 +411,29 @@ static partial class DocumentWrapperComponents
             /// </remarks>
             public string {{options.GeneratedName(contentControl.Tag)}}
             {
-                get => (ContentControls.SingleOrDefault(it => !it.IsInRepeatingSection && it.Tag == {{StringLiteral(contentControl.Tag)}}) as IDocumentTextItem
-                    ?? MergeFields.Single(it => !it.IsInRepeatingSection && it.Name == {{StringLiteral(contentControl.Tag)}})).Text;
-                set => (ContentControls.SingleOrDefault(it => !it.IsInRepeatingSection && it.Tag == {{StringLiteral(contentControl.Tag)}}) as IDocumentTextItem
-                    ?? MergeFields.Single(it => !it.IsInRepeatingSection && it.Name == {{StringLiteral(contentControl.Tag)}})).Text = value;
+        {{PropertyAccessors(
+            $$"""
+            (ContentControls.SingleOrDefault(it => !it.IsInRepeatingSection && it.Tag == {{StringLiteral(contentControl.Tag)}}) as IDocumentTextItem
+                ?? MergeFields.Single(it => !it.IsInRepeatingSection && it.Name == {{StringLiteral(contentControl.Tag)}})).Text
+            """)}}
             }
         """;
+
+    /// <summary>
+    /// 同じ値へのアクセス式からgetterとsetterを生成し、検索条件のずれを防ぎます。
+    /// 生成先へメンバーやキャッシュは追加せず、アクセスごとの検索を維持します。
+    /// </summary>
+    /// <param name="valueExpression">読み取りと代入の両方に使うC#式。続行の字下げは相対指定です。</param>
+    /// <returns>プロパティ本体のインデントを含むアクセサー宣言。</returns>
+    static string PropertyAccessors(string valueExpression)
+    {
+        var indentedExpression = valueExpression.Replace(Environment.NewLine, Environment.NewLine + "        ");
+
+        return $$"""
+                get => {{indentedExpression}};
+                set => {{indentedExpression}} = value;
+        """;
+    }
 
     /// <summary>
     /// 複数のテンプレート部品を、生成ソース上の行単位で連結します。
