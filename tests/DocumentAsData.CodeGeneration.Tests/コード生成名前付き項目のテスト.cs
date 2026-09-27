@@ -107,6 +107,22 @@ public sealed class コード生成名前付き項目のテスト : IDisposable
     }
 
     [Fact]
+    public void 生成された通常項目への書き込みは同名の明細内項目を変更しません()
+    {
+        using var document = GeneratedCodeInspection
+            .AssemblyFrom(GeneratedCodeInspection.GenerateSources(@"TestData\コード生成\repeatingOutside.docx"))
+            .GeneratedType("RepeatingOutsideDocument")
+            .InvokeStaticMethod<Document>("Open", @"TestData\コード生成\repeatingOutside.docx");
+        dynamic documentAccessor = document;
+
+        documentAccessor.ItemName = "変更後の商品名";
+
+        (documentAccessor.ItemName as object).Should().Be("変更後の商品名");
+        IEnumerable<dynamic> items = documentAccessor.Items;
+        items.Select(it => it.ItemName as object).Should().Equal("商品A", "商品B");
+    }
+
+    [Fact]
     public void 生成された明細データの変更はReplaceするまで文書へ反映されません()
     {
         using var document = GeneratedCodeInspection

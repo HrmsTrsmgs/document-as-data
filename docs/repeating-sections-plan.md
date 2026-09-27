@@ -122,8 +122,8 @@ RS-02には別途テストを9件追加しました。9件ともGreenにし、�
 
 ### RS-03：文書直下の生成プロパティの検索範囲
 
-* 確認済み：[生成プロパティ](../src/DocumentAsData.CodeGeneration/DocumentWrapperComponents.cs)で明細内を除外しているのは、文字列Content Controlのgetterの優先検索です。そのsetter、MERGEFIELD・CheckBox・DatePickerのgetter/setter、文字列項目の代替検索先は文書全体を対象にしています。
-* 未確認：通常項目と明細内項目が同名の場合、既に確認した文字列Content Controlの優先読み取り以外で、意図した通常項目だけを読み書きできるか。単一項目だけの既存テストからは判断できません。
+* 確認済み：[生成プロパティ](../src/DocumentAsData.CodeGeneration/DocumentWrapperComponents.cs)の文字列Content Controlは、getterとsetterの優先検索で明細内を除外します。同名の通常項目を書き込んでも、明細内の値が変わらないことを確認しました。MERGEFIELD・CheckBox・DatePickerのgetter/setterと、文字列項目の代替検索先は文書全体を対象にしています。
+* 未確認：通常項目と明細内項目が同名の場合、文字列Content Controlの優先検索以外でも意図した通常項目だけを読み書きできるか。単一項目だけの既存テストからは判断できません。
 * 次の確認：生成プロパティの各検索経路を整理して必要なテストを選びます。低レイヤーのコレクションが文書全体を検索する既存契約は、これに合わせて変更しません。
 
 ### RS-04：生成Data経由の通常項目と明細内の同名
