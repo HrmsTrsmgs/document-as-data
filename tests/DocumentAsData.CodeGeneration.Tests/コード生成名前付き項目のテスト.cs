@@ -239,7 +239,7 @@ public sealed class コード生成名前付き項目のテスト : IDisposable
         document.MergeFields.Select(it => it.Text).Should().Equal("明細のMERGEFIELD");
     }
 
-    [Fact(Skip = "RS-03: 文字列項目の代替検索でも明細内を除外する読み取り仕様。レビュー後にRedへ移す。")]
+    [Fact]
     public void 生成された通常文字列ContentControlは明細内の同名項目を除いて通常のMERGEFIELDで代用して読み取れます()
     {
         // 逆向きの代用です。明細内に同名の文字列Content ControlとMERGEFIELDが残っています。
