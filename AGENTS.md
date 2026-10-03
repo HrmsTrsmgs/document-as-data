@@ -8,13 +8,19 @@
 作業開始時は、このファイルに加えて、作業内容に応じた指示を読む。
 
 * 常に適用する共通指示: `docs/ai-instructions/common.md`
-* 振る舞い追加、仕様変更、不具合修正、リファクタリング: `docs/ai-instructions/tdd.md`
+* 振る舞い追加、仕様変更、不具合修正、リファクタリングの入口: `docs/ai-instructions/tdd-context/run.md`
 * C#、.NET、xUnit、FluentAssertions、NuGet、MSBuildを扱う作業: `docs/ai-instructions/csharp.md`
 * DocumentAsData固有の設計、README、公開準備: `docs/ai-instructions/document-as-data.md`
 
+工程別TDDでは、進行役だけが `tdd-context/run.md` を読み、各担当には
+`tdd-context/common.md` と担当工程の文書だけを渡す。関連するC#・プロジェクト固有の
+指示や設計資料は、その工程で必要な範囲を担当自身が参照する。
+工程担当は `run.md` や他工程の文書を読まない。
+`tdd.md` は従来のTDD方針の参照資料であり、工程別担当へ一括で読み込ませない。
+
 ## 分類方針
 
-* 他の開発にも共有できる内容は `common.md` または `tdd.md` に置く。
+* 他の開発にも共有できる内容は `common.md` または適用するTDD文書に置く。
 * C#/.NETに閉じる内容は `csharp.md` に置く。
 * DocumentAsDataの目的、公開方針、DOCXテストデータなど、このリポジトリ固有の内容は `document-as-data.md` に置く。
 * 今回限りの作業メモ、試行錯誤、すぐ陳腐化する操作ログは指示化しない。
