@@ -9,6 +9,21 @@ static partial class DocumentWrapperComponents
     static class Validation
     {
         /// <summary>
+        /// 文書直下のMERGEFIELDと文字列Content Controlから名前を取得する生成コードです。
+        /// </summary>
+        const string TopLevelTextItemNames =
+            """
+            [
+                .. from item in MergeFields
+                   where !item.IsInRepeatingSection
+                   select item.Name,
+                .. from item in ContentControls
+                   where !item.IsInRepeatingSection
+                   select item.Tag
+            ]
+            """;
+
+        /// <summary>
         /// 生成元の文書に必要な項目を、種類ごと、次に明細ごとの順で検査するメソッドを生成します。
         /// </summary>
         /// <param name="document">必要な項目の見本を持つ生成元の文書。</param>
@@ -28,11 +43,11 @@ static partial class DocumentWrapperComponents
                 {
             {{RequiredItemsValidation(
                 [.. from mergeField in DocumentItemScopes.TopLevel(document.MergeFields) select mergeField.Name],
-                "[.. from it in MergeFields where !it.IsInRepeatingSection select it.Name, .. from it in ContentControls where !it.IsInRepeatingSection select it.Tag]",
+                TopLevelTextItemNames,
                 "MERGEFIELD")}}
             {{RequiredItemsValidation(
                 [.. from contentControl in DocumentItemScopes.TopLevel(document.ContentControls) select contentControl.Tag],
-                "[.. from it in ContentControls where !it.IsInRepeatingSection select it.Tag, .. from it in MergeFields where !it.IsInRepeatingSection select it.Name]",
+                TopLevelTextItemNames,
                 "文字列Content Control")}}
             {{RequiredItemsValidation(
                 [.. from checkBox in document.CheckBoxes select checkBox.Tag],
