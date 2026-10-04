@@ -24,12 +24,14 @@ static partial class DocumentWrapperComponents
             """;
 
         /// <summary>
-        /// 文書直下のCheckBoxからTagを取得する生成コードです。
+        /// 指定したContent Controlコレクションから文書直下のTagを取得する生成コードです。
         /// </summary>
-        const string TopLevelCheckBoxTags =
-            """
+        /// <param name="collectionName">生成コード内のContent Controlコレクション名。</param>
+        /// <returns>文書直下のTagを取得する生成コード。</returns>
+        static string TopLevelTagNames(string collectionName) =>
+            $$"""
             [
-                .. from item in CheckBoxes
+                .. from item in {{collectionName}}
                    where !item.IsInRepeatingSection
                    select item.Tag
             ]
@@ -63,11 +65,11 @@ static partial class DocumentWrapperComponents
                 "文字列Content Control")}}
             {{RequiredItemsValidation(
                 [.. from checkBox in DocumentItemScopes.TopLevel(document.CheckBoxes) select checkBox.Tag],
-                TopLevelCheckBoxTags,
+                TopLevelTagNames("CheckBoxes"),
                 "CheckBox")}}
             {{RequiredItemsValidation(
-                [.. from datePicker in document.DatePickers select datePicker.Tag],
-                "DatePickers.Select(it => it.Tag)",
+                [.. from datePicker in DocumentItemScopes.TopLevel(document.DatePickers) select datePicker.Tag],
+                TopLevelTagNames("DatePickers"),
                 "DatePicker")}}
             {{RequiredItemsValidation(
                 [.. from section in document.RepeatingSections select section.Tag],

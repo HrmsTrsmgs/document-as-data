@@ -88,7 +88,7 @@ public sealed class コード生成型構造のテスト
             .WithInnerException<DocumentMappingException>();
     }
 
-    [Fact(Skip = "RS-05：型付きOpenの不足検査を追加予定です。不足位置と例外の契約をレビューして解除します。")]
+    [Fact]
     public void 生成されたDocument型は明細内に同名が残っていても通常のDatePickerが不足するとOpenに失敗します()
     {
         // 生成元の通常項目DeliveryDateだけを除いた文書です。Itemsと各明細の同名項目は残っています。
