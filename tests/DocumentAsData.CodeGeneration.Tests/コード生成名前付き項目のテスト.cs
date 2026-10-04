@@ -25,6 +25,162 @@ public sealed class コード生成名前付き項目のテスト : IDisposable
     readonly TemporaryDocumentFiles temporaryFiles = new();
 
     [Fact]
+    public void 生成DataのReadは通常項目と明細内の同名文字列ContentControlを区別せず重複として拒否します()
+    {
+        // 個別の生成プロパティとは異なり、Readは文書全体から対応付けます。
+        // 通常項目1件と明細2件に同名のItemNameがあり、どれかを勝手に選びません。
+        using var document = GeneratedCodeInspection
+            .AssemblyFrom(GeneratedCodeInspection.GenerateSources(@"TestData\コード生成\repeatingOutside.docx"))
+            .GeneratedType("RepeatingOutsideDocument")
+            .InvokeStaticMethod<Document>("Open", @"TestData\コード生成\repeatingOutside.docx");
+        dynamic documentAccessor = document;
+        var action = () =>
+        {
+            documentAccessor.Read();
+        };
+
+        action.Should().Throw<InvalidOperationException>();
+    }
+
+    [Fact]
+    public void 生成DataのReplaceは通常項目と明細内の同名文字列ContentControlを区別せず重複として拒否します()
+    {
+        var assembly = GeneratedCodeInspection.AssemblyFrom(
+            GeneratedCodeInspection.GenerateSources(@"TestData\コード生成\repeatingOutside.docx"));
+        using var document = assembly.GeneratedType("RepeatingOutsideDocument")
+            .InvokeStaticMethod<Document>("Open", @"TestData\コード生成\repeatingOutside.docx");
+        // Readも同名項目で失敗するため、書き込む生成Dataは独立して用意します。
+        var data = Activator.CreateInstance(assembly.GeneratedType("RepeatingOutsideData"));
+        data.Should().NotBeNull();
+        dynamic dataAccessor = data;
+        dataAccessor.ItemName = "変更後の商品名";
+        dynamic documentAccessor = document;
+        var action = () =>
+        {
+            documentAccessor.Replace(dataAccessor);
+        };
+
+        action.Should().Throw<InvalidOperationException>();
+    }
+
+    [Fact]
+    public void 生成DataのReadは通常項目と明細内の同名MERGEFIELDを区別せず重複として拒否します()
+    {
+        // 個別の生成プロパティとは異なり、Readは文書全体から対応付けます。
+        // 通常項目1件と明細2件に同名のCodeがあり、どれかを勝手に選びません。
+        using var document = GeneratedCodeInspection
+            .AssemblyFrom(GeneratedCodeInspection.GenerateSources(@"TestData\コード生成\repeatingOutsideMergeField.docx"))
+            .GeneratedType("RepeatingOutsideMergeFieldDocument")
+            .InvokeStaticMethod<Document>("Open", @"TestData\コード生成\repeatingOutsideMergeField.docx");
+        dynamic documentAccessor = document;
+        var action = () =>
+        {
+            documentAccessor.Read();
+        };
+
+        action.Should().Throw<InvalidOperationException>();
+    }
+
+    [Fact]
+    public void 生成DataのReplaceは通常項目と明細内の同名MERGEFIELDを区別せず重複として拒否します()
+    {
+        var assembly = GeneratedCodeInspection.AssemblyFrom(
+            GeneratedCodeInspection.GenerateSources(@"TestData\コード生成\repeatingOutsideMergeField.docx"));
+        using var document = assembly.GeneratedType("RepeatingOutsideMergeFieldDocument")
+            .InvokeStaticMethod<Document>("Open", @"TestData\コード生成\repeatingOutsideMergeField.docx");
+        // Readも同名項目で失敗するため、書き込む生成Dataは独立して用意します。
+        var data = Activator.CreateInstance(assembly.GeneratedType("RepeatingOutsideMergeFieldData"));
+        data.Should().NotBeNull();
+        dynamic dataAccessor = data;
+        dataAccessor.Code = "変更後のコード";
+        dynamic documentAccessor = document;
+        var action = () =>
+        {
+            documentAccessor.Replace(dataAccessor);
+        };
+
+        action.Should().Throw<InvalidOperationException>();
+    }
+
+    [Fact]
+    public void 生成DataのReadは通常項目と明細内の同名CheckBoxを区別せず重複として拒否します()
+    {
+        // 個別の生成プロパティとは異なり、Readは文書全体から対応付けます。
+        // 通常項目1件と明細2件に同名のAgreementがあり、どれかを勝手に選びません。
+        using var document = GeneratedCodeInspection
+            .AssemblyFrom(GeneratedCodeInspection.GenerateSources(@"TestData\コード生成\repeatingOutsideCheckBox.docx"))
+            .GeneratedType("RepeatingOutsideCheckBoxDocument")
+            .InvokeStaticMethod<Document>("Open", @"TestData\コード生成\repeatingOutsideCheckBox.docx");
+        dynamic documentAccessor = document;
+        var action = () =>
+        {
+            documentAccessor.Read();
+        };
+
+        action.Should().Throw<InvalidOperationException>();
+    }
+
+    [Fact]
+    public void 生成DataのReplaceは通常項目と明細内の同名CheckBoxを区別せず重複として拒否します()
+    {
+        var assembly = GeneratedCodeInspection.AssemblyFrom(
+            GeneratedCodeInspection.GenerateSources(@"TestData\コード生成\repeatingOutsideCheckBox.docx"));
+        using var document = assembly.GeneratedType("RepeatingOutsideCheckBoxDocument")
+            .InvokeStaticMethod<Document>("Open", @"TestData\コード生成\repeatingOutsideCheckBox.docx");
+        // Readも同名項目で失敗するため、書き込む生成Dataは独立して用意します。
+        var data = Activator.CreateInstance(assembly.GeneratedType("RepeatingOutsideCheckBoxData"));
+        data.Should().NotBeNull();
+        dynamic dataAccessor = data;
+        dataAccessor.Agreement = false;
+        dynamic documentAccessor = document;
+        var action = () =>
+        {
+            documentAccessor.Replace(dataAccessor);
+        };
+
+        action.Should().Throw<InvalidOperationException>();
+    }
+
+    [Fact]
+    public void 生成DataのReadは通常項目と明細内の同名DatePickerを区別せず重複として拒否します()
+    {
+        // 個別の生成プロパティとは異なり、Readは文書全体から対応付けます。
+        // 通常項目1件と明細2件に同名のDeliveryDateがあり、どれかを勝手に選びません。
+        using var document = GeneratedCodeInspection
+            .AssemblyFrom(GeneratedCodeInspection.GenerateSources(@"TestData\コード生成\repeatingOutsideDatePicker.docx"))
+            .GeneratedType("RepeatingOutsideDatePickerDocument")
+            .InvokeStaticMethod<Document>("Open", @"TestData\コード生成\repeatingOutsideDatePicker.docx");
+        dynamic documentAccessor = document;
+        var action = () =>
+        {
+            documentAccessor.Read();
+        };
+
+        action.Should().Throw<InvalidOperationException>();
+    }
+
+    [Fact]
+    public void 生成DataのReplaceは通常項目と明細内の同名DatePickerを区別せず重複として拒否します()
+    {
+        var assembly = GeneratedCodeInspection.AssemblyFrom(
+            GeneratedCodeInspection.GenerateSources(@"TestData\コード生成\repeatingOutsideDatePicker.docx"));
+        using var document = assembly.GeneratedType("RepeatingOutsideDatePickerDocument")
+            .InvokeStaticMethod<Document>("Open", @"TestData\コード生成\repeatingOutsideDatePicker.docx");
+        // Readも同名項目で失敗するため、書き込む生成Dataは独立して用意します。
+        var data = Activator.CreateInstance(assembly.GeneratedType("RepeatingOutsideDatePickerData"));
+        data.Should().NotBeNull();
+        dynamic dataAccessor = data;
+        dataAccessor.DeliveryDate = new DateTimeOffset(2026, 10, 2, 0, 0, 0, TimeSpan.Zero);
+        dynamic documentAccessor = document;
+        var action = () =>
+        {
+            documentAccessor.Replace(dataAccessor);
+        };
+
+        action.Should().Throw<InvalidOperationException>();
+    }
+
+    [Fact]
     public void 生成された繰り返し項目は明細が1件でもコレクションとして読み取れます()
     {
         using var document = GeneratedCodeInspection

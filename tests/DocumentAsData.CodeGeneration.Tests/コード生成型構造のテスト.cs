@@ -17,6 +17,187 @@ public sealed class コード生成型構造のテスト
         @"TestData\コード生成\日付選択ContentControl.docx";
 
     [Fact]
+    public void 生成されたDocument型は同名項目が通常項目に残っていても必要なセクションがなければOpenに失敗します()
+    {
+        // ItemNameは存在し、Itemsセクションだけがありません。項目名の不足による失敗と区別します。
+        var generatedType = GeneratedCodeInspection
+            .AssemblyFrom(GeneratedCodeInspection.GenerateSources(@"TestData\コード生成\repeatingTemplate.docx"))
+            .GeneratedType("RepeatingTemplateDocument");
+
+        var action = () =>
+        {
+            using var document = generatedType.InvokeStaticMethod<Document>(
+                "Open", @"TestData\コード生成\Itemsセクションだけ不足しItemNameは通常項目に存在.docx");
+        };
+
+        action.Should().Throw<TargetInvocationException>()
+            .WithInnerException<DocumentMappingException>();
+    }
+
+    [Fact(Skip = "RS-05：型付きOpenの不足検査を追加予定です。不足位置と例外の契約をレビューして解除します。")]
+    public void 生成されたDocument型は明細内に同名が残っていても通常の文字列ContentControlが不足するとOpenに失敗します()
+    {
+        // 生成元の通常項目ItemNameだけを除いた文書です。Itemsと各明細の同名項目は残っています。
+        var generatedType = GeneratedCodeInspection
+            .AssemblyFrom(GeneratedCodeInspection.GenerateSources(@"TestData\コード生成\repeatingOutside.docx"))
+            .GeneratedType("RepeatingOutsideDocument");
+
+        var action = () =>
+        {
+            using var document = generatedType.InvokeStaticMethod<Document>(
+                "Open", @"TestData\コード生成\通常の文字列ContentControlだけ不足し同名は明細内に存在.docx");
+        };
+
+        action.Should().Throw<TargetInvocationException>()
+            .WithInnerException<DocumentMappingException>();
+    }
+
+    [Fact(Skip = "RS-05：型付きOpenの不足検査を追加予定です。不足位置と例外の契約をレビューして解除します。")]
+    public void 生成されたDocument型は明細内に同名が残っていても通常のMERGEFIELDが不足するとOpenに失敗します()
+    {
+        // 生成元の通常項目Codeだけを除いた文書です。Itemsと各明細の同名項目は残っています。
+        var generatedType = GeneratedCodeInspection
+            .AssemblyFrom(GeneratedCodeInspection.GenerateSources(@"TestData\コード生成\repeatingOutsideMergeField.docx"))
+            .GeneratedType("RepeatingOutsideMergeFieldDocument");
+
+        var action = () =>
+        {
+            using var document = generatedType.InvokeStaticMethod<Document>(
+                "Open", @"TestData\コード生成\通常のMERGEFIELDだけ不足し同名は明細内に存在.docx");
+        };
+
+        action.Should().Throw<TargetInvocationException>()
+            .WithInnerException<DocumentMappingException>();
+    }
+
+    [Fact(Skip = "RS-05：型付きOpenの不足検査を追加予定です。不足位置と例外の契約をレビューして解除します。")]
+    public void 生成されたDocument型は明細内に同名が残っていても通常のCheckBoxが不足するとOpenに失敗します()
+    {
+        // 生成元の通常項目Agreementだけを除いた文書です。Itemsと各明細の同名項目は残っています。
+        var generatedType = GeneratedCodeInspection
+            .AssemblyFrom(GeneratedCodeInspection.GenerateSources(@"TestData\コード生成\repeatingOutsideCheckBox.docx"))
+            .GeneratedType("RepeatingOutsideCheckBoxDocument");
+
+        var action = () =>
+        {
+            using var document = generatedType.InvokeStaticMethod<Document>(
+                "Open", @"TestData\コード生成\通常のCheckBoxだけ不足し同名は明細内に存在.docx");
+        };
+
+        action.Should().Throw<TargetInvocationException>()
+            .WithInnerException<DocumentMappingException>();
+    }
+
+    [Fact(Skip = "RS-05：型付きOpenの不足検査を追加予定です。不足位置と例外の契約をレビューして解除します。")]
+    public void 生成されたDocument型は明細内に同名が残っていても通常のDatePickerが不足するとOpenに失敗します()
+    {
+        // 生成元の通常項目DeliveryDateだけを除いた文書です。Itemsと各明細の同名項目は残っています。
+        var generatedType = GeneratedCodeInspection
+            .AssemblyFrom(GeneratedCodeInspection.GenerateSources(@"TestData\コード生成\repeatingOutsideDatePicker.docx"))
+            .GeneratedType("RepeatingOutsideDatePickerDocument");
+
+        var action = () =>
+        {
+            using var document = generatedType.InvokeStaticMethod<Document>(
+                "Open", @"TestData\コード生成\通常のDatePickerだけ不足し同名は明細内に存在.docx");
+        };
+
+        action.Should().Throw<TargetInvocationException>()
+            .WithInnerException<DocumentMappingException>();
+    }
+
+    [Fact(Skip = "RS-06：型付きOpenの不足検査を追加予定です。不足位置と例外の契約をレビューして解除します。")]
+    public void 生成されたDocument型は2件目の明細だけMERGEFIELDが不足するとOpenに失敗します()
+    {
+        // Itemsの各明細には4種類の項目があります。2件目のMERGEFIELDだけを除いており、
+        // 1件目に残る同名項目で文書全体の名前検査は通っても、明細単位で不足を検出します。
+        var generatedType = GeneratedCodeInspection
+            .AssemblyFrom(GeneratedCodeInspection.GenerateSources(@"TestData\コード生成\repeatingKinds.docx"))
+            .GeneratedType("RepeatingKindsDocument");
+
+        var action = () =>
+        {
+            using var document = generatedType.InvokeStaticMethod<Document>(
+                "Open", @"TestData\コード生成\2件目の明細だけMERGEFIELDが不足.docx");
+        };
+
+        action.Should().Throw<TargetInvocationException>()
+            .WithInnerException<DocumentMappingException>();
+    }
+
+    [Fact(Skip = "RS-06：型付きOpenの不足検査を追加予定です。不足位置と例外の契約をレビューして解除します。")]
+    public void 生成されたDocument型は2件目の明細だけCheckBoxが不足するとOpenに失敗します()
+    {
+        // Itemsの各明細には4種類の項目があります。2件目のCheckBoxだけを除いており、
+        // 1件目に残る同名項目で文書全体の名前検査は通っても、明細単位で不足を検出します。
+        var generatedType = GeneratedCodeInspection
+            .AssemblyFrom(GeneratedCodeInspection.GenerateSources(@"TestData\コード生成\repeatingKinds.docx"))
+            .GeneratedType("RepeatingKindsDocument");
+
+        var action = () =>
+        {
+            using var document = generatedType.InvokeStaticMethod<Document>(
+                "Open", @"TestData\コード生成\2件目の明細だけCheckBoxが不足.docx");
+        };
+
+        action.Should().Throw<TargetInvocationException>()
+            .WithInnerException<DocumentMappingException>();
+    }
+
+    [Fact(Skip = "RS-06：型付きOpenの不足検査を追加予定です。不足位置と例外の契約をレビューして解除します。")]
+    public void 生成されたDocument型は2件目の明細だけDatePickerが不足するとOpenに失敗します()
+    {
+        // Itemsの各明細には4種類の項目があります。2件目のDatePickerだけを除いており、
+        // 1件目に残る同名項目で文書全体の名前検査は通っても、明細単位で不足を検出します。
+        var generatedType = GeneratedCodeInspection
+            .AssemblyFrom(GeneratedCodeInspection.GenerateSources(@"TestData\コード生成\repeatingKinds.docx"))
+            .GeneratedType("RepeatingKindsDocument");
+
+        var action = () =>
+        {
+            using var document = generatedType.InvokeStaticMethod<Document>(
+                "Open", @"TestData\コード生成\2件目の明細だけDatePickerが不足.docx");
+        };
+
+        action.Should().Throw<TargetInvocationException>()
+            .WithInnerException<DocumentMappingException>();
+    }
+
+    [Fact(Skip = "RS-06：明細内の文字列項目の相互代用を追加予定です。Open時の互換性をレビューして解除します。")]
+    public void 生成されたDocument型は一部の明細の文字列ContentControlをMERGEFIELDで代用してOpenできます()
+    {
+        // 生成元は各明細にItemName・Code・Agreement・DeliveryDateを持ちます。
+        // 開く文書は2件目のItemNameだけ種類を置き換え、名前と値を維持しています。
+        var generatedType = GeneratedCodeInspection
+            .AssemblyFrom(GeneratedCodeInspection.GenerateSources(@"TestData\コード生成\repeatingKinds.docx"))
+            .GeneratedType("RepeatingKindsDocument");
+
+        using var document = generatedType.InvokeStaticMethod<Document>(
+            "Open", @"TestData\コード生成\2件目のItemNameをMERGEFIELDで代用.docx");
+        dynamic documentAccessor = document;
+        IEnumerable<dynamic> items = documentAccessor.Items;
+
+        items.Select(it => it.ItemName as object).Should().Equal("商品A", "商品B");
+    }
+
+    [Fact(Skip = "RS-06：明細内の文字列項目の相互代用を追加予定です。Open時の互換性をレビューして解除します。")]
+    public void 生成されたDocument型は一部の明細のMERGEFIELDを文字列ContentControlで代用してOpenできます()
+    {
+        // 生成元は各明細にItemName・Code・Agreement・DeliveryDateを持ちます。
+        // 開く文書は2件目のCodeだけ種類を置き換え、名前と値を維持しています。
+        var generatedType = GeneratedCodeInspection
+            .AssemblyFrom(GeneratedCodeInspection.GenerateSources(@"TestData\コード生成\repeatingKinds.docx"))
+            .GeneratedType("RepeatingKindsDocument");
+
+        using var document = generatedType.InvokeStaticMethod<Document>(
+            "Open", @"TestData\コード生成\2件目のCodeを文字列ContentControlで代用.docx");
+        dynamic documentAccessor = document;
+        IEnumerable<dynamic> items = documentAccessor.Items;
+
+        items.Select(it => it.Code as object).Should().Equal("A001", "B001");
+    }
+
+    [Fact]
     public void 生成されたDocument型は必要な繰り返しセクションが不足するとOpenに失敗します()
     {
         var generatedType = GeneratedCodeInspection

@@ -18,7 +18,7 @@ static partial class DocumentWrapperComponents
                 /// <summary>
                 /// 生成元の文書にあったMERGEFIELD、文字列Content Control、CheckBox、DatePickerが存在することを検証します。
                 /// 文字列項目は同名のMERGEFIELDと文字列Content Controlを読み取り先として認めます。
-                /// 繰り返しセクション内の文字列Content Controlは、明細ごとにも存在を検証します。
+                /// 繰り返しセクション自体と、その中の文字列Content Controlも検証します。
                 /// 文書の生成、返却、解放は呼び出し元のOpenで行います。
                 /// </summary>
                 /// <exception cref="DocumentMappingException">
@@ -42,6 +42,10 @@ static partial class DocumentWrapperComponents
                 [.. from datePicker in document.DatePickers select datePicker.Tag],
                 "DatePickers.Select(it => it.Tag)",
                 "DatePicker")}}
+            {{RequiredItemsValidation(
+                [.. from section in document.RepeatingSections select section.Tag],
+                "RepeatingSections.Select(it => it.Tag)",
+                "繰り返しセクション")}}
             {{ForEach(
                 from section in document.RepeatingSections
                 select RepeatingSectionValidation(section))}}

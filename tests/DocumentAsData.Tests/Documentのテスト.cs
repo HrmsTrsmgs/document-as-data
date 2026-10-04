@@ -309,6 +309,56 @@ public class Documentのテスト
         }
     }
 
+    [Fact(Skip = "RS-07：対応する繰り返しセクションもOOXML検証の対象にする予定です。検証対象の契約をレビューして解除します。")]
+    public void Openは検証する場合正常な繰り返しセクションを開けます()
+    {
+        // w15:repeatingSectionは明細全体、w15:repeatingSectionItemは各明細を表す
+        // Office 2013の要素です。通常項目だけでなく、明細2件を含む文書を検証して開きます。
+        using var document = Document.Open(
+            Path.Combine("TestData", "繰り返しセクションに2件の明細.docx"), validate: true);
+
+        document.RepeatingSections["Items"].Items.Should().HaveCount(2);
+    }
+
+    [Fact(Skip = "RS-07：対応する繰り返しセクションもOOXML検証の対象にする予定です。検証対象の契約をレビューして解除します。")]
+    public void Stream版Openは検証する場合正常な繰り返しセクションを開けます()
+    {
+        using var stream = TestDocument.CreateMemoryStream(
+            Path.Combine("TestData", "繰り返しセクションに2件の明細.docx"));
+        using var document = Document.Open(stream, validate: true);
+
+        document.RepeatingSections["Items"].Items.Should().HaveCount(2);
+    }
+
+    [Fact(Skip = "RS-07：繰り返しセクション固有の不正なOOXMLの拒否を追加予定です。検証対象の契約をレビューして解除します。")]
+    public void Openは検証する場合セクション名の値が欠落した不正な繰り返しセクションを拒否します()
+    {
+        // 意図的な不正データです。w15:sectionTitleはWordに表示するセクション名を持ち、
+        // その必須属性w:valを欠落させています。データ項目のIDであるTagの欠落ではありません。
+        // mc:Ignorable="w15"があるため、Office 2010対象では要素ごと無視され得ます。
+        var action = () =>
+        {
+            using var document = Document.Open(
+                Path.Combine("TestData", "セクション名の値が欠落した不正な繰り返しセクション.docx"), validate: true);
+        };
+
+        action.Should().Throw<InvalidDataException>();
+    }
+
+    [Fact(Skip = "RS-07：繰り返しセクション固有の不正なOOXMLの拒否を追加予定です。検証対象の契約をレビューして解除します。")]
+    public void Stream版Openは検証する場合セクション名の値が欠落した不正な繰り返しセクションを拒否します()
+    {
+        // 同じ不正文書をStreamからも検証します。詳細なOOXMLは直前のファイル版テストを参照します。
+        using var stream = TestDocument.CreateMemoryStream(
+            Path.Combine("TestData", "セクション名の値が欠落した不正な繰り返しセクション.docx"));
+        var action = () =>
+        {
+            using var document = Document.Open(stream, validate: true);
+        };
+
+        action.Should().Throw<InvalidDataException>();
+    }
+
     [Fact]
     public void Openは検証する場合正常なOOXMLを開きます()
     {
