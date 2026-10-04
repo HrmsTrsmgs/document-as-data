@@ -27,12 +27,12 @@ static partial class DocumentWrapperComponents
                 void ValidateRequiredItems()
                 {
             {{RequiredItemsValidation(
-                [.. from mergeField in document.MergeFields select mergeField.Name],
-                "[.. MergeFields.Select(it => it.Name), .. ContentControls.Select(it => it.Tag)]",
+                [.. from mergeField in DocumentItemScopes.TopLevel(document.MergeFields) select mergeField.Name],
+                "[.. from it in MergeFields where !it.IsInRepeatingSection select it.Name, .. from it in ContentControls where !it.IsInRepeatingSection select it.Tag]",
                 "MERGEFIELD")}}
             {{RequiredItemsValidation(
-                [.. from contentControl in document.ContentControls select contentControl.Tag],
-                "[.. ContentControls.Select(it => it.Tag), .. MergeFields.Select(it => it.Name)]",
+                [.. from contentControl in DocumentItemScopes.TopLevel(document.ContentControls) select contentControl.Tag],
+                "[.. from it in ContentControls where !it.IsInRepeatingSection select it.Tag, .. from it in MergeFields where !it.IsInRepeatingSection select it.Name]",
                 "文字列Content Control")}}
             {{RequiredItemsValidation(
                 [.. from checkBox in document.CheckBoxes select checkBox.Tag],
