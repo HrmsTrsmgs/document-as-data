@@ -38,6 +38,19 @@ static partial class DocumentWrapperComponents
             """;
 
         /// <summary>
+        /// 繰り返し明細内のMERGEFIELDと文字列Content Controlから名前を取得する生成コードです。
+        /// </summary>
+        const string RepeatingItemTextItemNames =
+            """
+            [
+                .. from field in item.MergeFields
+                   select field.Name,
+                .. from control in item.ContentControls
+                   select control.Tag
+            ]
+            """;
+
+        /// <summary>
         /// 生成元の文書に必要な項目を、種類ごと、次に明細ごとの順で検査するメソッドを生成します。
         /// </summary>
         /// <param name="document">必要な項目の見本を持つ生成元の文書。</param>
@@ -92,8 +105,12 @@ static partial class DocumentWrapperComponents
                     {
             {{Indent(RequiredItemsValidation(
                 [.. from contentControl in section.Items[0].ContentControls select contentControl.Tag],
-                "item.ContentControls.Select(it => it.Tag)",
+                RepeatingItemTextItemNames,
                 "文字列Content Control"))}}
+            {{Indent(RequiredItemsValidation(
+                [.. from mergeField in section.Items[0].MergeFields select mergeField.Name],
+                RepeatingItemTextItemNames,
+                "MERGEFIELD"))}}
                     }
             """;
 
