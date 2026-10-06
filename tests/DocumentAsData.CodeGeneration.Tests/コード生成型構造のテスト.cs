@@ -125,7 +125,7 @@ public sealed class コード生成型構造のテスト
             .WithInnerException<DocumentMappingException>();
     }
 
-    [Fact(Skip = "RS-06：型付きOpenの不足検査を追加予定です。不足位置と例外の契約をレビューして解除します。")]
+    [Fact]
     public void 生成されたDocument型は2件目の明細だけCheckBoxが不足するとOpenに失敗します()
     {
         // Itemsの各明細には4種類の項目があります。2件目のCheckBoxだけを除いており、

@@ -38,6 +38,19 @@ static partial class DocumentWrapperComponents
             """;
 
         /// <summary>
+        /// 繰り返し明細内の指定したContent ControlからTagを取得する生成コードです。
+        /// </summary>
+        /// <param name="collectionName">生成コード内のContent Controlコレクション名。</param>
+        /// <returns>明細内のTagを取得する生成コード。</returns>
+        static string RepeatingItemTagNames(string collectionName) =>
+            $$"""
+            [
+                .. from control in item.{{collectionName}}
+                   select control.Tag
+            ]
+            """;
+
+        /// <summary>
         /// 繰り返し明細内のMERGEFIELDと文字列Content Controlから名前を取得する生成コードです。
         /// </summary>
         const string RepeatingItemTextItemNames =
@@ -111,6 +124,10 @@ static partial class DocumentWrapperComponents
                 [.. from mergeField in section.Items[0].MergeFields select mergeField.Name],
                 RepeatingItemTextItemNames,
                 "MERGEFIELD"))}}
+            {{Indent(RequiredItemsValidation(
+                [.. from checkBox in section.Items[0].CheckBoxes select checkBox.Tag],
+                RepeatingItemTagNames("CheckBoxes"),
+                "CheckBox"))}}
                     }
             """;
 
