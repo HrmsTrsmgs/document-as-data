@@ -128,6 +128,10 @@ static partial class DocumentWrapperComponents
                 [.. from checkBox in section.Items[0].CheckBoxes select checkBox.Tag],
                 RepeatingItemTagNames("CheckBoxes"),
                 "CheckBox"))}}
+            {{Indent(RequiredItemsValidation(
+                [.. from datePicker in section.Items[0].DatePickers select datePicker.Tag],
+                RepeatingItemTagNames("DatePickers"),
+                "DatePicker"))}}
                     }
             """;
 
