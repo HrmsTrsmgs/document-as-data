@@ -8,7 +8,7 @@
 作業開始時は、このファイルに加えて、作業内容に応じた指示を読む。
 
 * 常に適用する共通指示: `docs/ai-instructions/common.md`
-* 振る舞い追加、仕様変更、不具合修正、リファクタリングの入口: `docs/ai-instructions/tdd-context/run.md`
+* 新しい主チャットでの振る舞い追加、仕様変更、不具合修正の入口: `.agents/skills/document-as-data-tdd/SKILL.md`。起動済みの工程担当は進行役Skillを再実行せず、指定された工程文書だけを読む。
 * C#、.NET、xUnit、FluentAssertions、NuGet、MSBuildを扱う作業: `docs/ai-instructions/csharp.md`
 * DocumentAsData固有の設計、README、公開準備: `docs/ai-instructions/document-as-data.md`
 
@@ -39,7 +39,7 @@
 * 新しいAPI、型、メソッド、設定項目、コマンドを追加する場合は、提案または実装変更として明示し、確認可能な差分にする。
 * 依頼範囲外の変更を混ぜない。
 * ユーザーの未コミット変更を無断で破棄、上書き、コミットしない。
-* 振る舞いを追加または変更する場合は、原則としてRed、Green、Refactorを分ける。
+* 振る舞いを追加または変更する場合は、Red、Green、Refactorで作業とコンテキストを分ける。工程の進行は主チャットが `.agents/skills/document-as-data-tdd/SKILL.md` に従って行う。
 * Greenでは、対象テストが要求していない仕様を先取りして実装しない。
 * コミット前に差分、対象ファイル、コミットメッセージ案を提示し、ユーザーの了承を得る。
 * pushは、ユーザーから指示された場合に行う。
