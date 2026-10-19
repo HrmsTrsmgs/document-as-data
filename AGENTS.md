@@ -11,6 +11,7 @@
 * 新しい主チャットでの振る舞い追加、仕様変更、不具合修正の入口: `.agents/skills/document-as-data-tdd/SKILL.md`。起動済みの工程担当は進行役Skillを再実行せず、指定された工程文書だけを読む。
 * C#、.NET、xUnit、FluentAssertions、NuGet、MSBuildを扱う作業: `docs/ai-instructions/csharp.md`
 * DocumentAsData固有の設計、README、公開準備: `docs/ai-instructions/document-as-data.md`
+* 開発再開時の仕様・判断・作業状況: `docs/development-context.md`
 
 工程別TDDでは、進行役だけが `tdd-context/run.md` を読み、各担当には
 `tdd-context/common.md` と担当工程の文書だけを渡す。関連するC#・プロジェクト固有の
@@ -41,5 +42,7 @@
 * ユーザーの未コミット変更を無断で破棄、上書き、コミットしない。
 * 振る舞いを追加または変更する場合は、Red、Green、Refactorで作業とコンテキストを分ける。工程の進行は主チャットが `.agents/skills/document-as-data-tdd/SKILL.md` に従って行う。
 * Greenでは、対象テストが要求していない仕様を先取りして実装しない。
+* 仕様が不明で判断が必要な場合は、必要な範囲だけ質問し、確定した仕様・判断理由・却下案を `docs/development-context.md` に記録する。確認済みの事実、AIの推測、未確認事項を区別する。
+* 作業を区切るときは、未完了事項と次の着手点を `docs/development-context.md` に簡潔に更新する。既存テストや既存文書と重複する説明はリンクで参照する。
 * コミット前に差分、対象ファイル、コミットメッセージ案を提示し、ユーザーの了承を得る。
 * pushは、ユーザーから指示された場合に行う。
