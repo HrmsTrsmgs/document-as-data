@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using System.Xml;
 using FluentAssertions;
 using Marimo.DocumentAsData.Test.TestDocuments;
 
@@ -208,6 +209,27 @@ public class Documentのテスト
         {
             File.Delete(filePath);
         }
+    }
+
+    [Fact]
+    public void Openは本文XMLが途中で切れた文書で失敗してもファイルを直ちに排他的に開き直せます()
+    {
+        // ZIPは成立しますが、word/document.xmlがw:bodyの開始タグ直後で切れた固定データです。
+        var filePath = @"TestData\本文XMLが途中で切れた不正文書.docx";
+        var open = () =>
+        {
+            using var document = Document.Open(filePath);
+        };
+
+        open.Should().Throw<XmlException>();
+
+        // Documentを取得できない失敗の直後でも、利用側が元ファイルを排他的に開けます。
+        var reopen = () =>
+        {
+            using var file = File.Open(filePath, FileMode.Open, FileAccess.ReadWrite, FileShare.None);
+        };
+
+        reopen.Should().NotThrow();
     }
 
     [Fact]

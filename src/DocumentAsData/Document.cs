@@ -57,12 +57,20 @@ public class Document : IDisposable
     Document(DocumentSession session)
     {
         this.session = session;
-        MergeFields = new(this);
-        ContentControls = new(this);
-        CheckBoxes = new(this);
-        DatePickers = new(this);
-        RepeatingSections = new(this);
-        objectMapper = new(this);
+        try
+        {
+            MergeFields = new(this);
+            ContentControls = new(this);
+            CheckBoxes = new(this);
+            DatePickers = new(this);
+            RepeatingSections = new(this);
+            objectMapper = new(this);
+        }
+        catch
+        {
+            session.Dispose();
+            throw;
+        }
     }
 
     /// <summary>
