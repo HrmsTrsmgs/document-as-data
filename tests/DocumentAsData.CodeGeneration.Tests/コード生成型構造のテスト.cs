@@ -341,6 +341,27 @@ public sealed class コード生成型構造のテスト
     }
 
     [Fact]
+    public void 生成されたDocument型のReadは明細データ型が同名でも文書全体のデータ型を返します()
+    {
+        var generatedAssembly = GeneratedCodeInspection.AssemblyFrom(
+            GeneratedCodeInspection.GenerateSources(
+                @"TestData\コード生成\repeatingTemplate.docx",
+                options => options.NameMappings["Items"] = "RepeatingTemplate"));
+        var tested = generatedAssembly
+            .GeneratedType("RepeatingTemplateDocument")
+            .GetMethods(
+                BindingFlags.Public |
+                BindingFlags.Instance |
+                BindingFlags.DeclaredOnly)
+            .SingleOrDefault(it =>
+                it.Name == "Read" &&
+                it.GetParameters().Length == 0);
+
+        tested.Should().NotBeNull();
+        tested.ReturnType.Should().Be(generatedAssembly.GeneratedType("RepeatingTemplateData"));
+    }
+
+    [Fact]
     public void 生成されたDocument型は文書データ型を受け取るReplaceメソッドを公開します()
     {
         var generatedAssembly = GeneratedCodeInspection.AssemblyFrom(

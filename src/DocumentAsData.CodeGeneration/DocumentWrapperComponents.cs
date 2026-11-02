@@ -100,8 +100,8 @@ static partial class DocumentWrapperComponents
                 /// Word文書全体のデータを読み込みます。
                 /// </summary>
                 /// <returns>文書内のデータを読み込んだオブジェクト。</returns>
-                public {{dataTypeName}} Read() =>
-                    base.Read<{{dataTypeName}}>();
+                public global::{{options.Namespace}}.{{dataTypeName}} Read() =>
+                    base.Read<global::{{options.Namespace}}.{{dataTypeName}}>();
 
                 /// <summary>
                 /// Word文書全体のデータを置換します。
