@@ -1,28 +1,26 @@
 # DocumentAsData 作業指示
 
 このファイルは、AIがこのリポジトリで作業するときの入口である。
-詳細なAI向け指示は、用途別に `docs/ai-instructions/` 配下へ分割する。
+共通規則は個人共通のAGENTSとSkill、固有規則と未導入環境向けの参照版は `docs/ai-instructions/` に置く。
 
 ## 読むべき指示
 
-作業開始時は、このファイルに加えて、作業内容に応じた指示を読む。
+* 常に適用する共通指示: ユーザー共通のAGENTS。未導入の場合は `docs/ai-instructions/common.md` の参照版を読む。
+* 新しい主チャットでの振る舞い追加、仕様変更、不具合修正: 共通Skill `tdd-workflow`。未導入の場合は `docs/ai-instructions/tdd.md` を入口とする。
+* 振る舞いを維持するリファクタリングの進行役: 共通Skill内の `references/run.md`。未導入の場合は `docs/ai-instructions/tdd-context/run.md`。性能調査・計測だけの依頼をTDDへ振り分けない。
+* C#/.NETの作業: 共通Skill `csharp-conventions`。採用パッケージ・具体的なビルド対象は `docs/ai-instructions/csharp.md` の該当節も確認する。共通Skill未導入時は同文書を技術規約の参照版として使う。
+* DocumentAsData固有の指示: `docs/ai-instructions/document-as-data.md`。主担当は確認し、工程担当は自分の担当範囲に必要な節だけ参照する。
 
-* 常に適用する共通指示: `docs/ai-instructions/common.md`
-* 新しい主チャットでの振る舞い追加、仕様変更、不具合修正の入口: `.agents/skills/document-as-data-tdd/SKILL.md`。起動済みの工程担当は進行役Skillを再実行せず、指定された工程文書だけを読む。
-* C#、.NET、xUnit、FluentAssertions、NuGet、MSBuildを扱う作業: `docs/ai-instructions/csharp.md`
-* DocumentAsData固有の設計、README、公開準備: `docs/ai-instructions/document-as-data.md`
-* 開発再開時の仕様・判断・作業状況: `docs/development-context.md`
+共通ルールの正本は個人管理の `codex-workflows`。利用可能なSkillの一覧で名前と実際の場所を確認する。共通Skillとリポジトリ内の参照版は同じ用途へ重ねて読み込まず、固有の制約・検証対象・記録先だけを補足する。私用リポジトリへのアクセスや共通Skillの導入を、OSSへの参加条件にしない。
 
-工程別TDDでは、進行役だけが `tdd-context/run.md` を読み、各担当には
-`tdd-context/common.md` と担当工程の文書だけを渡す。関連するC#・プロジェクト固有の
-指示や設計資料は、その工程で必要な範囲を担当自身が参照する。
-工程担当は `run.md` や他工程の文書を読まない。
-`tdd.md` は従来のTDD方針の参照資料であり、工程別担当へ一括で読み込ませない。
+進行役は選んだ入口の進行手順だけを読む。起動済みの工程担当は入口を再実行せず、同じ側の工程共通文書と担当工程文書だけを読む。必要な技術・固有規則は担当範囲で参照し、他工程や候補一覧を読み込まない。運用文書の整備だけでは工程担当を起動しない。
+
+2026-10-25に `codex-workflows` の `e66db1d` を基準として入口を統一した。共通規則の改善は正本でレビューし、未導入環境向けの参照版も同じ作業で同期する。プロジェクト固有の仕様や一時的な作業ログは共通規則へ昇格させない。
 
 ## 分類方針
 
-* 他の開発にも共有できる内容は `common.md` または適用するTDD文書に置く。
-* C#/.NETに閉じる内容は `csharp.md` に置く。
+* 他の開発にも共有できる規則は `codex-workflows` の共通AGENTS・該当Skillを正本とし、このリポジトリの参照版へ同期する。
+* 技術共通の規則は対応する共通Skill、採用パッケージや具体的な検証対象はリポジトリ内の技術別指示へ置く。
 * DocumentAsDataの目的、公開方針、DOCXテストデータなど、このリポジトリ固有の内容は `document-as-data.md` に置く。
 * 今回限りの作業メモ、試行錯誤、すぐ陳腐化する操作ログは指示化しない。
 
@@ -40,7 +38,7 @@
 * 新しいAPI、型、メソッド、設定項目、コマンドを追加する場合は、提案または実装変更として明示し、確認可能な差分にする。
 * 依頼範囲外の変更を混ぜない。
 * ユーザーの未コミット変更を無断で破棄、上書き、コミットしない。
-* 振る舞いを追加または変更する場合は、Red、Green、Refactorで作業とコンテキストを分ける。工程の進行は主チャットが `.agents/skills/document-as-data-tdd/SKILL.md` に従って行う。
+* 振る舞い追加・変更は、共通TDDの工程境界に従う。通常はRed→Green→人間レビュー・Gコミット→Refactor→変更時の人間レビュー・Fコミット。段階指定ではそこで停止する。
 * Greenでは、対象テストが要求していない仕様を先取りして実装しない。
 * 仕様が不明で判断が必要な場合は、必要な範囲だけ質問し、確定した仕様・判断理由・却下案を `docs/development-context.md` に記録する。確認済みの事実、AIの推測、未確認事項を区別する。
 * 作業を区切るときは、未完了事項と次の着手点を `docs/development-context.md` に簡潔に更新する。既存テストや既存文書と重複する説明はリンクで参照する。

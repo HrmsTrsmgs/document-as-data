@@ -1,5 +1,7 @@
 # C#/.NET開発指示
 
+通常の技術規約は共通Skill `csharp-conventions` を使う。この文書の共通規約は未導入環境向けの参照版。採用パッケージ・具体的なビルド対象とコマンドは、この文書の該当節をプロジェクトの補足として確認する。
+
 この文書は、C#、.NET、xUnit、FluentAssertions、NuGet、MSBuildを扱う作業に適用する。
 
 ## C#コード記述

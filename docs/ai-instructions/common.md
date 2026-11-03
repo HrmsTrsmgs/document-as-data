@@ -1,5 +1,7 @@
 # 共通AI作業指示
 
+個人共通AGENTSが未導入の環境で使う参照版。導入済みの場合はそちらを使い、共通規則を二重に読み込まない。共通規則の正本は `codex-workflows/instructions/AGENTS.md`、固有の制約は `document-as-data.md` に置く。
+
 この文書は、SpreadsheetAsData以外の開発にも共有できるAI協働ルールを定義する。
 
 ## 指示の解釈
