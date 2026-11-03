@@ -299,6 +299,23 @@ public class TextContentControlのテスト
     }
 
     [Fact]
+    public void Textプロパティはプレースホルダー表示がfalseなら入力値を取得します()
+    {
+        var filePath = TestDocument.CreateTemporaryCopy(
+            Path.Combine("TestData", "プレースホルダー表示がfalseのContent Control.docx"));
+        try
+        {
+            using var document = Document.Open(filePath, validate: true);
+
+            document.ContentControls["CustomerName"].Text.Should().Be("入力済みの値");
+        }
+        finally
+        {
+            File.Delete(filePath);
+        }
+    }
+
+    [Fact]
     public void Textプロパティはプレースホルダー表示中のContentControlへ値を設定します()
     {
         var filePath =

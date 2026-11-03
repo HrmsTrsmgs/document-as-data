@@ -167,7 +167,8 @@ public class TextContentControl : ContentControl, IDocumentTextItem
     /// このContent Controlがプレースホルダー表示中かを取得します。
     /// </summary>
     bool IsShowingPlaceholder =>
-        Element.PropertyElements<Wordprocessing.ShowingPlaceholder>().Any();
+        Element.PropertyElements<Wordprocessing.ShowingPlaceholder>()
+            .Any(it => it.Val?.Value != false);
 
     /// <summary>
     /// 値の書き込み後に表示文字列がプレースホルダーとして扱われないよう、表示状態を解除します。
