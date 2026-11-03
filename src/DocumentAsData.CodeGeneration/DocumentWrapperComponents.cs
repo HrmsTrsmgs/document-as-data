@@ -107,7 +107,7 @@ static partial class DocumentWrapperComponents
                 /// Word文書全体のデータを置換します。
                 /// </summary>
                 /// <param name="data">文書へ書き込むデータ。</param>
-                public void Replace({{dataTypeName}} data) =>
+                public void Replace(global::{{options.Namespace}}.{{dataTypeName}} data) =>
                     base.Replace(data);
             {{ForEach([
                 .. from mergeField in TopLevel(document.MergeFields)

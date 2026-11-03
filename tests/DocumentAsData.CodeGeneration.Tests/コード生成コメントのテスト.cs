@@ -105,7 +105,7 @@ public sealed class コード生成コメントのテスト
         GeneratedCodeInspection
             .GenerateSources(BasicStructureDocumentFilePath)
             .TypeDeclaration("BasicStructureDocument")
-            .MethodDeclaration("Replace", "BasicStructureData")
+            .MethodDeclaration("Replace", "global::Generated.BasicStructureData")
             .SummaryText()
             .Should().Be("Word文書全体のデータを置換します。");
     }

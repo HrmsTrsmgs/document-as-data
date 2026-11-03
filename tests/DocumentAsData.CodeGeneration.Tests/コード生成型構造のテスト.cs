@@ -384,6 +384,34 @@ public sealed class コード生成型構造のテスト
     }
 
     [Fact]
+    public void 生成されたDocument型のReplaceは明細データ型が同名でも文書全体のデータ型を受け取ります()
+    {
+        var generatedAssembly = GeneratedSourceCompiler.Compile(
+            [
+                .. GeneratedCodeInspection.GenerateSources(
+                    @"TestData\コード生成\repeatingTemplate.docx",
+                    options => options.NameMappings["Items"] = "RepeatingTemplate"),
+                """
+                namespace Generated;
+
+                public static class UseDocumentData
+                {
+                    public static void Replace(RepeatingTemplateDocument document, RepeatingTemplateData data)
+                    {
+                        document.Replace(data);
+                    }
+                }
+                """
+            ]);
+        var tested = generatedAssembly.GeneratedType("RepeatingTemplateDocument")
+            .GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
+            .Single(it => it.Name == "Replace" && it.GetParameters().Length == 1);
+
+        tested.GetParameters()[0].ParameterType.Should().Be(
+            generatedAssembly.GeneratedType("RepeatingTemplateData"));
+    }
+
+    [Fact]
     public void 生成されたDocument型は指定ファイルを開く静的Openメソッドを公開します()
     {
         var tested = GeneratedCodeInspection
