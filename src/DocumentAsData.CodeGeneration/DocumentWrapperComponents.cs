@@ -1,6 +1,4 @@
-﻿using System.Globalization;
-
-using static Marimo.DocumentAsData.CodeGeneration.DocumentItemScopes;
+﻿using static Marimo.DocumentAsData.CodeGeneration.DocumentItemScopes;
 
 namespace Marimo.DocumentAsData.CodeGeneration;
 
@@ -308,14 +306,13 @@ static partial class DocumentWrapperComponents
 
     /// <summary>
     /// 生成Dataプロパティ名が文書項目名と異なる場合に、ReadとReplaceへ元名を伝える属性を生成します。
-    /// 書式文字はコンパイル後の識別子では無視されるため、ソース上で同名でも属性を付けます。
+    /// 先頭の@と書式文字はコンパイル後の識別子では無視されるため、元名と比較して属性を付けます。
     /// </summary>
     /// <param name="itemName">文書内の項目名またはTag。</param>
     /// <param name="propertyName">生成するC#プロパティ名。</param>
     /// <returns>属性と次行のインデント。元名を補う必要がない場合は空文字列。</returns>
     static string DataItemNameAttributeDeclaration(string itemName, string propertyName) =>
-        itemName == propertyName
-            && !propertyName.Any(it => char.GetUnicodeCategory(it) == UnicodeCategory.Format)
+        itemName == propertyName.IdentifierComparisonKey
             ? ""
             : $"[DocumentItemName({StringLiteral(itemName)})]{Environment.NewLine}    ";
 

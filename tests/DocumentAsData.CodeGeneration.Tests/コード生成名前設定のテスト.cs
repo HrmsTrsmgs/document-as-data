@@ -241,6 +241,26 @@ public sealed class コード生成名前設定のテスト
     }
 
     [Fact]
+    public void NameMappingsでアットマーク付きTagをそのまま指定しても文書全体のDataへ文字列を読み込みます()
+    {
+        const string filePath = @"TestData\コード生成\アットマーク付きTagの文字列ContentControl.docx";
+        using var document = GeneratedCodeInspection
+            .AssemblyFrom(
+                GeneratedCodeInspection.GenerateSources(
+                    filePath,
+                    options => options.NameMappings["@CustomerName"] = "@CustomerName"))
+            .GeneratedType("アットマーク付きTagの文字列ContentControlDocument")
+            .InvokeStaticMethod<Document>("Open", filePath);
+        dynamic documentAccessor = document;
+        (documentAccessor.CustomerName as object).Should().Be("山田太郎");
+        dynamic tested = documentAccessor.Read();
+
+        (tested.CustomerName as object)
+            .Should().BeOfType<string>()
+            .Which.Should().Be("山田太郎");
+    }
+
+    [Fact]
     public void NameMappingsで変更した生成Dataプロパティから文字列ContentControlへ文字列を書き込みます()
     {
         using var tested = GeneratedCodeInspection
