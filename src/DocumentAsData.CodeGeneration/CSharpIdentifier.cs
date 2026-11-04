@@ -10,7 +10,7 @@ static class CSharpIdentifier
     extension(string self)
     {
         /// <summary>
-        /// C#の識別子比較で無視される先頭の@と書式文字を除き、衝突診断に使う名前を取得します。
+        /// C#の識別子比較で無視される先頭の@と書式文字を除いた名前を取得します。
         /// 生成コードや文書内の元名自体は変更しません。
         /// </summary>
         internal string IdentifierComparisonKey =>
