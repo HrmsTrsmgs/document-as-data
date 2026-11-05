@@ -180,7 +180,7 @@ public sealed class コード生成型構造のテスト
         items.Select(it => it.ItemName as object).Should().Equal("商品A", "商品B");
     }
 
-    [Fact(Skip = "RS-06：明細内の文字列項目の相互代用を追加予定です。Open時の互換性をレビューして解除します。")]
+    [Fact]
     public void 生成されたDocument型は一部の明細のMERGEFIELDを文字列ContentControlで代用してOpenできます()
     {
         // 生成元は各明細にItemName・Code・Agreement・DeliveryDateを持ちます。
