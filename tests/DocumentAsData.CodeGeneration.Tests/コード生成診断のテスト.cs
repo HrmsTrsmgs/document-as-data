@@ -246,6 +246,20 @@ public sealed class コード生成診断のテスト
     }
 
     [Fact]
+    public void 明細内のMERGEFIELDと文字列ContentControlの生成プロパティ名が衝突するとエラーを診断します()
+    {
+        GeneratedCodeInspection
+            .GenerateDiagnostics(
+                @"TestData\コード生成\repeatingKinds.docx",
+                options => options.NameMappings["Code"] = "ItemName")
+            .Should().ContainEquivalentOf(
+                new CodeGenerationDiagnostic(
+                    true,
+                    "ItemName",
+                    ["Code", "ItemName"]));
+    }
+
+    [Fact]
     public void 異なる明細に同じTagがあっても生成名の衝突と診断しません()
     {
         // Itemsの二つの明細には、それぞれItemNameが一つずつあります。

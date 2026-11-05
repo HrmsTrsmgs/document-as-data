@@ -85,8 +85,9 @@ static class GeneratedNameDiagnostics
                    select section.Tag
             ],
             .. from section in document.RepeatingSections
-               select from contentControl in section.Items[0].ContentControls
-                      select contentControl.Tag
+               select section.Items[0].ContentControls
+                   .Select(it => it.Tag)
+                   .Concat(section.Items[0].MergeFields.Select(it => it.Name))
         ];
 
     /// <summary>

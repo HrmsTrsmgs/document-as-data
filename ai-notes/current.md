@@ -4,17 +4,16 @@
 
 ## 停止位置と次の作業
 
-* B09（明細追加時の識別ID重複）のGreenとテスト可読性整理はユーザー了承済み。この記録とともにコミットし、実装側のRefactorへ進みます。基準は `b5a053c`＋製品コード・テスト・固定DOCXの差分です。
-* 対象は `src/DocumentAsData/RepeatingSectionItem.cs`、`tests/DocumentAsData.Tests/RepeatingSectionのテスト.cs`、固定DOCX「識別IDが整数の上下限を含む2件の明細.docx」。入力条件・Replace・SaveAs・期待値はテスト本文、OOXML検査・読み取りの準備はクラス内補助に分離済みです。
-* Refactorに実変更があれば人間レビューで停止します。その後はB10（コード生成時の名前診断漏れ）を一件ずつ扱います。[指摘と対応状況](refactoring-review.md#現在の対応状況)を参照。
+* B09（明細追加時の識別ID重複）は `29a77e2` でコミット済み。実装側のRefactor検討は追加変更・追加Skipなしで完了しました。
+* B10は明細内のMERGEFIELDと文字列Content Controlの生成プロパティ名衝突を診断する1件から着手。既存 `repeatingKinds.docx` の `Code → ItemName` を対象に診断テスト1件を追加し、診断が空のため失敗するRedを確認済み。明細の名前診断へMERGEFIELDを加える修正でGreen済み。製品1ファイル・テスト1件・この記録と対応表をユーザー了承後にコミットします。
+* 次はこの1件のRefactor。別種類の衝突や予約名の契約にはまだ進みません。[指摘と対応状況](refactoring-review.md#現在の対応状況)を参照。
 
 ## 最新の検証
 
-* 今回の文書整理：相対リンク先89件、改行・BOM、差分の空白検査は成功。旧記録先への有効な参照は残っていません。製品コード・テストは変更していないため再実行していません。
-
-* B09のテスト整理後の検証版：`b5a053c`＋上記Green差分とテスト整理。全体623成功、失敗0、Skip 5（本体317、コード生成306）。関連34成功・Skip 1。解析Rebuild成功（17.7秒）、変更行の診断なし。既存SARIF診断13件は残っています。ビルドとテストの重複実行でロック警告が出たため、今回のプロセス終了後に逐次実行し直した結果です。初回テストの応答停止原因は未特定。
-* SDK 10.0.401のMSBuildを直接使用。`global.json`指定の10.0.302は未導入で、format検査は未完了です。設定は変更していません。
-* Skip 5件はRS-07の4件と明細0件の契約メモ1件。仕様の正本はテスト、未決定事項は[繰り返し計画](repeating-sections-plan.md)を参照します。
+* B10の検証版：`29a77e2`＋名前診断の修正とテスト1件。対象1成功。全体624成功・失敗0・Skip 5（本体317、コード生成307）、約4分。解析Rebuild成功（約20秒）、CodeGenerationのSARIF診断0。差分・改行検査成功。
+* SDK 10.0.401のMSBuild.dllを `dotnet exec` で直接実行し、ソリューションを `-t:Rebuild -restore:false -p:UseSharedCompilation=false -p:EnforceCodeStyleInBuild=true -p:RunAnalyzersDuringBuild=true -p:ErrorLog=obj/ide-diagnostics.sarif` で検証。その終了後、同SDKのvstest.console.dllでDebug/net10.0の本体・コード生成テストDLLを通常権限で直接実行しました。ビルドとテストは同時実行しません。
+* `global.json`指定のSDK 10.0.302は未導入で、format検査は未完了。設定は変更していません。制限環境でのテスト応答停止は既知の未特定事項です。
+* Skip 5件はRS-07の4件と明細0件の契約メモ1件。今回は新規テスト追加でSkip数に変化なし。未決定事項は[繰り返し計画](repeating-sections-plan.md)を参照します。
 
 ## 保留・環境制約
 
