@@ -260,6 +260,17 @@ public sealed class コード生成診断のテスト
     }
 
     [Fact]
+    public void 明細内の生成プロパティ名が明細データ型名と同じ場合にエラーを診断します()
+    {
+        GeneratedCodeInspection
+            .GenerateDiagnostics(
+                @"TestData\コード生成\repeatingTemplate.docx",
+                options => options.NameMappings["ItemName"] = "ItemsData")
+            .Should().ContainEquivalentOf(
+                new CodeGenerationDiagnostic(true, "ItemsData", ["ItemName"]));
+    }
+
+    [Fact]
     public void 異なる明細に同じTagがあっても生成名の衝突と診断しません()
     {
         // Itemsの二つの明細には、それぞれItemNameが一つずつあります。

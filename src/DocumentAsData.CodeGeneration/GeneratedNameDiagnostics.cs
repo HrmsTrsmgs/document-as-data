@@ -54,6 +54,19 @@ static class GeneratedNameDiagnostics
             .. InvalidDocumentNameDiagnostics(filePath, options),
             .. PropertyNameDiagnostics(propertySourceNameScopes, reservedNames, options),
             .. from section in document.RepeatingSections
+               let generatedTypeName = options.DataTypeName(section.Tag).IdentifierComparisonKey
+               from sourceNames in
+                   from sourceName in (from contentControl in section.Items[0].ContentControls
+                                       select contentControl.Tag).Concat(
+                       from mergeField in section.Items[0].MergeFields
+                       select mergeField.Name)
+                   group sourceName by options.GeneratedName(sourceName).IdentifierComparisonKey
+               where sourceNames.Key == generatedTypeName
+               select new CodeGenerationDiagnostic(
+                   true,
+                   generatedTypeName,
+                   [.. sourceNames]),
+            .. from section in document.RepeatingSections
                group section.Tag by options.DataTypeName(section.Tag).IdentifierComparisonKey
                into sourceNames
                where sourceNames.Count() > 1
