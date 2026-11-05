@@ -106,6 +106,21 @@ public class CheckBoxのテスト
     }
 
     [Fact]
+    public void チェック状態要素の値属性が省略されたチェックボックスはチェック済みです()
+    {
+        // w14:checkedは存在し、w14:valだけを省略しています。表示文字はチェック済みの☒です。
+        var filePath = Path.Combine("TestData", "チェック状態の値属性を省略したチェックボックス.docx");
+        using (var source = WordprocessingDocument.Open(filePath, false))
+        {
+            new OpenXmlValidator(FileFormatVersions.Office2010).Validate(source).Should().BeEmpty();
+        }
+
+        using var document = Document.Open(filePath, true);
+
+        document.CheckBoxes["Agreement"].IsChecked.Should().BeTrue();
+    }
+
+    [Fact]
     public void CustomXMLに連結されたチェックボックスの状態は読み取りません()
     {
         // w:sdtPrのw:dataBindingがCustom XMLを指すため、表示側の状態だけを信用しません。
