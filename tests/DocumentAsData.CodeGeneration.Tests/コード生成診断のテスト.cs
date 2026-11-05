@@ -271,6 +271,22 @@ public sealed class コード生成診断のテスト
     }
 
     [Fact]
+    public void 明細型名と衝突する元名は文字列ContentControlとMERGEFIELDの順に診断へ含めます()
+    {
+        GeneratedCodeInspection
+            .GenerateDiagnostics(
+                @"TestData\コード生成\repeatingKinds.docx",
+                options => options.NameMappings = new()
+                {
+                    ["ItemName"] = "ItemsData",
+                    ["Code"] = "ItemsData"
+                })
+            .Should().Contain(it => it.IsError
+                && it.GeneratedName == "ItemsData"
+                && it.SourceNames.SequenceEqual(new[] { "ItemName", "Code" }));
+    }
+
+    [Fact]
     public void 異なる明細に同じTagがあっても生成名の衝突と診断しません()
     {
         // Itemsの二つの明細には、それぞれItemNameが一つずつあります。

@@ -56,10 +56,7 @@ static class GeneratedNameDiagnostics
             .. from section in document.RepeatingSections
                let generatedTypeName = options.DataTypeName(section.Tag).IdentifierComparisonKey
                from sourceNames in
-                   from sourceName in (from contentControl in section.Items[0].ContentControls
-                                       select contentControl.Tag).Concat(
-                       from mergeField in section.Items[0].MergeFields
-                       select mergeField.Name)
+                   from sourceName in DetailPropertySourceNames(section)
                    group sourceName by options.GeneratedName(sourceName).IdentifierComparisonKey
                where sourceNames.Key == generatedTypeName
                select new CodeGenerationDiagnostic(
@@ -97,13 +94,21 @@ static class GeneratedNameDiagnostics
                    select section.Tag
             ],
             .. from section in document.RepeatingSections
-               select (
-                   from contentControl in section.Items[0].ContentControls
-                   select contentControl.Tag
-               ).Concat(
-                   from mergeField in section.Items[0].MergeFields
-                   select mergeField.Name)
+               select DetailPropertySourceNames(section)
         ];
+
+    /// <summary>
+    /// 明細型の生成元となる最初の明細から、文字列Content Control、MERGEFIELDの順に元名を取り出します。
+    /// </summary>
+    /// <param name="section">明細型の生成元となるセクション。</param>
+    /// <returns>明細プロパティへ変換する元名の列。</returns>
+    static IEnumerable<string> DetailPropertySourceNames(RepeatingSection section) =>
+        (
+            from contentControl in section.Items[0].ContentControls
+            select contentControl.Tag
+        ).Concat(
+            from mergeField in section.Items[0].MergeFields
+            select mergeField.Name);
 
     /// <summary>
     /// 同じ生成先に属する元名だけをまとめ、重複・空名・予約名との衝突を診断します。
