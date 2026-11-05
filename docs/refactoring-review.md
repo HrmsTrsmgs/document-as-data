@@ -153,12 +153,16 @@ Release全体テストは595件成功、Skip 1件です。以下は修正前の�
 
 #### B07 / P2：CheckBoxの表示記号用フォントを反映しない — XMLで再現、Word表示は未確認
 
+* **2026-11-05の判断：** Word操作が復旧するまで修正を保留する方針を開発者が選択。仕様だけに基づく先行修正は行いません。実機確認・Redは未実施です。
+
 * 対象：[CheckBox.cs](../src/DocumentAsData/CheckBox.cs) の52、79–83行。
 * checkedStateを `font="Wingdings", val="00FC"`、元の表示runをMS Gothicとしてtrue設定すると、保存文字はU+00FCの `ü`、runのフォントはMS Gothicのままです。入力のValidatorエラーは0件です。
 * 表示記号はコードポイントとフォントの組で指定されます。[CheckedStateのfont属性](https://learn.microsoft.com/en-us/dotnet/api/documentformat.openxml.office2010.word.checkedstate?view=openxml-3.0.1)
 * 次の確認：Wordが保存値をどう補正・表示するかを確認し、異なる記号フォントを持つ入力の切替結果をRedへします。文字だけの更新と、保存表示の整合を区別します。
 
 #### B08 / P2：日付設定後にもplaceholder指定が残る — 未保証範囲を具体化
+
+* **2026-11-05の進捗：** 固定DOCXとテスト1件で日時・表示文字は保存される一方placeholder指定が残るRedを確認し、設定後に解除するGreenまで完了。全体622件成功・失敗0・既存Skip 5、解析Rebuild成功・新規診断なし。Word実機表示は未確認。未コミットでレビュー待ちです。
 
 * 対象：[DatePicker.cs](../src/DocumentAsData/DatePicker.cs) の62–65行。
 * 未入力の日付選択へ `w:showingPlcHdr` を付けて日時設定すると、fullDateと表示文字は更新されますが、placeholder指定はtrueのままです。入力のValidatorエラーは0件でした。

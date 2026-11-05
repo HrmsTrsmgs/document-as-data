@@ -1,5 +1,7 @@
 ﻿using System.Globalization;
+using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Packaging;
+using DocumentFormat.OpenXml.Validation;
 using FluentAssertions;
 using Marimo.DocumentAsData.Test.TestDocuments;
 using Wordprocessing = DocumentFormat.OpenXml.Wordprocessing;
@@ -206,6 +208,61 @@ public class DatePickerのテスト
         finally
         {
             File.Delete(filePath);
+        }
+    }
+
+    [Fact]
+    public void SelectedDateTimeプロパティはプレースホルダー表示中の未入力欄に日時を保存してプレースホルダー状態を解除します()
+    {
+        // 既存の未入力DOCXにw:showingPlcHdrと案内文を加えた最小OOXMLです。
+        // Wordで作成・表示確認したデータではなく、保存形式の契約を検証します。
+        var sourcePath = TestDocument.CreateTemporaryCopy(
+            Path.Combine("TestData", "プレースホルダー表示中の未入力の日付選択Content Control.docx"));
+        var outputPath = TestDocument.CreateOutputPath();
+        var value = new DateTimeOffset(2026, 12, 31, 0, 0, 0, TimeSpan.FromHours(9));
+        try
+        {
+            using (var source = WordprocessingDocument.Open(sourcePath, false))
+            {
+                new OpenXmlValidator(FileFormatVersions.Office2007).Validate(source).Should().BeEmpty();
+                var contentControl = source.MainDocumentPart!.Document!
+                    .Descendants<Wordprocessing.SdtElement>().Single();
+                contentControl.Descendants<Wordprocessing.SdtContentDate>()
+                    .Single().FullDate.Should().BeNull();
+                (contentControl.Descendants<Wordprocessing.ShowingPlaceholder>()
+                    .Single().Val?.Value ?? true).Should().BeTrue();
+                contentControl.Descendants<Wordprocessing.Text>()
+                    .Single().Text.Should().Be("日付を選択してください。");
+            }
+
+            using (var document = Document.Open(sourcePath, validate: true))
+            {
+                document.DatePickers["DeliveryDate"].SelectedDateTime = value;
+                document.SaveAs(outputPath);
+            }
+
+            using (var saved = Document.Open(outputPath, validate: true))
+            {
+                saved.DatePickers["DeliveryDate"].SelectedDateTime.Should().Be(value);
+                saved.DatePickers["DeliveryDate"].SelectedDateTime.Offset.Should().Be(value.Offset);
+            }
+
+            using var savedPackage = WordprocessingDocument.Open(outputPath, false);
+            // 日時の再取得だけでは、表示文字とプレースホルダー表示状態は分かりません。
+            // w:showingPlcHdrが有効ならw:sdtContentは案内文として解釈されるため、
+            // 保存した文字が入力内容として扱われる状態（要素なし、またはfalse）を確認します。
+            // https://learn.microsoft.com/en-us/dotnet/api/documentformat.openxml.wordprocessing.showingplaceholder
+            var savedContentControl = savedPackage.MainDocumentPart!.Document!
+                .Descendants<Wordprocessing.SdtElement>().Single();
+            savedContentControl.Descendants<Wordprocessing.Text>()
+                .Single().Text.Should().Be("2026/12/31");
+            savedContentControl.Descendants<Wordprocessing.ShowingPlaceholder>()
+                .Any(it => it.Val == null || it.Val.Value).Should().BeFalse();
+        }
+        finally
+        {
+            File.Delete(sourcePath);
+            File.Delete(outputPath);
         }
     }
 

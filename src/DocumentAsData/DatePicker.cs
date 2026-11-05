@@ -32,7 +32,8 @@ public partial class DatePicker : ContentControl
     /// 日付選択Content Controlの日時を取得または設定します。
     /// </summary>
     /// <remarks>
-    /// 日時が未入力でも設定できます。表示形式の省略・空文字には、表示言語の短い日付形式を使います。
+    /// 日時が未入力でも設定でき、設定後はプレースホルダー表示を解除します。
+    /// 表示形式の省略・空文字には、表示言語の短い日付形式を使います。
     /// 表示言語の省略時は、表示文字に直接指定された言語、文字スタイル、文書の既定言語の順に参照します。
     /// 言語を決定できる設定と表示文字列は必要です。Wordの全書式に対応するものではありません。
     /// </remarks>
@@ -63,6 +64,8 @@ public partial class DatePicker : ContentControl
             DisplayText.Text = value.ToString(
                 DisplayFormat.Convert(format),
                 culture);
+            Element.PropertyElements<Wordprocessing.ShowingPlaceholder>()
+                .SingleOrDefault()?.Remove();
         }
     }
 
