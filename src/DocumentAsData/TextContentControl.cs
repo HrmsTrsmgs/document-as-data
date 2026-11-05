@@ -33,11 +33,11 @@ public class TextContentControl : ContentControl, IDocumentTextItem
     /// プレースホルダー表示中は、表示用文字列ではなく空文字列を返します。
     /// 値を設定すると、プレースホルダー表示状態を解除します。
     /// 読み取り時は、Content Control内の段落をCRLFで区切ります。
-    /// 書き込み時は先頭の文字列要素へ値をまとめ、値の改行は段落内改行として保存します。
+    /// 書き込み時は先頭のテキストの位置に値をまとめ、値の改行は段落内改行として保存します。
     /// 文字列と書式だけの後続段落は除去し、画像や入れ子のコントロールを持つ段落は保持します。
     /// </remarks>
     /// <exception cref="InvalidOperationException">
-    /// 値の設定時に文字列要素が存在しない場合。
+    /// 値の設定時に、文書に文字列の書き込み先がない場合。
     /// </exception>
     /// <exception cref="NotSupportedException">
     /// このContent Controlまたは親の繰り返しセクションがWordのXMLマッピングを使用している場合。
@@ -56,6 +56,7 @@ public class TextContentControl : ContentControl, IDocumentTextItem
         {
             EnsureNotDataBound();
 
+            // w:tが一つ以上あることを前提に、先頭へ新しい値をまとめ、残りのw:tを空にします。
             var texts = Element.Descendants<Wordprocessing.Text>().ToArray();
 
             RemovePlaceholderState();

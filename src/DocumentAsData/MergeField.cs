@@ -79,7 +79,7 @@ public class MergeField : DocumentItem, IDocumentTextItem
     /// 設定したフィールドは、Wordのフィールド更新で値が失われないようロックします。
     /// </summary>
     /// <exception cref="InvalidOperationException">
-    /// 文字列の設定時に表示結果が存在しないか、複合フィールドの結果領域を取得できない場合。
+    /// 文字列の設定時に、文書内の表示結果が欠落しているか、その範囲を特定できない場合。
     /// </exception>
     public string Text
     {

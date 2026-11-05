@@ -127,7 +127,7 @@ Release全体テストは595件成功、Skip 1件です。以下は修正前の�
 
 #### B04 / P2：`@`付きの元Tagと生成名が同じ場合に対応付け属性が欠ける — 新規・再現済み
 
-* **2026-11-03の進捗：Red→Green、未コミットでレビュー待ち。** `@CustomerName` の固定DOCXと名前設定でDataのReadが失敗するRedを確認し、元Tagを伝える属性の要否を修正しました。全体618件成功・失敗0・既存Skip 5、解析Rebuild成功。formatは指定SDK不足で未完了です。
+* **2026-11-04の進捗：Greenは `a6abc44` でコミット済み。** `@CustomerName` の固定DOCXと名前設定でDataのReadが失敗するRedを確認し、元Tagを伝える属性の要否を修正しました。全体618件成功・失敗0・既存Skip 5、解析Rebuild成功。formatは指定SDK不足で未完了です。Refactorでは識別子比較キーのXMLコメント1行を修正し、未コミットでレビュー待ちです。
 * 対象：[DocumentWrapperComponents.cs](../src/DocumentAsData.CodeGeneration/DocumentWrapperComponents.cs) の316–320行。
 * Tagを `@CustomerName` とし、辞書でも同じ生成名を指定すると、直接プロパティは値を読めますが、生成Data経由のReadは `InvalidOperationException` になります。診断・コンパイルは成功します。
 * ソース上の名前が等しいため属性を省略しますが、C#のメタデータ上では `@` が除かれます。既存のUnicode書式文字への対処では捕捉できません。
@@ -135,12 +135,16 @@ Release全体テストは595件成功、Skip 1件です。以下は修正前の�
 
 #### B05 / P2：CheckBoxの合法な状態省略を読めない — 新規・再現済み
 
+* **2026-11-05の進捗：要素省略時の読み取りは `c336842` でコミット済み。** 固定DOCXと回帰テストで例外になるRedを確認し、falseを返すよう修正。全体619件成功・失敗0・既存Skip 5、解析Rebuild成功。Refactorではテストの型名表記を整理し、未コミットでレビュー待ち。val属性だけの省略は次の独立したケースとして残しています。
+* **同日の続き：** 型名整理は `bb17762` でコミット。val属性のみ省略した場合は、期待true・実際falseのRedを確認後にGreenを実施し、全体620件成功・失敗0・既存Skip 5、解析Rebuild成功。`84632e3` でコミットし、Refactorは変更不要でした。
 * 対象：[CheckBox.cs](../src/DocumentAsData/CheckBox.cs) の44、65–66、101–103行。
 * `w14:checked` 要素なしではgetterが例外、`<w14:checked/>` のval省略ではfalseになります。どちらの入力もOffice 2010のValidatorエラーは0件です。
 * [CT_SdtCheckbox](https://learn.microsoft.com/en-us/openspecs/office_standards/ms-docx/d4682d85-ae4d-48a7-8376-ec2448ae7e35)では要素省略がfalse、[CT_OnOff](https://learn.microsoft.com/en-us/openspecs/office_standards/ms-docx/173a98b1-92a5-4dd8-a0be-0614b1cb6606)では要素あり・val省略がtrueです。
 * 次のRed：この二つの入力を別々に確認します。要素省略時のsetterは追加の確認対象であり、今回実行済みではありません。
 
 #### B06 / P2：CheckBoxの表示記号省略で状態だけ変更して失敗する — 新規・再現済み
+
+* **2026-11-05の進捗：** checkedStateのval属性のみ省略した固定DOCXと回帰テストを追加。設定時例外のRedを確認し、既定記号☒で設定できるGreenまで完了。全体621件成功・失敗0・既存Skip 5、解析Rebuild成功・変更箇所診断なし。未コミットでレビュー待ち。formatは指定SDK不足で未完了です。
 
 * 対象：[CheckBox.cs](../src/DocumentAsData/CheckBox.cs) の49–53、79–94行。
 * 未チェックの入力で `checkedState` のvalを省略しtrue設定すると、例外を投げますが、チェック状態はtrue、保存表示は `☐` のままです。入力のValidatorエラーは0件でした。

@@ -155,6 +155,43 @@ public class CheckBoxのテスト
     }
 
     [Fact]
+    public void チェック済み表示記号の値属性が省略されていてもチェック状態と既定の表示文字を設定します()
+    {
+        // 既存の未チェック文書からw14:checkedStateのw14:valだけを省略した固定DOCXです。
+        // CheckedStateの仕様ではvalは省略可能で、チェック済みの既定文字はU+2612です。
+        // https://learn.microsoft.com/en-us/dotnet/api/documentformat.openxml.office2010.word.checkedstate
+        var sourcePath = TestDocument.CreateTemporaryCopy(
+            Path.Combine("TestData", "チェック済み表示記号の値属性を省略したチェックボックス.docx"));
+        var outputPath = TestDocument.CreateOutputPath();
+        try
+        {
+            using (var source = WordprocessingDocument.Open(sourcePath, false))
+            {
+                new OpenXmlValidator(FileFormatVersions.Office2010).Validate(source).Should().BeEmpty();
+            }
+
+            using (var document = Document.Open(sourcePath, true))
+            {
+                document.CheckBoxes["Agreement"].IsChecked = true;
+
+                document.CheckBoxes["Agreement"].IsChecked.Should().BeTrue();
+                document.SaveAs(outputPath);
+            }
+
+            using var saved = WordprocessingDocument.Open(outputPath, false);
+            // 状態のw14:checkedと表示文字のw:tは別なので、保存後の文字も確認します。
+            saved.MainDocumentPart!.Document!
+                .Descendants<Wordprocessing.Text>()
+                .Single().Text.Should().Be("☒");
+        }
+        finally
+        {
+            File.Delete(sourcePath);
+            File.Delete(outputPath);
+        }
+    }
+
+    [Fact]
     public void CustomXMLに連結されたチェックボックスの状態は書き込みません()
     {
         var filePath = TestDocument.CreateTemporaryCopy(BoundCheckBoxPath);

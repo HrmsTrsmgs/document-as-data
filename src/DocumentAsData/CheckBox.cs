@@ -75,12 +75,13 @@ public class CheckBox : ContentControl
     /// <summary>
     /// 指定したチェック状態に対して文書に設定された表示文字を取得します。
     /// </summary>
+    /// <remarks>OOXMLのw14:checkedState/@w14:val省略時は、既定のU+2612（☒）を使用します。</remarks>
     /// <param name="isChecked">表示するチェック状態。</param>
     /// <returns>チェック状態に対応する表示文字。</returns>
     string DisplayCharacter(bool isChecked) =>
         CharacterFromHexadecimal(
             isChecked
-                ? CheckBoxProperties.CheckedState?.Val?.Value
+                ? CheckBoxProperties.CheckedState?.Val?.Value ?? "2612"
                 : CheckBoxProperties.UncheckedState?.Val?.Value);
 
     /// <summary>
