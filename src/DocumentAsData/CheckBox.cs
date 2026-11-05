@@ -41,7 +41,7 @@ public class CheckBox : ContentControl
         get
         {
             EnsureNotDataBound();
-            return IsCheckedValue(CheckedValue.Val?.Value);
+            return IsCheckedValue(CheckBoxProperties.Checked?.Val?.Value);
         }
         set
         {
