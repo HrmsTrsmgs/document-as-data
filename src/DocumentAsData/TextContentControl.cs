@@ -170,11 +170,4 @@ public class TextContentControl : ContentControl, IDocumentTextItem
     bool IsShowingPlaceholder =>
         Element.PropertyElements<Wordprocessing.ShowingPlaceholder>()
             .Any(it => it.Val?.Value != false);
-
-    /// <summary>
-    /// 値の書き込み後に表示文字列がプレースホルダーとして扱われないよう、表示状態を解除します。
-    /// </summary>
-    void RemovePlaceholderState() =>
-        Element.PropertyElements<Wordprocessing.ShowingPlaceholder>()
-            .SingleOrDefault()?.Remove();
 }

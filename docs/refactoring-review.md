@@ -162,7 +162,7 @@ Release全体テストは595件成功、Skip 1件です。以下は修正前の�
 
 #### B08 / P2：日付設定後にもplaceholder指定が残る — 未保証範囲を具体化
 
-* **2026-11-05の進捗：** 固定DOCXとテスト1件で日時・表示文字は保存される一方placeholder指定が残るRedを確認し、設定後に解除するGreenまで完了。全体622件成功・失敗0・既存Skip 5、解析Rebuild成功・新規診断なし。Word実機表示は未確認。未コミットでレビュー待ちです。
+* **2026-11-05の進捗：** 固定DOCXとテスト1件で日時・表示文字は保存される一方placeholder指定が残るRedを確認し、設定後に解除するGreenまで完了。全体622件成功・失敗0・既存Skip 5、解析Rebuild成功・新規診断なし。Word実機表示は未確認。Greenは `f8dd2a0` でコミット済み。Refactorではプレースホルダー解除処理をContentControlへ共通化し、全体622件成功・失敗0・Skip 5、解析Rebuild成功・新規診断なし。共通化差分は未コミットでレビュー待ちです。
 
 * 対象：[DatePicker.cs](../src/DocumentAsData/DatePicker.cs) の62–65行。
 * 未入力の日付選択へ `w:showingPlcHdr` を付けて日時設定すると、fullDateと表示文字は更新されますが、placeholder指定はtrueのままです。入力のValidatorエラーは0件でした。

@@ -64,8 +64,7 @@ public partial class DatePicker : ContentControl
             DisplayText.Text = value.ToString(
                 DisplayFormat.Convert(format),
                 culture);
-            Element.PropertyElements<Wordprocessing.ShowingPlaceholder>()
-                .SingleOrDefault()?.Remove();
+            RemovePlaceholderState();
         }
     }
 

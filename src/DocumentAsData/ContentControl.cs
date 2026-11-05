@@ -56,4 +56,11 @@ public abstract class ContentControl : DocumentItem
             throw new NotSupportedException();
         }
     }
+
+    /// <summary>
+    /// 値の書き込み後に表示文字列がプレースホルダーとして扱われないよう、表示状態を解除します。
+    /// </summary>
+    private protected void RemovePlaceholderState() =>
+        Element.PropertyElements<Wordprocessing.ShowingPlaceholder>()
+            .SingleOrDefault()?.Remove();
 }
