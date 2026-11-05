@@ -6,7 +6,7 @@
 
 ## このプロジェクトの記録先
 
-再開・判断・未確定事項は `docs/development-context.md` を入口にし、候補は同文書の「未確定・検討事項」を使う。存在しない候補ファイルを前提にしない。 固有制約は `docs/ai-instructions/document-as-data.md` に従う。工程担当へは必要な確定情報だけを渡す。
+主担当は `ai-notes/README.md` と `ai-notes/current.md` を入口にする。候補はそこから参照する既存のレビュー・計画で管理し、長く残す設計判断は `docs/design-decisions.md` へ記録する。 固有制約は `docs/ai-instructions/document-as-data.md` に従う。工程担当へは必要な確定情報だけを渡す。
 
 ## 開始とコンテキスト
 

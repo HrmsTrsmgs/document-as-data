@@ -422,7 +422,7 @@ section.Replace(items);
 * `Open(..., validate: true)` はOffice 2010向けの検証です。繰り返しセクションのOffice 2013要素の検証には対応していません。通常の `Open(path)`／`Open(stream)` を使ってください。
 * 自動テストでは固定DOCXの構造、値、保存後の再読み込みを確認しています。繰り返し部分のWord上での表示・編集は未確認です。
 
-検討中の論点とテスト範囲の詳細は[対応計画](repeating-sections-plan.md#精査で確認した残課題)に記録しています。
+検討中の論点とテスト範囲の詳細は[対応計画](../ai-notes/repeating-sections-plan.md#精査で確認した残課題)に記録しています。
 
 ## 開く・保存する・閉じる
 

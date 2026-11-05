@@ -1,3 +1,30 @@
+# レビュー指摘と対応状況
+
+## 現在の対応状況
+
+2026-11-05確認。現在状態はこの表で更新します。再開位置と最新の検証結果は[current.md](current.md)、仕様と設計判断は[docs](../docs/design-decisions.md)を参照してください。
+以下の観測・検証は各レビュー時点の記録であり、修正後の現状を表すものではありません。行番号も調査時点のものです。
+
+| 指摘 | 状態・解決コミット |
+| --- | --- |
+| B01 | 破損XMLのOpen失敗後の解放を修正：`4323936`。Validator自体の例外経路は未確認 |
+| B02 | Read：`52c0e8a`、Replace：`6187f8d` |
+| B03 | placeholder=falseの読み取りを修正：`3840cdf` |
+| B04 | 元Tagの対応付けを修正：`a6abc44`。コメント整理：`91a89df` |
+| B05 | checked要素省略：`c336842`、val省略：`84632e3`。テスト表記整理：`bb17762`。setterの要素省略は未確認 |
+| B06 | checkedStateのval省略を修正：`0055208`。unchecked側・要素全体省略は別の未確認事項 |
+| B07 | 保留。ユーザーが2026-11-05にWord操作復旧まで修正しないと決定。実機確認を省いて先行する案は不採用。復旧後にWordで表示・保存を観測してからRedへ |
+| B08 | 日付設定時のplaceholder解除：`f8dd2a0`。解除処理の共通化：`9a601d5` |
+| B09 | Red→Green済み、未コミットでレビュー待ち。詳細な検証版と結果はcurrent.md |
+| B10〜B12 | 未着手。下記の再現記録を参照し、一件ずつ契約を確認 |
+| V01〜V05、R01〜R03、P01〜P02 | 調査・改善候補。記載を実装許可とみなさない |
+| D01 | 記録の配置・現在状態と履歴の整理を実施中。公開文書・既存コメントとの整合確認は未完了 |
+| D02 | 記録先と主担当／工程担当の入口はAGENTSで指定。下記のその他の指示差異は今回再検証していない |
+
+## 過去の調査と判断の根拠
+
+完了した整理の理由・不採用案と、未着手の再現条件を保持しています。過去の「次のRed」「未対応」は当時の提案です。作業順序や完了状態には上表を使用してください。
+
 # 次版準備のリファクタリング精査
 
 最新の全体レビューは、末尾の[2026-10-23の精査結果](#全体レビュー2026-10-23)を参照してください。以下の2026-09-27の記述は当時の作業記録です。
@@ -103,7 +130,6 @@ Release全体テストは595件成功、Skip 1件です。以下は修正前の�
 
 #### B01 / P1：Open失敗直後に元ファイルの束縛が残る — 新規・再現済み
 
-* **2026-10-25の進捗：対象ケースは `4323936` でコミット済み。** 本文XMLが途中で切れた固定DOCXと回帰テストを追加し、Open失敗直後の排他Openが失敗するRedを確認しました。Documentの初期化失敗時に所有セッションを解放する変更で、対象テストと全体テスト614件が成功しました（失敗0、既存Skip 5）。解析有効Rebuildも成功、formatは指定SDK不足で未実施です。Refactorでは追加変更なし。関連するValidator自体の例外経路は、引き続き未確認です。
 * 対象：[Document.cs](../src/DocumentAsData/Document.cs) の57–72行、312行付近。
 * ZIPとして成立するDOCXの `word/document.xml` だけを途中で切断して開くと、`XmlException` の直後に排他Openが `IOException` になります。Documentが返らないため、呼び出し側からDisposeできません。
 * `DocumentSession.Open` の完了後、Documentの初期化でXMLを遅延読み込みする際の例外に解放経路がありません。プロセス終了後には排他Openできました。永久リークやGC後も残るとは断定しません。
@@ -112,14 +138,12 @@ Release全体テストは595件成功、Skip 1件です。以下は修正前の�
 
 #### B02 / P1：明細型が文書全体のData型を隠す — 既知RS-02の実害を新たに再現
 
-* **2026-10-25の進捗：Readの一件をRed→Green、未コミットで人間レビュー待ち。** 既存の繰り返しテンプレートと名前設定による回帰テストで外側のData型を返さないRedを確認しました。生成Readの戻り型と呼び出し先の型引数を名前空間付きで指定し、対象・関連38件と全体615件が成功しました（失敗0、既存Skip 5）。解析有効Rebuildも成功、formatは指定SDK不足で解析前失敗です。Replaceの経路は次のRedとして残しています。
 * 対象：[DocumentWrapperComponents.cs](../src/DocumentAsData.CodeGeneration/DocumentWrapperComponents.cs) の103、139、153行付近。
 * `repeatingTemplate.docx` で `NameMappings["Items"] = "RepeatingTemplate"` とすると、診断なしでコンパイルできます。しかし `Read()` の戻り型と `Replace()` の引数型が、外側の `Generated.RepeatingTemplateData` ではなく、文書型内の同名明細型になります。実際のRead結果も明細の `ItemName` を持ちます。
 * 次のRed：この名前配置でも、生成文書のReadが文書全体のData型を返すこと。名前衝突を拒否する契約にする場合は、その判断を先に確認します。コンパイル成功だけでは検証できない項目です。
 
 #### B03 / P1：placeholder=falseの内容を空として読む — 新規・再現済み
 
-* **2026-11-03の進捗：`3840cdf`でコミット済み。** false指定の固定DOCXと回帰テストで空文字となるRedを確認し、指定値の判定でGreenにしました。全体617件成功・失敗0・既存Skip 5、解析Rebuild成功。Refactor変更なし。formatは指定SDK不足で未完了です。
 * 対象：[TextContentControl.cs](../src/DocumentAsData/TextContentControl.cs) の169–170行。
 * 値のある文字列Content Controlへ `<w:showingPlcHdr w:val="false"/>` を付けると、Validatorエラー0件でも `Text` は空文字です。現在は要素の存在だけを見ています。
 * [ShowingPlaceholderの規則](https://learn.microsoft.com/en-us/dotnet/api/documentformat.openxml.wordprocessing.showingplaceholder?view=openxml-3.0.1)では、trueの場合だけplaceholderとして扱います。
@@ -127,7 +151,6 @@ Release全体テストは595件成功、Skip 1件です。以下は修正前の�
 
 #### B04 / P2：`@`付きの元Tagと生成名が同じ場合に対応付け属性が欠ける — 新規・再現済み
 
-* **2026-11-04の進捗：Greenは `a6abc44` でコミット済み。** `@CustomerName` の固定DOCXと名前設定でDataのReadが失敗するRedを確認し、元Tagを伝える属性の要否を修正しました。全体618件成功・失敗0・既存Skip 5、解析Rebuild成功。formatは指定SDK不足で未完了です。Refactorでは識別子比較キーのXMLコメント1行を修正し、未コミットでレビュー待ちです。
 * 対象：[DocumentWrapperComponents.cs](../src/DocumentAsData.CodeGeneration/DocumentWrapperComponents.cs) の316–320行。
 * Tagを `@CustomerName` とし、辞書でも同じ生成名を指定すると、直接プロパティは値を読めますが、生成Data経由のReadは `InvalidOperationException` になります。診断・コンパイルは成功します。
 * ソース上の名前が等しいため属性を省略しますが、C#のメタデータ上では `@` が除かれます。既存のUnicode書式文字への対処では捕捉できません。
@@ -135,8 +158,6 @@ Release全体テストは595件成功、Skip 1件です。以下は修正前の�
 
 #### B05 / P2：CheckBoxの合法な状態省略を読めない — 新規・再現済み
 
-* **2026-11-05の進捗：要素省略時の読み取りは `c336842` でコミット済み。** 固定DOCXと回帰テストで例外になるRedを確認し、falseを返すよう修正。全体619件成功・失敗0・既存Skip 5、解析Rebuild成功。Refactorではテストの型名表記を整理し、未コミットでレビュー待ち。val属性だけの省略は次の独立したケースとして残しています。
-* **同日の続き：** 型名整理は `bb17762` でコミット。val属性のみ省略した場合は、期待true・実際falseのRedを確認後にGreenを実施し、全体620件成功・失敗0・既存Skip 5、解析Rebuild成功。`84632e3` でコミットし、Refactorは変更不要でした。
 * 対象：[CheckBox.cs](../src/DocumentAsData/CheckBox.cs) の44、65–66、101–103行。
 * `w14:checked` 要素なしではgetterが例外、`<w14:checked/>` のval省略ではfalseになります。どちらの入力もOffice 2010のValidatorエラーは0件です。
 * [CT_SdtCheckbox](https://learn.microsoft.com/en-us/openspecs/office_standards/ms-docx/d4682d85-ae4d-48a7-8376-ec2448ae7e35)では要素省略がfalse、[CT_OnOff](https://learn.microsoft.com/en-us/openspecs/office_standards/ms-docx/173a98b1-92a5-4dd8-a0be-0614b1cb6606)では要素あり・val省略がtrueです。
@@ -144,7 +165,6 @@ Release全体テストは595件成功、Skip 1件です。以下は修正前の�
 
 #### B06 / P2：CheckBoxの表示記号省略で状態だけ変更して失敗する — 新規・再現済み
 
-* **2026-11-05の進捗：** checkedStateのval属性のみ省略した固定DOCXと回帰テストを追加。設定時例外のRedを確認し、既定記号☒で設定できるGreenまで完了。全体621件成功・失敗0・既存Skip 5、解析Rebuild成功・変更箇所診断なし。未コミットでレビュー待ち。formatは指定SDK不足で未完了です。
 
 * 対象：[CheckBox.cs](../src/DocumentAsData/CheckBox.cs) の49–53、79–94行。
 * 未チェックの入力で `checkedState` のvalを省略しtrue設定すると、例外を投げますが、チェック状態はtrue、保存表示は `☐` のままです。入力のValidatorエラーは0件でした。
@@ -153,7 +173,6 @@ Release全体テストは595件成功、Skip 1件です。以下は修正前の�
 
 #### B07 / P2：CheckBoxの表示記号用フォントを反映しない — XMLで再現、Word表示は未確認
 
-* **2026-11-05の判断：** Word操作が復旧するまで修正を保留する方針を開発者が選択。仕様だけに基づく先行修正は行いません。実機確認・Redは未実施です。
 
 * 対象：[CheckBox.cs](../src/DocumentAsData/CheckBox.cs) の52、79–83行。
 * checkedStateを `font="Wingdings", val="00FC"`、元の表示runをMS Gothicとしてtrue設定すると、保存文字はU+00FCの `ü`、runのフォントはMS Gothicのままです。入力のValidatorエラーは0件です。
@@ -162,7 +181,6 @@ Release全体テストは595件成功、Skip 1件です。以下は修正前の�
 
 #### B08 / P2：日付設定後にもplaceholder指定が残る — 未保証範囲を具体化
 
-* **2026-11-05の進捗：** 固定DOCXとテスト1件で日時・表示文字は保存される一方placeholder指定が残るRedを確認し、設定後に解除するGreenまで完了。全体622件成功・失敗0・既存Skip 5、解析Rebuild成功・新規診断なし。Word実機表示は未確認。Greenは `f8dd2a0` でコミット済み。Refactorではプレースホルダー解除処理をContentControlへ共通化し、全体622件成功・失敗0・Skip 5、解析Rebuild成功・新規診断なし。共通化差分は未コミットでレビュー待ちです。
 
 * 対象：[DatePicker.cs](../src/DocumentAsData/DatePicker.cs) の62–65行。
 * 未入力の日付選択へ `w:showingPlcHdr` を付けて日時設定すると、fullDateと表示文字は更新されますが、placeholder指定はtrueのままです。入力のValidatorエラーは0件でした。
@@ -170,6 +188,7 @@ Release全体テストは595件成功、Skip 1件です。以下は修正前の�
 * 次の確認：対応範囲を確認後、日時・表示・placeholder解除を保存XMLで観測するRed。Word上の表示・編集結果はまだ確認していません。[placeholder指定の意味](https://learn.microsoft.com/en-us/dotnet/api/documentformat.openxml.wordprocessing.showingplaceholder?view=openxml-3.0.1)
 
 #### B09 / P2：明細複製時にIDがオーバーフローし重複する — 既知の上限候補を再現済みに更新
+
 
 * 対象：[RepeatingSectionItem.cs](../src/DocumentAsData/RepeatingSectionItem.cs) の74–78行。
 * 既存IDに `2147483647` と `-2147483648` がある2明細を3明細へ増やすと、加算で負数へ回り、既存の `-2147483648` と重複しました。入力・出力ともOffice 2013のValidatorエラーは0件です。
@@ -219,17 +238,17 @@ Release全体テストは595件成功、Skip 1件です。以下は修正前の�
 #### D01 / P2：現在状態と履歴を分けて同期する — 確認済み
 
 * [繰り返し計画](repeating-sections-plan.md) の107–122、202–212行付近には、RS-05/06の実装済み項目を未対応／Skipとして扱う記述があります。現在の作業ツリーでは該当テストは有効で、今回成功しました。残るSkipはRS-07の4件と0件契約メモ1件です。
-* [機能リファレンス](reference.md) の420行には0.4.0時点の制約が残ります。公開済み0.4.0の説明と開発中の対応状況を明示的に分け、過去のCHANGELOGを現状へ書き換えないようにします。
+* [機能リファレンス](../docs/reference.md) の420行には0.4.0時点の制約が残ります。公開済み0.4.0の説明と開発中の対応状況を明示的に分け、過去のCHANGELOGを現状へ書き換えないようにします。
 * `DocumentItemScopes` のクラス説明、Validationの76・111行付近、コード生成名前付き項目テストの653行付近にも、現行コードと異なる説明があります。
 * 開発コンテキストは、コミット済みのAI-DLC作業を未コミットとしていました。今回のレビュー終了状態だけは本作業で更新し、それ以外の文書・コメント修正は候補として残します。
 
 #### D02 / P2：AI指示の参照先・担当範囲を整理する — 確認済みの記述差
 
-* [run.md](ai-instructions/tdd-context/run.md) は候補を `docs/development-candidates.md` に記録するよう指定しますが、そのファイルはありません。AI-DLCでは既存の開発コンテキストと計画文書を使う方針です。新しい記録先を増やす前に正本を統一します。
+* [run.md](../docs/ai-instructions/tdd-context/run.md) は候補を `docs/development-candidates.md` に記録するよう指定しますが、そのファイルはありません。AI-DLCでは既存の開発コンテキストと計画文書を使う方針です。新しい記録先を増やす前に正本を統一します。
 * AGENTSの再開用記録の読み込み指示と、Greenへ将来候補・却下案を渡さない規則の担当範囲を明確にします。進行役が全体記録を読み、担当には必要な確定契約だけ渡す整理が候補です。
 * C#指示113行が全テスト省略条件をTDD文書へ委ねますが、`tdd.md` は索引であり、参照先には以前の「論理的に影響がない場合だけ省略し理由を報告」という具体条件が揃っていません。全テスト原則そのものは残っています。
 * Skillの「各工程に新しい担当」とrun.mdの「Red/Refactorは同領域なら継続可」の表現、工程文書内の重複文も揃えられます。TDDのRed/Green/Refactorの役割を変更する提案ではありません。
-* [テスト記述方針](testing-style.md)はWorkbook・Table等の移植元の例が中心です。共有ルールとして残す箇所と、DocumentAsDataの実在APIで示す代表例を区別すると、存在しないAPIを実装の前提にする誤りを減らせます。
+* [テスト記述方針](../docs/testing-style.md)はWorkbook・Table等の移植元の例が中心です。共有ルールとして残す箇所と、DocumentAsDataの実在APIで示す代表例を区別すると、存在しないAPIを実装の前提にする誤りを減らせます。
 
 ### 振る舞いを変えない整理候補
 
