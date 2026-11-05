@@ -230,6 +230,29 @@ public class RepeatingSectionのテスト
     }
 
     [Fact]
+    public void Replaceで増やした明細は既存の識別IDが整数の上下限でも保存後にIDが重複しません()
+    {
+        var inputPath = Path.Combine("TestData", "識別IDが整数の上下限を含む2件の明細.docx");
+
+        // 固定データは「表行を繰り返す2件の明細.docx」のw:idを2か所だけ上下限へ変更したものです。
+        // Wordによる生成差異ではなく、既存IDの境界値を含む文書での複製を検証します。
+        ReadValidatedContentControlIds(inputPath)
+            .Should().Contain(int.MaxValue).And.Contain(int.MinValue).And.OnlyHaveUniqueItems();
+
+        using var output = new MemoryStream();
+        using (var document = Document.Open(inputPath))
+        {
+            document.RepeatingSections["Items"].Items.Should().HaveCount(2);
+            document.RepeatingSections["Items"].Replace<ItemData>(
+                [new() { ItemName = "商品C" }, new() { ItemName = "商品D" }, new() { ItemName = "商品E" }]);
+            document.SaveAs(output);
+        }
+
+        ReadSavedItemNames(output).Should().Equal("商品C", "商品D", "商品E");
+        ReadValidatedContentControlIds(output).Should().OnlyHaveUniqueItems();
+    }
+
+    [Fact]
     public void ReadはXMLマッピングされたセクションを拒否します()
     {
         using var document = Document.Open(
@@ -258,6 +281,47 @@ public class RepeatingSectionのテスト
         // 空の明細を残すのか、別にテンプレートを保持するのか、0件を拒否するのか未決定です。
         // 期待結果を捏造しないため、この1件は仕様テストではなく検討メモとして数えます。
         throw new NotImplementedException();
+    }
+
+    /// <summary>
+    /// 保存先を先頭から読み直し、文書を閉じる前に明細の商品名を取り出します。
+    /// </summary>
+    static string[] ReadSavedItemNames(Stream output)
+    {
+        output.Position = 0;
+        using var saved = Document.Open(output);
+        return [.. saved.RepeatingSections["Items"].Read<ItemData>().Select(it => it.ItemName)];
+    }
+
+    /// <summary>
+    /// 固定データを開き、Open XMLとしての妥当性とContent Controlの識別IDを確認します。
+    /// </summary>
+    static int?[] ReadValidatedContentControlIds(string filePath)
+    {
+        using var input = WordprocessingDocument.Open(filePath, false);
+        return ReadValidatedContentControlIds(input);
+    }
+
+    /// <summary>
+    /// 保存先を先頭から開き直し、Open XMLとしての妥当性とContent Controlの識別IDを確認します。
+    /// </summary>
+    static int?[] ReadValidatedContentControlIds(Stream output)
+    {
+        output.Position = 0;
+        using var saved = WordprocessingDocument.Open(output, false);
+        return ReadValidatedContentControlIds(saved);
+    }
+
+    /// <summary>
+    /// w:idは公開APIのTagとは別の識別子です。値の読み戻しやValidatorだけでは
+    /// 重複を観測できないため、文書を閉じる前にOOXMLから取り出します。
+    /// </summary>
+    static int?[] ReadValidatedContentControlIds(WordprocessingDocument package)
+    {
+        new OpenXmlValidator(FileFormatVersions.Office2013).Validate(package).Should().BeEmpty();
+        var document = package.MainDocumentPart?.Document;
+        document.Should().NotBeNull();
+        return [.. document.Descendants<Wordprocessing.SdtId>().Select(it => it.Val?.Value)];
     }
 
     /// <summary>

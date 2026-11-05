@@ -71,11 +71,18 @@ public class RepeatingSectionItem : ContentControl
     internal void InsertCopyAfter()
     {
         var copy = Element.CloneNode(true);
-        var lastId = Document.Elements.OfType<Wordprocessing.SdtId>().Max(it => it.Val?.Value) ?? 0;
+        var usedIds = Document.Elements.OfType<Wordprocessing.SdtId>().Select(it => it.Val?.Value).ToHashSet();
+        var lastId = usedIds.Max() ?? 0;
 
         foreach (var id in copy.Descendants<Wordprocessing.SdtId>())
         {
-            id.Val = ++lastId;
+            do
+            {
+                lastId = lastId == int.MaxValue ? int.MinValue : lastId + 1;
+            }
+            while (!usedIds.Add(lastId));
+
+            id.Val = lastId;
         }
 
         Element.InsertAfterSelf(copy);
