@@ -369,6 +369,19 @@ public sealed class コード生成診断のテスト
     }
 
     [Fact]
+    public void 明細データ型名と別のセクションの生成プロパティ名が衝突すると診断します()
+    {
+        GeneratedCodeInspection
+            .GenerateDiagnostics(
+                @"TestData\コード生成\repeatingSections.docx",
+                options => options.NameMappings["Options"] = "ItemsData")
+            .Should().Contain(it => it.IsError
+                && it.GeneratedName == "ItemsData"
+                && it.SourceNames.Contains("Items")
+                && it.SourceNames.Contains("Options"));
+    }
+
+    [Fact]
     public void 異なる明細データ型名を生成する二つのセクションは衝突と診断しません()
     {
         // 固定文書にはItemsとOptionsという二つの繰り返しセクションがあります。

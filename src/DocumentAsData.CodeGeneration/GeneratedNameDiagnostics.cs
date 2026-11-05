@@ -55,6 +55,14 @@ static class GeneratedNameDiagnostics
             .. PropertyNameDiagnostics(propertySourceNameScopes, reservedNames, options),
             .. from section in document.RepeatingSections
                let generatedTypeName = options.DataTypeName(section.Tag).IdentifierComparisonKey
+               from propertySection in document.RepeatingSections
+               where options.GeneratedName(propertySection.Tag).IdentifierComparisonKey == generatedTypeName
+               select new CodeGenerationDiagnostic(
+                   true,
+                   generatedTypeName,
+                   [section.Tag, propertySection.Tag]),
+            .. from section in document.RepeatingSections
+               let generatedTypeName = options.DataTypeName(section.Tag).IdentifierComparisonKey
                from sourceNames in
                    from sourceName in DetailPropertySourceNames(section)
                    group sourceName by options.GeneratedName(sourceName).IdentifierComparisonKey
