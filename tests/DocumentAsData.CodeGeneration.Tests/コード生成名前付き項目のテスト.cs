@@ -607,6 +607,25 @@ public sealed class コード生成名前付き項目のテスト : IDisposable
     }
 
     [Fact]
+    public void U2028を含むTagから生成した文字列ContentControlプロパティで文字列を読み取れます()
+    {
+        // LF入りの固定DOCXを基に、Tagの文字参照だけをUnicode行区切りの&#x2028;へ変更しています。
+        var filePath = @"TestData\コード生成\U2028を含むTagの文字列ContentControl.docx";
+        using var document = GeneratedCodeInspection
+            .AssemblyFrom(
+                GeneratedCodeInspection.GenerateSources(
+                    filePath,
+                    options => options.NameMappings["Customer\u2028Name"] = "CustomerName"))
+            .GeneratedType("U2028を含むTagの文字列ContentControlDocument")
+            .InvokeStaticMethod<Document>("Open", filePath);
+
+        dynamic documentAccessor = document;
+        string tested = documentAccessor.CustomerName;
+
+        tested.Should().Be("山田太郎");
+    }
+
+    [Fact]
     public void LFを含むTagから生成したCheckBoxプロパティでチェック状態を読み取れます()
     {
         // w:tagのvalにLFを含みます。CheckBoxには文字列Content Controlとは別の

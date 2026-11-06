@@ -453,11 +453,11 @@ static partial class DocumentWrapperComponents
             self.Replace("\n", "\\n");
 
         /// <summary>
-        /// CRとLFを可視のエスケープ表記へ変換します。
+        /// CR、LF、Unicode行区切りを可視のエスケープ表記へ変換します。
         /// 文字列リテラルでは、元のバックスラッシュをエスケープした後に呼び出します。
         /// </summary>
         string EscapeLineBreaks() =>
-            self.Replace("\r", "\\r").EscapeLineFeed();
+            self.Replace("\r", "\\r").EscapeLineFeed().Replace("\u2028", "\\u2028");
 
         /// <summary>
         /// 名前に含まれるアンパサンドがXMLコメントでエンティティとして解釈されるのを防ぎます。
