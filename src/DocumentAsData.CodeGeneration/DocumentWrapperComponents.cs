@@ -277,7 +277,7 @@ static partial class DocumentWrapperComponents
         return $$"""
 
             /// <summary>
-            /// CheckBox「{{checkBox.Tag.EscapeLineFeed()}}」のチェック状態を取得または設定します。
+            /// CheckBox「{{checkBox.Tag.EscapeLineBreaks()}}」のチェック状態を取得または設定します。
             /// </summary>
             {{DataItemNameAttributeDeclaration(checkBox.Tag, propertyName)}}public bool {{propertyName}} { get; set; }
         """;
@@ -378,7 +378,7 @@ static partial class DocumentWrapperComponents
         $$"""
 
             /// <summary>
-            /// CheckBox「{{checkBox.Tag.EscapeLineFeed()}}」のチェック状態を取得または設定します。
+            /// CheckBox「{{checkBox.Tag.EscapeLineBreaks()}}」のチェック状態を取得または設定します。
             /// </summary>
             /// <remarks>繰り返しセクション内の項目は対象にしません。</remarks>
             public bool {{options.GeneratedName(checkBox.Tag)}}

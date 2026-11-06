@@ -627,6 +627,25 @@ public sealed class コード生成名前付き項目のテスト : IDisposable
     }
 
     [Fact]
+    public void CRを含むTagから生成したCheckBoxプロパティでチェック状態を読み取れます()
+    {
+        // 既存のLF入りCheckBoxの固定データを基に、Tagの文字参照をCRへ変更しています。
+        var filePath = @"TestData\コード生成\CRを含むTagのCheckBox.docx";
+        using var document = GeneratedCodeInspection
+            .AssemblyFrom(
+                GeneratedCodeInspection.GenerateSources(
+                    filePath,
+                    options => options.NameMappings["Agree\rment"] = "Agreement"))
+            .GeneratedType("CRを含むTagのCheckBoxDocument")
+            .InvokeStaticMethod<Document>("Open", filePath);
+
+        dynamic documentAccessor = document;
+        bool tested = documentAccessor.Agreement;
+
+        tested.Should().BeTrue();
+    }
+
+    [Fact]
     public void LFを含むTagから生成したDatePickerプロパティで日時を読み取れます()
     {
         // w:tagのvalにLFを含みます。日付の表示形式ではなく、
