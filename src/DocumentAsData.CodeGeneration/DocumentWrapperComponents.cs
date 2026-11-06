@@ -457,7 +457,10 @@ static partial class DocumentWrapperComponents
         /// 文字列リテラルでは、元のバックスラッシュをエスケープした後に呼び出します。
         /// </summary>
         string EscapeLineBreaks() =>
-            self.Replace("\r", "\\r").EscapeLineFeed().Replace("\u2028", "\\u2028").Replace("\u2029", "\\u2029");
+            self.Replace("\r", "\\r")
+                .EscapeLineFeed()
+                .Replace("\u2028", "\\u2028")
+                .Replace("\u2029", "\\u2029");
 
         /// <summary>
         /// 名前に含まれるアンパサンドがXMLコメントでエンティティとして解釈されるのを防ぎます。
