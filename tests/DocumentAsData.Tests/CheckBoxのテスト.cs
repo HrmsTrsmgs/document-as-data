@@ -3,6 +3,7 @@ using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Validation;
 using FluentAssertions;
 using Marimo.DocumentAsData.Test.TestDocuments;
+using Marimo.DocumentAsData.Test.テスト補助;
 using Wordprocessing = DocumentFormat.OpenXml.Wordprocessing;
 
 namespace Marimo.DocumentAsData.Test;
@@ -97,7 +98,8 @@ public class CheckBoxのテスト
         var filePath = Path.Combine("TestData", "チェック状態要素を省略したチェックボックス.docx");
         using (var source = WordprocessingDocument.Open(filePath, false))
         {
-            new OpenXmlValidator(FileFormatVersions.Office2010).Validate(source).Should().BeEmpty();
+            new OpenXmlValidator(FileFormatVersions.Office2010)
+                .Validate(source, TestCancellation.Token).Should().BeEmpty();
         }
 
         using var document = Document.Open(filePath, true);
@@ -112,7 +114,8 @@ public class CheckBoxのテスト
         var filePath = Path.Combine("TestData", "チェック状態の値属性を省略したチェックボックス.docx");
         using (var source = WordprocessingDocument.Open(filePath, false))
         {
-            new OpenXmlValidator(FileFormatVersions.Office2010).Validate(source).Should().BeEmpty();
+            new OpenXmlValidator(FileFormatVersions.Office2010)
+                .Validate(source, TestCancellation.Token).Should().BeEmpty();
         }
 
         using var document = Document.Open(filePath, true);
@@ -167,7 +170,8 @@ public class CheckBoxのテスト
         {
             using (var source = WordprocessingDocument.Open(sourcePath, false))
             {
-                new OpenXmlValidator(FileFormatVersions.Office2010).Validate(source).Should().BeEmpty();
+                new OpenXmlValidator(FileFormatVersions.Office2010)
+                    .Validate(source, TestCancellation.Token).Should().BeEmpty();
             }
 
             using (var document = Document.Open(sourcePath, true))

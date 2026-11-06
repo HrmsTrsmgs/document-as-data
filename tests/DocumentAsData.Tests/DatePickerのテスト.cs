@@ -4,6 +4,7 @@ using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Validation;
 using FluentAssertions;
 using Marimo.DocumentAsData.Test.TestDocuments;
+using Marimo.DocumentAsData.Test.テスト補助;
 using Wordprocessing = DocumentFormat.OpenXml.Wordprocessing;
 
 namespace Marimo.DocumentAsData.Test;
@@ -224,7 +225,8 @@ public class DatePickerのテスト
         {
             using (var source = WordprocessingDocument.Open(sourcePath, false))
             {
-                new OpenXmlValidator(FileFormatVersions.Office2007).Validate(source).Should().BeEmpty();
+                new OpenXmlValidator(FileFormatVersions.Office2007)
+                    .Validate(source, TestCancellation.Token).Should().BeEmpty();
                 var contentControl = source.MainDocumentPart!.Document!
                     .Descendants<Wordprocessing.SdtElement>().Single();
                 contentControl.Descendants<Wordprocessing.SdtContentDate>()

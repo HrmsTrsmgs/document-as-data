@@ -5,7 +5,7 @@ using Marimo.DocumentAsData.Test.TestDocuments;
 
 namespace Marimo.DocumentAsData.Test;
 
-[Collection(nameof(CurrentDirectoryCollection))]
+[Collection<CurrentDirectoryCollection>]
 public class Documentのテスト
 {
     static readonly string EmptyDocumentPath =

@@ -2,6 +2,7 @@
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Validation;
 using FluentAssertions;
+using Marimo.DocumentAsData.Test.テスト補助;
 using Word2013 = DocumentFormat.OpenXml.Office2013.Word;
 using Wordprocessing = DocumentFormat.OpenXml.Wordprocessing;
 
@@ -202,7 +203,8 @@ public class RepeatingSectionのテスト
         body.Descendants<Wordprocessing.Bold>().Should().HaveCount(3);
         body.Descendants<Wordprocessing.Text>().Select(it => it.Text)
             .Should().Equal("見出し", "商品C", "商品D", "商品E", "後書き");
-        new OpenXmlValidator(FileFormatVersions.Office2013).Validate(saved).Should().BeEmpty();
+        new OpenXmlValidator(FileFormatVersions.Office2013)
+            .Validate(saved, TestCancellation.Token).Should().BeEmpty();
     }
 
     [Fact]

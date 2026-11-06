@@ -1,6 +1,7 @@
 ﻿using DocumentFormat.OpenXml.Packaging;
 using FluentAssertions;
 using Marimo.DocumentAsData.Test.TestDocuments;
+using Marimo.DocumentAsData.Test.テスト補助;
 using Wordprocessing = DocumentFormat.OpenXml.Wordprocessing;
 
 namespace Marimo.DocumentAsData.Test;
@@ -229,7 +230,7 @@ public class TextContentControlのテスト
                 .Should().ContainSingle();
             new DocumentFormat.OpenXml.Validation.OpenXmlValidator(
                 DocumentFormat.OpenXml.FileFormatVersions.Office2010)
-                .Validate(saved).Should().BeEmpty();
+                .Validate(saved, TestCancellation.Token).Should().BeEmpty();
         }
         finally
         {
