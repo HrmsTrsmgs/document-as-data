@@ -256,7 +256,7 @@ static partial class DocumentWrapperComponents
         return $$"""
 
             /// <summary>
-            /// 文書項目「{{itemName.EscapeAmpersands().Replace("<", "&lt;").EscapeLineBreaks()}}」の文字列を取得または設定します。
+            /// 文書項目「{{itemName.EscapeXmlCommentText()}}」の文字列を取得または設定します。
             /// </summary>
             {{DataItemNameAttributeDeclaration(itemName, propertyName)}}public string {{propertyName}} { get; set; } = "";
         """;
@@ -400,7 +400,7 @@ static partial class DocumentWrapperComponents
         $$"""
 
             /// <summary>
-            /// 文字列Content Control「{{contentControl.Tag.EscapeAmpersands().Replace("<", "&lt;").EscapeLineBreaks()}}」の文字列を取得または設定します。
+            /// 文字列Content Control「{{contentControl.Tag.EscapeXmlCommentText()}}」の文字列を取得または設定します。
             /// </summary>
             /// <remarks>
             /// 読み取りと書き込みは文字列Content Controlを優先し、存在しない場合に同名のMERGEFIELDを使用します。
@@ -446,6 +446,12 @@ static partial class DocumentWrapperComponents
 
     extension(string self)
     {
+        /// <summary>
+        /// XMLコメントのテキストとして解釈でき、生成ソースの行を分断しない形に変換します。
+        /// </summary>
+        string EscapeXmlCommentText() =>
+            self.EscapeAmpersands().Replace("<", "&lt;").EscapeLineBreaks();
+
         /// <summary>
         /// LFを可視のエスケープ表記へ変換し、生成ソースの行が分断されるのを防ぎます。
         /// </summary>
