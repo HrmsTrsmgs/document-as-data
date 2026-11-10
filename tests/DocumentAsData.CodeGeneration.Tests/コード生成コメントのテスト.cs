@@ -82,6 +82,33 @@ public sealed class コード生成コメントのテスト
     }
 
     [Fact]
+    public void 小なり記号を含む文字列ContentControlのTagから正しいXMLコメントを生成します()
+    {
+        // R&D.docxを基に、TagをA<Bへ変更しています。
+        var sources = GeneratedCodeInspection.GenerateSources(
+            @"TestData\コード生成\LessThanTag.docx",
+            options => options.NameMappings["A<B"] = "Comparison");
+
+        (
+            from source in sources
+            from diagnostic in
+                CSharpSyntaxTree.ParseText(
+                    source,
+                    new CSharpParseOptions(documentationMode: DocumentationMode.Diagnose))
+                    .GetDiagnostics()
+            where diagnostic.Severity is DiagnosticSeverity.Warning or DiagnosticSeverity.Error
+            select diagnostic
+        ).Should().BeEmpty();
+
+        sources.TypeDeclaration("LessThanTagDocument")
+            .PropertyDeclaration("Comparison")
+            .SummaryText().Should().Be("文字列Content Control「A<B」の文字列を取得または設定します。");
+        sources.TypeDeclaration("LessThanTagData")
+            .PropertyDeclaration("Comparison")
+            .SummaryText().Should().Be("文書項目「A<B」の文字列を取得または設定します。");
+    }
+
+    [Fact]
     public void Document型のコメントを生成します()
     {
         GeneratedCodeInspection

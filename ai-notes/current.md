@@ -1,15 +1,15 @@
 # 現在の作業状態
 
-確認日：2026-11-08。主担当はこの記録とGit状態を照合して再開します。記録方法は[README](README.md)を参照してください。
+確認日：2026-11-10。主担当はこの記録とGit状態を照合して再開します。記録方法は[README](README.md)を参照してください。
 
 ## 停止位置と次の作業
 
-* U+0085を含むTagのコード生成は `ca18a5b` で修正済み。Refactorを検討し、追加変更なし。
-* CheckBoxのTagに `&` を含むと生成XMLコメントが不正になる問題をRedで確認し、Green・全体検証済み。製品コード・テスト・固定DOCXは未コミットでレビュー待ち。了承後にコミットしRefactorへ進みます。[対応状況](refactoring-review.md#現在の対応状況)を参照。
+* CheckBoxのTagに `&` を含む場合の生成XMLコメントは `a5c3a8f` で修正済み。Refactorを検討し、追加変更なし。
+* 文字列Content ControlのTagに `<` を含むと生成XMLコメントが不正になる問題をRedで確認し、Green・全体検証済み。製品コード・テスト・固定DOCXは未コミットでレビュー待ち。了承後にコミットしRefactorへ進みます。[対応状況](refactoring-review.md#現在の対応状況)を参照。
 
 ## 最新の検証
 
-* CheckBoxのGreen：全体632成功・失敗0・Skip 5（本体317、コード生成315）。解析Rebuild成功、変更ファイルへのSARIF診断なし。既存の診断は残っています。
+* 文字列Content ControlのGreen：全体633成功・失敗0・Skip 5（本体317、コード生成316）。解析Rebuild成功、変更ファイルへのSARIF診断なし。既存の診断は残っています。
 * SDK 10.0.401のMSBuild.dllを直接使用。指定SDK 10.0.302が未導入のため `format` は起動できません。Visual Studio本体での確認は未実施です。
 * Skip 5件はRS-07の4件と明細0件の契約メモ1件。未決定事項は[繰り返し計画](repeating-sections-plan.md)を参照します。
 
