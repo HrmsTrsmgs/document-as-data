@@ -19,6 +19,41 @@ public sealed class コード生成コメントのテスト
         @"TestData\コード生成\日付選択ContentControl.docx";
 
     [Fact]
+    public void アンパサンドを含むCheckBoxのTagから正しいXMLコメントを生成します()
+    {
+        // チェック済みCheckBoxの固定データを基に、TagをR&Dへ変更しています。
+        var filePath = @"TestData\コード生成\AmpersandCheckBox.docx";
+        var sources = GeneratedCodeInspection.GenerateSources(
+            filePath,
+            options => options.NameMappings["R&D"] = "Research");
+
+        using var document = GeneratedCodeInspection.AssemblyFrom(sources)
+            .GeneratedType("AmpersandCheckBoxDocument")
+            .InvokeStaticMethod<Document>("Open", filePath);
+        dynamic documentAccessor = document;
+        bool isChecked = documentAccessor.Research;
+        isChecked.Should().BeTrue();
+
+        (
+            from source in sources
+            from diagnostic in
+                CSharpSyntaxTree.ParseText(
+                    source,
+                    new CSharpParseOptions(documentationMode: DocumentationMode.Diagnose))
+                    .GetDiagnostics()
+            where diagnostic.Severity is DiagnosticSeverity.Warning or DiagnosticSeverity.Error
+            select diagnostic
+        ).Should().BeEmpty();
+
+        sources.TypeDeclaration("AmpersandCheckBoxDocument")
+            .PropertyDeclaration("Research")
+            .SummaryText().Should().Be("CheckBox「R&D」のチェック状態を取得または設定します。");
+        sources.TypeDeclaration("AmpersandCheckBoxData")
+            .PropertyDeclaration("Research")
+            .SummaryText().Should().Be("CheckBox「R&D」のチェック状態を取得または設定します。");
+    }
+
+    [Fact]
     public void 文書名とTagにアンパサンドを含んでも正しいXMLコメントを生成します()
     {
         // 文書名もTagもR&Dです。DOCX内のTagはXML上でR&amp;Dと保存しています。
