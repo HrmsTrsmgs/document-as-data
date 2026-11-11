@@ -274,6 +274,20 @@ public sealed class コード生成診断のテスト
     }
 
     [Fact]
+    public void 明細内のDatePickerと文字列ContentControlの生成プロパティ名が衝突するとエラーを診断します()
+    {
+        GeneratedCodeInspection
+            .GenerateDiagnostics(
+                @"TestData\コード生成\repeatingKinds.docx",
+                options => options.NameMappings["DeliveryDate"] = "ItemName")
+            .Should().ContainEquivalentOf(
+                new CodeGenerationDiagnostic(
+                    true,
+                    "ItemName",
+                    ["ItemName", "DeliveryDate"]));
+    }
+
+    [Fact]
     public void 明細内の生成プロパティ名が明細データ型名と同じ場合にエラーを診断します()
     {
         GeneratedCodeInspection

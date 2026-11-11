@@ -83,7 +83,7 @@ static class GeneratedNameDiagnostics
     }
 
     /// <summary>
-    /// 通常項目とセクション名を文書型へ、最初の明細の文字列Content Control、MERGEFIELD、CheckBoxを各明細型へ分けます。
+    /// 通常項目とセクション名を文書型へ、最初の明細の文字列Content Control、MERGEFIELD、CheckBox、DatePickerを各明細型へ分けます。
     /// </summary>
     /// <param name="document">生成元の文書。</param>
     /// <returns>同じ生成先へ配置される元名の列。</returns>
@@ -106,7 +106,7 @@ static class GeneratedNameDiagnostics
         ];
 
     /// <summary>
-    /// 明細型の生成元となる最初の明細から、文字列Content Control、MERGEFIELD、CheckBoxの順に元名を取り出します。
+    /// 明細型の生成元となる最初の明細から、文字列Content Control、MERGEFIELD、CheckBox、DatePickerの順に元名を取り出します。
     /// </summary>
     /// <param name="section">明細型の生成元となるセクション。</param>
     /// <returns>明細プロパティへ変換する元名の列。</returns>
@@ -117,7 +117,9 @@ static class GeneratedNameDiagnostics
             .. from mergeField in section.Items[0].MergeFields
                select mergeField.Name,
             .. from checkBox in section.Items[0].CheckBoxes
-               select checkBox.Tag
+               select checkBox.Tag,
+            .. from datePicker in section.Items[0].DatePickers
+               select datePicker.Tag
         ];
 
     /// <summary>
