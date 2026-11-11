@@ -111,15 +111,14 @@ static class GeneratedNameDiagnostics
     /// <param name="section">明細型の生成元となるセクション。</param>
     /// <returns>明細プロパティへ変換する元名の列。</returns>
     static IEnumerable<string> DetailPropertySourceNames(RepeatingSection section) =>
-        (
-            from contentControl in section.Items[0].ContentControls
-            select contentControl.Tag
-        ).Concat(
-            from mergeField in section.Items[0].MergeFields
-            select mergeField.Name
-        ).Concat(
-            from checkBox in section.Items[0].CheckBoxes
-            select checkBox.Tag);
+        [
+            .. from contentControl in section.Items[0].ContentControls
+               select contentControl.Tag,
+            .. from mergeField in section.Items[0].MergeFields
+               select mergeField.Name,
+            .. from checkBox in section.Items[0].CheckBoxes
+               select checkBox.Tag
+        ];
 
     /// <summary>
     /// 同じ生成先に属する元名だけをまとめ、重複・空名・予約名との衝突を診断します。
