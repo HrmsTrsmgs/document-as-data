@@ -1,6 +1,6 @@
 # モデル選択の開始方針
 
-共通 `tdd-workflow/references/models.md`（`codex-workflows e66db1d` 基準、モデル割当は2026-11-04更新）のリポジトリ内参照版。
+共通TDDの参照版。正本は `codex-workflows/skills/tdd-workflow/references/models.md`。
 
 進行役だけが必要時に読む。工程名だけでモデルを固定せず、利用環境の実在するモデルID・推論設定・指定権限を確認する。この文書は設定済みや性能の保証ではない。
 

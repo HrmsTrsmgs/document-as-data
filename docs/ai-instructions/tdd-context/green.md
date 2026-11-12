@@ -1,6 +1,6 @@
 # Green: 今回のRedを直接通す
 
-共通 `tdd-workflow/references/green.md`（`codex-workflows e66db1d`）のリポジトリ内参照版。
+共通TDDの参照版。正本は `codex-workflows/skills/tdd-workflow/references/green.md`。
 
 `common.md` とこの文書だけを工程指示として読む。今回のRed、確認した失敗、確定契約、現行コード・関連テスト、検証方法、必須制約を使う。要求一覧全体、将来候補、未採用API、Redの議論、Refactor方針は読まない。
 

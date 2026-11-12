@@ -1,6 +1,6 @@
 # Red: 利用側から外部契約を決める
 
-共通 `tdd-workflow/references/red.md`（`codex-workflows e66db1d`）のリポジトリ内参照版。
+共通TDDの参照版。正本は `codex-workflows/skills/tdd-workflow/references/red.md`。
 
 `common.md` とこの文書だけを工程指示として読む。今回の要求と確定済み契約から、責務、呼び出し、入力、戻り値、外から見える状態変化を利用側から設計する。内部アルゴリズムや実装しやすさからAPIを逆算しない。
 
