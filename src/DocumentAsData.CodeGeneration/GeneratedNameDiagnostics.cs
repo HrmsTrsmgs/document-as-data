@@ -133,13 +133,14 @@ static class GeneratedNameDiagnostics
         IEnumerable<IEnumerable<string>> scopes,
         string[] reservedNames,
         CodeGenerationOptions options) =>
-        from scope in scopes
+        from scope in scopes.Select((names, index) => (names, index))
         from sourceNames in
-            (from sourceName in scope
+            (from sourceName in scope.names
              group sourceName by options.GeneratedName(sourceName).IdentifierComparisonKey)
         where sourceNames.Count() > 1
             || sourceNames.Key.IsEmpty()
             || reservedNames.Contains(sourceNames.Key)
+                && (scope.index == 0 || sourceNames.Key != nameof(Document.Read))
         select new CodeGenerationDiagnostic(
             true,
             sourceNames.Key,

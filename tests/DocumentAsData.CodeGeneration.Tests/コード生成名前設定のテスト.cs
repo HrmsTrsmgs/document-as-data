@@ -17,6 +17,26 @@ public sealed class コード生成名前設定のテスト
         @"TestData\コード生成\日付選択ContentControl.docx";
 
     [Fact]
+    public void 明細データのプロパティ名にReadを使用できます()
+    {
+        GeneratedCodeInspection.GenerateDiagnostics(
+                @"TestData\コード生成\repeatingTemplate.docx",
+                options => options.NameMappings["ItemName"] = "Read")
+            .Should().BeEmpty();
+
+        using var document = GeneratedCodeInspection
+            .AssemblyFrom(GeneratedCodeInspection.GenerateSources(
+                @"TestData\コード生成\repeatingTemplate.docx",
+                options => options.NameMappings["ItemName"] = "Read"))
+            .GeneratedType("RepeatingTemplateDocument")
+            .InvokeStaticMethod<Document>("Open", @"TestData\コード生成\repeatingTemplate.docx");
+        dynamic documentAccessor = document;
+        IEnumerable<dynamic> items = documentAccessor.Items;
+
+        items.Select(it => it.Read as object).Should().Equal("商品A");
+    }
+
+    [Fact]
     public void NameMappingsは繰り返しセクションと明細データのプロパティ名へ適用されます()
     {
         using var document = GeneratedCodeInspection
