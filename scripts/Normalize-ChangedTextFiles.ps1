@@ -12,6 +12,9 @@ function Invoke-Git {
     param([Parameter(ValueFromRemainingArguments = $true)][string[]]$Arguments)
 
     & git -C $repositoryRoot -c "safe.directory=$safeDirectory" -c "core.quotePath=false" @Arguments
+    if ($LASTEXITCODE -ne 0) {
+        throw "Git failed with exit code $LASTEXITCODE."
+    }
 }
 
 function Get-ChangedPath {
