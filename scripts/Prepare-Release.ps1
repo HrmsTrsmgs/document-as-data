@@ -46,7 +46,7 @@ try {
         $env:DOCUMENTASDATA_TEST_MSBUILD = $VisualStudioMSBuild
         Invoke-DotNet @(
             'test', './tests/DocumentAsData.CodeGeneration.Tests', '--no-build', '--no-restore',
-            '--configuration', 'Release', '--filter', 'FullyQualifiedName~パッケージ',
+            '--configuration', 'Release', '--filter', 'FullyQualifiedName~パッケージ|FullyQualifiedName~共用ライブラリ',
             '--logger', 'trx', '--results-directory', (Join-Path $runDirectory 'visual-studio-tests')
         )
         $env:DOCUMENTASDATA_TEST_MSBUILD = $null
