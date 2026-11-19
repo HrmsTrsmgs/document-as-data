@@ -70,33 +70,34 @@ public sealed class GenerateDocumentAsData : Microsoft.Build.Utilities.Task
     {
         var documentFilePath = Path.GetFullPath(documentFile.ItemSpec);
         var generatedFilePath = Path.ChangeExtension(documentFilePath, "DocumentAsData.g.cs");
-        var nameMappings = LoadNameMappings(documentFilePath);
-
-        foreach (var diagnostic in
-            from diagnostic in
-                DocumentWrapperGenerator.GenerateDiagnostics(
-                    documentFilePath,
-                    options => ConfigureOptions(options, nameMappings))
-            where diagnostic.IsError
-            select diagnostic)
+        var options = new CodeGenerationOptions
         {
-            LogFileError(
-                documentFilePath,
-                $"DocumentAsData のコード生成診断: 生成名 '{diagnostic.GeneratedName}'、元名 '{string.Join(", ", diagnostic.SourceNames)}'");
+            NameMappings = LoadNameMappings(documentFilePath),
+            Namespace = RootNamespace
+        };
+
+        string source;
+        using (var document = Document.Open(documentFilePath))
+        {
+            foreach (var diagnostic in
+                from diagnostic in GeneratedNameDiagnostics.Diagnose(documentFilePath, document, options)
+                where diagnostic.IsError
+                select diagnostic)
+            {
+                LogFileError(
+                    documentFilePath,
+                    $"DocumentAsData のコード生成診断: 生成名 '{diagnostic.GeneratedName}'、元名 '{string.Join(", ", diagnostic.SourceNames)}'");
+            }
+
+            if (Log.HasLoggedErrors)
+            {
+                yield break;
+            }
+
+            source = DocumentWrapperComponents.SourceFile(documentFilePath, options, document);
         }
 
-        if (Log.HasLoggedErrors)
-        {
-            yield break;
-        }
-
-        WriteIfChanged(
-            generatedFilePath,
-            DocumentWrapperGenerator
-                .GenerateSources(
-                    documentFilePath,
-                    options => ConfigureOptions(options, nameMappings))
-                .Single());
+        WriteIfChanged(generatedFilePath, source);
 
         var generatedFile = new TaskItem(generatedFilePath);
         generatedFile.SetMetadata(
@@ -119,17 +120,6 @@ public sealed class GenerateDocumentAsData : Microsoft.Build.Utilities.Task
         }
 
         File.WriteAllText(path, content);
-    }
-
-    /// <summary>
-    /// 診断とソース生成へ同じ名前変換辞書と名前空間を適用します。
-    /// </summary>
-    /// <param name="options">適用先のコード生成設定。</param>
-    /// <param name="nameMappings">文書に対応する識別子名変換辞書。</param>
-    void ConfigureOptions(CodeGenerationOptions options, Dictionary<string, string> nameMappings)
-    {
-        options.NameMappings = nameMappings;
-        options.Namespace = RootNamespace;
     }
 
     /// <summary>

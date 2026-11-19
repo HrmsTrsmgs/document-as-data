@@ -4,11 +4,11 @@
 
 ## 停止位置と次の作業
 
-* V04は `c127651` でコミット済み。Refactorは追加変更なし。V05は同コミット上でGreen、レビュー待ち。MSBuild連携テストで実行するPowerShellの待機に既定5分の期限を設定。次はV05の差分確認とコミット。
+* V05は `66e091b` でコミット済み。Refactorは追加変更なし。R01はMSBuildの生成名診断とソース生成で1回開いたDOCXを共有する変更まで完了し、レビュー待ち。対象はBuildのタスクとCodeGenerationのAssemblyInfo。作業開始前からあるGeneratedNameDiagnostics.csの差分は別件。
 
 ## 最新の検証
 
-* SDK 10.0.302でV05を検証。期限4秒のテストは修正前に15秒待って終了コード0となり失敗し、修正後は4秒で成功。全体638成功・失敗0・既存Skip 5。非増分解析ビルドは警告・エラー0。formatは既存のxUnit1004の5件で停止。
+* SDK 10.0.302でR01を検証。全体638成功・失敗0・既存Skip 5。非増分解析ビルドは警告・エラー0。formatは既存のxUnit1004の5件とGeneratedNameDiagnostics.csの空白11件で停止。R01対象への指摘なし。
 
 ## 保留・環境制約
 
