@@ -9,6 +9,7 @@ using System.Xml.Linq;
 using Marimo.DocumentAsData.Build;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
+using Task = System.Threading.Tasks.Task;
 
 namespace Marimo.DocumentAsData.CodeGeneration.Test.テスト補助;
 
@@ -627,8 +628,9 @@ sealed record PowerShell実行結果(int ExitCode, string Output)
     /// </summary>
     /// <param name="scriptFilePath">実行するスクリプト。</param>
     /// <param name="workingDirectory">MSBuildの作業ディレクトリ。</param>
+    /// <param name="timeout">スクリプトの終了を待つ期限。</param>
     /// <returns>終了コードと出力。</returns>
-    internal static PowerShell実行結果 Run(string scriptFilePath, string workingDirectory)
+    internal static PowerShell実行結果 Run(string scriptFilePath, string workingDirectory, TimeSpan? timeout = null)
     {
         using var process = new Process
         {
@@ -646,10 +648,46 @@ sealed record PowerShell実行結果(int ExitCode, string Output)
             }
         };
         process.Start();
-        var output = process.StandardOutput.ReadToEndAsync();
-        var error = process.StandardError.ReadToEndAsync();
-        process.WaitForExit();
-        return new(process.ExitCode, output.GetAwaiter().GetResult() + error.GetAwaiter().GetResult());
+        var output = new StringBuilder();
+        var error = new StringBuilder();
+        var outputLock = new object();
+        using var deadline = new CancellationTokenSource(timeout ?? TimeSpan.FromMinutes(5));
+        var cancellationToken = deadline.Token;
+        var completed = Task.WhenAll(
+            ReadOutput(process.StandardOutput, output),
+            ReadOutput(process.StandardError, error),
+            process.WaitForExitAsync(cancellationToken));
+        int exitCode;
+        try
+        {
+            completed.WaitAsync(cancellationToken).GetAwaiter().GetResult();
+            exitCode = process.ExitCode;
+        }
+        catch (OperationCanceledException)
+        {
+            if (!process.HasExited)
+            {
+                process.Kill(entireProcessTree: true);
+            }
+            exitCode = -1;
+        }
+        lock (outputLock)
+        {
+            return new(exitCode, output.ToString() + error);
+        }
+
+        async Task ReadOutput(StreamReader reader, StringBuilder destination)
+        {
+            var buffer = new char[4096];
+            int count;
+            while ((count = await reader.ReadAsync(buffer.AsMemory(), cancellationToken).ConfigureAwait(false)) > 0)
+            {
+                lock (outputLock)
+                {
+                    destination.Append(buffer, 0, count);
+                }
+            }
+        }
     }
 }
 

@@ -9,6 +9,27 @@ namespace Marimo.DocumentAsData.CodeGeneration.Test;
 public sealed class MSBuild連携タスクのテスト
 {
     [Fact]
+    public void PowerShellの実行期限を過ぎると待機を打ち切りそれまでの診断を返します()
+    {
+        using var project = MSBuild連携テストプロジェクト.Create();
+        var script = Path.Combine(project.DirectoryPath, "wait.ps1");
+        File.WriteAllText(script, """
+            [Console]::Out.WriteLine('stdout-before-wait')
+            [Console]::Error.WriteLine('stderr-before-wait')
+            Start-Sleep -Seconds 15
+            exit 0
+            """);
+
+        var elapsed = System.Diagnostics.Stopwatch.StartNew();
+        var tested = PowerShell実行結果.Run(script, project.DirectoryPath, timeout: TimeSpan.FromSeconds(4));
+        elapsed.Stop();
+
+        tested.ExitCode.Should().NotBe(0, tested.Output);
+        tested.Output.Should().Contain("stdout-before-wait").And.Contain("stderr-before-wait");
+        elapsed.Elapsed.Should().BeLessThan(TimeSpan.FromSeconds(12));
+    }
+
+    [Fact]
     public void 一時プロジェクトはリポジトリのSDK選択設定を引き継ぎます()
     {
         using var project = MSBuild連携テストプロジェクト.Create();
