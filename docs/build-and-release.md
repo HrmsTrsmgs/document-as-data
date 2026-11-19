@@ -100,6 +100,10 @@ SpreadsheetAsDataのtargetsでは `UsingTask Runtime="NET"` も使用されて�
 pwsh -NoProfile -File ./scripts/Prepare-Release.ps1
 ```
 
+Release候補を作成するたびにソリューション全体を再ビルドして解析する。
+テスト後の `dotnet format` では情報レベルの診断も確認する。保留テストの
+`Skip` に対する xUnit1004 が残っている間は、この段階で停止し、パッケージの作成を見送る。
+
 初回のrestoreではNuGetから依存パッケージを取得する。パッケージ利用テストは外部フィードではなく、
 その復元済みキャッシュとテスト内のローカルフィードを利用する。
 そのテスト用プロジェクトでのみ `NuGetAudit=false` として、オフラインの復元検証と脆弱性監査を分けている。

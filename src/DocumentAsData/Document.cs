@@ -242,13 +242,28 @@ public class Document : IDisposable
     /// 未保存の変更を保存せずに文書を閉じます。呼び出し側のStreamは閉じません。
     /// </summary>
     public void Close() =>
-        session.Dispose();
+        Dispose();
 
     /// <summary>
     /// 未保存の変更を保存せずに文書を閉じて所有リソースを解放します。
     /// </summary>
-    public void Dispose() =>
-        Close();
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    /// <summary>
+    /// 文書が所有するリソースを解放します。派生型は独自のリソースを解放した後、基底の実装を呼び出します。
+    /// </summary>
+    /// <param name="disposing">明示的な破棄の場合はtrue、ファイナライザーから呼び出す場合はfalse。</param>
+    protected virtual void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            session.Dispose();
+        }
+    }
 
     /// <summary>
     /// SDK文書の保存と生存期間を管理します。Streamの入出力契約とは別に、

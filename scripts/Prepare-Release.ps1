@@ -34,13 +34,14 @@ try {
     Invoke-DotNet @('restore', './DocumentAsData.slnx', '-p:TreatWarningsAsErrors=true')
     Invoke-DotNet @(
         'build', './DocumentAsData.slnx', '--no-restore', '--configuration', 'Release',
-        '--disable-build-servers', '-p:UseSharedCompilation=false', '-p:TreatWarningsAsErrors=true'
+        '--no-incremental', '--disable-build-servers', '-p:UseSharedCompilation=false',
+        '-p:EnforceCodeStyleInBuild=true', '-p:RunAnalyzersDuringBuild=true', '-p:TreatWarningsAsErrors=true'
     )
     Invoke-DotNet @(
         'test', './DocumentAsData.slnx', '--no-build', '--no-restore', '--configuration', 'Release',
         '--logger', 'trx', '--results-directory', (Join-Path $runDirectory 'tests')
     )
-    Invoke-DotNet @('format', './DocumentAsData.slnx', '--no-restore', '--verify-no-changes', '--severity', 'warn')
+    Invoke-DotNet @('format', './DocumentAsData.slnx', '--no-restore', '--verify-no-changes', '--severity', 'info')
 
     if ($VisualStudioMSBuild) {
         $env:DOCUMENTASDATA_TEST_MSBUILD = $VisualStudioMSBuild
