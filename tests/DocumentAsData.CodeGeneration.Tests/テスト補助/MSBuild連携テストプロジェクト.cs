@@ -33,7 +33,7 @@ sealed class MSBuild連携テストプロジェクト : IDisposable
             Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(DirectoryPath);
         File.Copy(
-            Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "..", "global.json"),
+            Path.Combine(RepositoryRoot, "global.json"),
             Path.Combine(DirectoryPath, "global.json"));
     }
 
@@ -43,13 +43,18 @@ sealed class MSBuild連携テストプロジェクト : IDisposable
     internal string DirectoryPath { get; }
 
     /// <summary>
+    /// テストのビルド出力から、設定とビルド対象を取得するリポジトリのルートを求めます。
+    /// </summary>
+    internal static string RepositoryRoot => Path.GetFullPath(Path.Combine(
+        AppContext.BaseDirectory, "..", "..", "..", "..", ".."));
+
+    /// <summary>
     /// パッケージ配置に依存せず、リポジトリで開発中のtargetsを参照します。
     /// </summary>
-    static string TargetsPath => Path.GetFullPath(Path.Combine(
-        AppContext.BaseDirectory,
-        "..", "..", "..", "..", "..",
+    static string TargetsPath => Path.Combine(
+        RepositoryRoot,
         "src", "DocumentAsData.Build", "buildTransitive",
-        "Marimo.DocumentAsData.Build.targets"));
+        "Marimo.DocumentAsData.Build.targets");
 
     /// <summary>
     /// テストと同じ構成でビルド済みのタスクを、一時ディレクトリへパッケージ化します。
@@ -61,11 +66,6 @@ sealed class MSBuild連携テストプロジェクト : IDisposable
     /// <param name="includeCombinedPackage">統合パッケージも梱包する場合はtrue。</param>
     internal string AddPowerShellPackSample(bool includeProjectReferences = false, bool warningsAsErrors = false, bool includeCombinedPackage = false)
     {
-        Directory.CreateDirectory(DirectoryPath);
-        var projectFilePath = Path.GetFullPath(Path.Combine(
-            AppContext.BaseDirectory,
-            "..", "..", "..", "..", "..",
-            "src", "DocumentAsData.Build", "DocumentAsData.Build.csproj"));
         var configuration = typeof(GenerateDocumentAsData).Assembly
             .GetCustomAttributes<AssemblyConfigurationAttribute>().Single().Configuration;
         string[] projectNames = includeProjectReferences
@@ -77,7 +77,7 @@ sealed class MSBuild連携テストプロジェクト : IDisposable
             "Pack.ps1",
             $$"""
             foreach ($projectName in @({{string.Join(", ", projectNames.Select(it => $"'{it}'"))}})) {
-                $projectPath = Join-Path '{{Path.GetFullPath(Path.Combine(projectFilePath, "..", "..")).Replace("'", "''")}}' "$projectName/$projectName.csproj"
+                $projectPath = Join-Path '{{Path.Combine(RepositoryRoot, "src").Replace("'", "''")}}' "$projectName/$projectName.csproj"
                 dotnet pack $projectPath --no-build --no-restore --disable-build-servers --configuration '{{configuration.Replace("'", "''")}}' --output ./packages --nologo --verbosity minimal -p:TreatWarningsAsErrors={{warningsAsErrors}}
                 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
             }
@@ -113,9 +113,9 @@ sealed class MSBuild連携テストプロジェクト : IDisposable
         var manifest = XDocument.Load(manifestStream);
         var packageId = manifest.Descendants().Single(it => it.Name.LocalName == "id").Value;
         var packageVersion = manifest.Descendants().Single(it => it.Name.LocalName == "version").Value;
-        using var assets = JsonDocument.Parse(File.ReadAllText(Path.GetFullPath(Path.Combine(
-            AppContext.BaseDirectory, "..", "..", "..", "..", "..",
-            "src", "DocumentAsData.Build", "obj", "project.assets.json"))));
+        using var assets = JsonDocument.Parse(File.ReadAllText(Path.Combine(
+            RepositoryRoot,
+            "src", "DocumentAsData.Build", "obj", "project.assets.json")));
         File.WriteAllText(
             Path.Combine(DirectoryPath, "NuGet.Config"),
             new XElement("configuration",
@@ -276,7 +276,6 @@ sealed class MSBuild連携テストプロジェクト : IDisposable
         string rootNamespace = "Generated",
         string warningsAsErrors = "")
     {
-        Directory.CreateDirectory(DirectoryPath);
         File.WriteAllText(
             Path.Combine(DirectoryPath, "DocumentAsData.BuildSample.csproj"),
             $$"""

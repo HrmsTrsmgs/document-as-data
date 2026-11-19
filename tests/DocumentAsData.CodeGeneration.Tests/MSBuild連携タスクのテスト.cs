@@ -12,7 +12,7 @@ public sealed class MSBuild連携タスクのテスト
     public void 一時プロジェクトはリポジトリのSDK選択設定を引き継ぎます()
     {
         using var project = MSBuild連携テストプロジェクト.Create();
-        var repositorySettings = Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "..", "global.json");
+        var repositorySettings = Path.Combine(MSBuild連携テストプロジェクト.RepositoryRoot, "global.json");
         var projectSettings = Path.Combine(project.DirectoryPath, "global.json");
 
         File.Exists(projectSettings).Should().BeTrue();
