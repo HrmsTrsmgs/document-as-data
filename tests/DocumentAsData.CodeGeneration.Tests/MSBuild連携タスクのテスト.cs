@@ -1,4 +1,5 @@
 ﻿using System.IO.Compression;
+using System.Text.Json.Nodes;
 using System.Xml.Linq;
 using FluentAssertions;
 using Marimo.DocumentAsData.CodeGeneration.Test.テスト補助;
@@ -7,6 +8,19 @@ namespace Marimo.DocumentAsData.CodeGeneration.Test;
 
 public sealed class MSBuild連携タスクのテスト
 {
+    [Fact]
+    public void 一時プロジェクトはリポジトリのSDK選択設定を引き継ぎます()
+    {
+        using var project = MSBuild連携テストプロジェクト.Create();
+        var repositorySettings = Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "..", "global.json");
+        var projectSettings = Path.Combine(project.DirectoryPath, "global.json");
+
+        File.Exists(projectSettings).Should().BeTrue();
+        var expectedSdk = JsonNode.Parse(File.ReadAllText(repositorySettings))?["sdk"];
+        var projectSdk = JsonNode.Parse(File.ReadAllText(projectSettings))?["sdk"];
+        JsonNode.DeepEquals(projectSdk, expectedSdk).Should().BeTrue();
+    }
+
     [Fact]
     public void 共用ライブラリのBuild参照を非公開にしてもCoreは利用アプリへ渡ります()
     {

@@ -31,6 +31,10 @@ sealed class MSBuild連携テストプロジェクト : IDisposable
             Path.GetTempPath(),
             "DocumentAsData.Tests",
             Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(DirectoryPath);
+        File.Copy(
+            Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "..", "global.json"),
+            Path.Combine(DirectoryPath, "global.json"));
     }
 
     /// <summary>
