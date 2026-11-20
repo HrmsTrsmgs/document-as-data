@@ -116,31 +116,31 @@ static partial class DocumentWrapperComponents
             $$"""
                     foreach (var item in RepeatingSections[{{StringLiteral(section.Tag)}}].Items)
                     {
-            {{Indent(ForEach(RepeatingItemValidationBlocks(section)))}}
+            {{Indent(ForEach(RepeatingItemValidationBlocks(section.Items[0])))}}
                     }
             """;
 
         /// <summary>
         /// 生成元の明細に含まれる種類ごとの必須項目検査を生成します。
         /// </summary>
-        /// <param name="section">必要な項目の見本を持つ生成元のセクション。</param>
+        /// <param name="templateItem">必要な項目の見本となる生成元の先頭明細。</param>
         /// <returns>明細内へ配置する必須項目検査の生成コード。</returns>
-        static IEnumerable<string> RepeatingItemValidationBlocks(RepeatingSection section) =>
+        static IEnumerable<string> RepeatingItemValidationBlocks(RepeatingSectionItem templateItem) =>
         [
             RequiredItemsValidation(
-                [.. from contentControl in section.Items[0].ContentControls select contentControl.Tag],
+                [.. from contentControl in templateItem.ContentControls select contentControl.Tag],
                 RepeatingItemTextItemNames,
                 "文字列Content Control"),
             RequiredItemsValidation(
-                [.. from mergeField in section.Items[0].MergeFields select mergeField.Name],
+                [.. from mergeField in templateItem.MergeFields select mergeField.Name],
                 RepeatingItemTextItemNames,
                 "MERGEFIELD"),
             RequiredItemsValidation(
-                [.. from checkBox in section.Items[0].CheckBoxes select checkBox.Tag],
+                [.. from checkBox in templateItem.CheckBoxes select checkBox.Tag],
                 RepeatingItemTagNames("CheckBoxes"),
                 "CheckBox"),
             RequiredItemsValidation(
-                [.. from datePicker in section.Items[0].DatePickers select datePicker.Tag],
+                [.. from datePicker in templateItem.DatePickers select datePicker.Tag],
                 RepeatingItemTagNames("DatePickers"),
                 "DatePicker")
         ];
