@@ -4,11 +4,11 @@
 
 ## 停止位置と次の作業
 
-* V05は `66e091b` でコミット済み。Refactorは追加変更なし。R01はMSBuildの生成名診断とソース生成で1回開いたDOCXを共有する変更まで完了し、レビュー待ち。対象はBuildのタスクとCodeGenerationのAssemblyInfo。作業開始前からあるGeneratedNameDiagnostics.csの差分は別件。
+* ビルド・コード生成の整理（R01〜R03）は `c9643ce` までで完了。解決コミットは[対応状況](refactoring-review.md#現在の対応状況)に記載。次の候補は本体の性能計測（P01・P02）。作業開始前からあるGeneratedNameDiagnostics.csのインデント変更は別件で未コミット。
 
 ## 最新の検証
 
-* SDK 10.0.302でR01を検証。全体638成功・失敗0・既存Skip 5。非増分解析ビルドは警告・エラー0。formatは既存のxUnit1004の5件とGeneratedNameDiagnostics.csの空白11件で停止。R01対象への指摘なし。
+* SDK 10.0.302でR02・R03を合わせて検証。全体638成功・失敗0・既存Skip 5。非増分解析ビルドは警告・エラー0。formatは既存のxUnit1004の5件とGeneratedNameDiagnostics.csの空白11件で停止。変更した2ファイルへの指摘なし。
 
 ## 保留・環境制約
 
