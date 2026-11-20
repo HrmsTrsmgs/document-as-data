@@ -108,12 +108,52 @@ sealed class MSBuild連携テストプロジェクト : IDisposable
         string packageFilePattern = "*DocumentAsData.Build.*.nupkg",
         bool sharedLibrary = false)
     {
+        var package = ReadPackageIdentity(packageFilePattern);
+        WritePackageSources();
+        WritePackageReferenceProject(package, build, run, designTimeBuild, includeDocument, sharedLibrary);
+        WritePackageConsumerFiles(sharedLibrary, build, run);
+
+        var consumerProject = sharedLibrary ? "App/App.csproj" : "PackageReference.csproj";
+        return WritePowerShellScript(
+            "PackageReference.ps1",
+            $$"""
+            dotnet restore ./{{consumerProject}} --configfile ./NuGet.Config --nologo --verbosity minimal
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+            $buildArguments = @('./{{consumerProject}}', '/t:{{(build
+                ? buildTarget
+                : "WriteAvailableItems")}}', '/nologo', '/v:minimal', '/nr:false')
+            if ($env:DOCUMENTASDATA_TEST_MSBUILD) {
+                & $env:DOCUMENTASDATA_TEST_MSBUILD @buildArguments
+            } else {
+                dotnet msbuild @buildArguments
+            }
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+            if ('{{run}}' -eq 'True') {
+                dotnet run --project ./{{consumerProject}} --no-build --no-restore
+            }
+            exit $LASTEXITCODE
+            """);
+    }
+
+    /// <summary>
+    /// 選択したローカルパッケージのマニフェストから、プロジェクトが参照するIDとバージョンを読みます。
+    /// </summary>
+    (string Id, string Version) ReadPackageIdentity(string packageFilePattern)
+    {
         using var package = ZipFile.OpenRead(
             Directory.GetFiles(Path.Combine(DirectoryPath, "packages"), packageFilePattern).Single());
         using var manifestStream = package.Entries.Single(it => it.FullName.EndsWith(".nuspec")).Open();
         var manifest = XDocument.Load(manifestStream);
         var packageId = manifest.Descendants().Single(it => it.Name.LocalName == "id").Value;
         var packageVersion = manifest.Descendants().Single(it => it.Name.LocalName == "version").Value;
+        return (packageId, packageVersion);
+    }
+
+    /// <summary>
+    /// 作成したパッケージとリポジトリの復元済みキャッシュを、一時プロジェクトの復元元にします。
+    /// </summary>
+    void WritePackageSources()
+    {
         using var assets = JsonDocument.Parse(File.ReadAllText(Path.Combine(
             RepositoryRoot,
             "src", "DocumentAsData.Build", "obj", "project.assets.json")));
@@ -126,6 +166,19 @@ sealed class MSBuild連携テストプロジェクト : IDisposable
                     assets.RootElement.GetProperty("packageFolders").EnumerateObject().Select((it, index) =>
                         new XElement("add", new XAttribute("key", $"cache{index}"), new XAttribute("value", it.Name)))))
                 .ToString());
+    }
+
+    /// <summary>
+    /// 利用者プロジェクトに文書の生成条件とMSBuild項目を観測するターゲットを書き込みます。
+    /// </summary>
+    void WritePackageReferenceProject(
+        (string Id, string Version) package,
+        bool build,
+        bool run,
+        bool designTimeBuild,
+        bool includeDocument,
+        bool sharedLibrary)
+    {
         File.WriteAllText(
             Path.Combine(DirectoryPath, "PackageReference.csproj"),
             $$"""
@@ -141,7 +194,7 @@ sealed class MSBuild連携テストプロジェクト : IDisposable
                 <UseSharedCompilation>false</UseSharedCompilation>
               </PropertyGroup>
               <ItemGroup>
-                <PackageReference Include="{{SecurityElement.Escape(packageId)}}" Version="{{SecurityElement.Escape(packageVersion)}}" />
+                <PackageReference Include="{{SecurityElement.Escape(package.Id)}}" Version="{{SecurityElement.Escape(package.Version)}}" />
                 <DocumentAsData Include="BasicStructure.docx" Condition="'{{build}}' == 'True' and '{{includeDocument}}' == 'True'" />
                 <Compile Remove="App/**/*.cs" />
               </ItemGroup>
@@ -160,6 +213,13 @@ sealed class MSBuild連携テストプロジェクト : IDisposable
               </Target>
             </Project>
             """);
+    }
+
+    /// <summary>
+    /// 検証する構成に応じて生成型を使うコードと、共用ライブラリを参照するアプリを配置します。
+    /// </summary>
+    void WritePackageConsumerFiles(bool sharedLibrary, bool build, bool run)
+    {
         if (sharedLibrary)
         {
             Directory.CreateDirectory(Path.Combine(DirectoryPath, "App"));
@@ -212,26 +272,6 @@ sealed class MSBuild連携テストプロジェクト : IDisposable
                 Console.WriteLine($"after:{saved.CustomerName}/{saved.Address}");
                 """);
         }
-        var consumerProject = sharedLibrary ? "App/App.csproj" : "PackageReference.csproj";
-        return WritePowerShellScript(
-            "PackageReference.ps1",
-            $$"""
-            dotnet restore ./{{consumerProject}} --configfile ./NuGet.Config --nologo --verbosity minimal
-            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-            $buildArguments = @('./{{consumerProject}}', '/t:{{(build
-                ? buildTarget
-                : "WriteAvailableItems")}}', '/nologo', '/v:minimal', '/nr:false')
-            if ($env:DOCUMENTASDATA_TEST_MSBUILD) {
-                & $env:DOCUMENTASDATA_TEST_MSBUILD @buildArguments
-            } else {
-                dotnet msbuild @buildArguments
-            }
-            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-            if ('{{run}}' -eq 'True') {
-                dotnet run --project ./{{consumerProject}} --no-build --no-restore
-            }
-            exit $LASTEXITCODE
-            """);
     }
 
     /// <summary>
