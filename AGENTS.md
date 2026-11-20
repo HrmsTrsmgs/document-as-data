@@ -2,6 +2,7 @@
 
 ## 読むべき指示
 
+* 進行役は、委任の利用条件とRGRのモデル・推論レベルを [モデル方針](docs/ai-instructions/tdd-context/models.md) に従う。導入済み共通Skillに旧割り当てが残る場合も、この方針を優先する。
 * 共通方針は個人共通AGENTSを使う。未導入時は [参照版](docs/ai-instructions/common.md) を読む。
 * 振る舞い追加・仕様変更・不具合修正は共通Skill `tdd-workflow`、挙動を維持するリファクタリングの進行は同Skillの `references/run.md` を入口とする。未導入時は [TDDの入口](docs/ai-instructions/tdd.md) を使う。運用文書の編集や性能調査・計測だけでは製品TDDを起動しない。
 * C#/.NETは共通Skill `csharp-conventions` と [プロジェクトの補足](docs/ai-instructions/csharp.md#プロジェクトの補足) を使う。未導入時だけ同文書の参照版を読む。

@@ -7,4 +7,4 @@
 - [Red](tdd-context/red.md)
 - [Green](tdd-context/green.md)
 - [Refactor](tdd-context/refactor.md)
-- [モデル方針（選択が必要な場合だけ）](tdd-context/models.md)
+- [モデル方針（担当起動前に確認）](tdd-context/models.md)
