@@ -1,4 +1,7 @@
-﻿using DocumentFormat.OpenXml;
+﻿using System.Runtime.CompilerServices;
+
+using DocumentFormat.OpenXml;
+
 
 namespace Marimo.DocumentAsData;
 
@@ -12,7 +15,7 @@ sealed class OpenXmlElementCache<T>
     /// <summary>
     /// OOXML要素を識別子として生成済みの公開オブジェクトを保持します。
     /// </summary>
-    readonly Dictionary<OpenXmlElement, T> items = [];
+    readonly ConditionalWeakTable<OpenXmlElement, T> items = [];
 
     /// <summary>
     /// 指定したOOXML要素に対応する既存または新しい公開オブジェクトを取得します。

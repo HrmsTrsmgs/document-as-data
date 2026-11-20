@@ -1,4 +1,6 @@
-﻿using DocumentFormat.OpenXml;
+﻿using System.Runtime.CompilerServices;
+
+using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Validation;
 using FluentAssertions;
@@ -10,6 +12,29 @@ namespace Marimo.DocumentAsData.Test;
 
 public class RepeatingSectionのテスト
 {
+    [Fact]
+    public void 削除した明細のMERGEFIELDは参照を手放すと回収されます()
+    {
+        using var document = Document.Open(Path.Combine("TestData", "明細に4種類の項目.docx"));
+        var field = 削除した明細のMERGEFIELDを取得する(document.RepeatingSections["Items"]);
+
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
+        GC.Collect();
+
+        field.IsAlive.Should().BeFalse();
+        GC.KeepAlive(document);
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    static WeakReference 削除した明細のMERGEFIELDを取得する(RepeatingSection section)
+    {
+        section.Replace<CodeData>([new() { Code = "A" }, new() { Code = "B" }]);
+        var field = new WeakReference(section.Items[1].MergeFields["Code"]);
+        section.Replace<CodeData>([new() { Code = "A" }]);
+        return field;
+    }
+
     [Fact]
     public void Itemsは明細が1件でもコレクションとして取得できます()
     {
