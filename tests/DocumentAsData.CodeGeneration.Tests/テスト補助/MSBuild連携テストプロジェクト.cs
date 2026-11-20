@@ -184,7 +184,7 @@ sealed class MSBuild連携テストプロジェクト : IDisposable
             $$"""
             <Project Sdk="Microsoft.NET.Sdk">
               <PropertyGroup>
-                <TargetFramework>net10.0</TargetFramework>
+                <TargetFramework>net11.0</TargetFramework>
                 <OutputType Condition="'{{run}}' == 'True' and '{{sharedLibrary}}' != 'True'">Exe</OutputType>
                 <DesignTimeBuild Condition="'{{designTimeBuild}}' == 'True'">true</DesignTimeBuild>
                 <SkipCompilerExecution Condition="'{{designTimeBuild}}' == 'True'">true</SkipCompilerExecution>
@@ -228,7 +228,7 @@ sealed class MSBuild連携テストプロジェクト : IDisposable
                 """
                 <Project Sdk="Microsoft.NET.Sdk">
                   <PropertyGroup>
-                    <TargetFramework>net10.0</TargetFramework>
+                    <TargetFramework>net11.0</TargetFramework>
                     <OutputType>Exe</OutputType>
                     <RestorePackagesPath>$(MSBuildProjectDirectory)/../restored</RestorePackagesPath>
                     <NuGetAudit>false</NuGetAudit>
@@ -322,7 +322,7 @@ sealed class MSBuild連携テストプロジェクト : IDisposable
             $$"""
             <Project Sdk="Microsoft.NET.Sdk">
               <PropertyGroup>
-                <TargetFramework>net10.0</TargetFramework>
+                <TargetFramework>net11.0</TargetFramework>
                 <Nullable>enable</Nullable>
                 <RootNamespace>{{SecurityElement.Escape(rootNamespace)}}</RootNamespace>
                 <WarningsAsErrors>{{SecurityElement.Escape(warningsAsErrors)}}</WarningsAsErrors>
@@ -415,7 +415,7 @@ sealed class MSBuild連携テストプロジェクト : IDisposable
             <Project Sdk="Microsoft.NET.Sdk">
               <Import Project="{{SecurityElement.Escape(Path.ChangeExtension(TargetsPath, ".props"))}}" />
               <PropertyGroup>
-                <TargetFramework>net10.0</TargetFramework>
+                <TargetFramework>net11.0</TargetFramework>
                 <DesignTimeBuild>{{designTimeBuild}}</DesignTimeBuild>
                 <DocumentAsDataTaskAssembly>{{SecurityElement.Escape(typeof(GenerateDocumentAsData).Assembly.Location)}}</DocumentAsDataTaskAssembly>
               </PropertyGroup>

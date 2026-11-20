@@ -66,7 +66,7 @@ public sealed class MSBuild連携タスクのテスト
         tested.Output.Should().Contain("after:更新後/大阪府");
         File.ReadAllText(Path.Combine(project.DirectoryPath, "App", "obj", "App.csproj.nuget.g.targets"))
             .Should().NotContain("Marimo.DocumentAsData.Build");
-        Directory.GetFiles(Path.Combine(project.DirectoryPath, "App", "bin", "Debug", "net10.0"))
+        Directory.GetFiles(Path.Combine(project.DirectoryPath, "App", "bin", "Debug", "net11.0"))
             .Select(Path.GetFileName).Should().Contain("DocumentAsData.dll")
             .And.NotContain(["DocumentAsData.CodeGeneration.dll", "DocumentAsData.Build.dll"]);
     }
@@ -88,7 +88,7 @@ public sealed class MSBuild連携タスクのテスト
 
         tested.ExitCode.Should().Be(0, tested.Output);
         tested.Output.Should().Contain("after:更新後/大阪府");
-        Directory.GetFiles(Path.Combine(project.DirectoryPath, "App", "bin", "Debug", "net10.0"))
+        Directory.GetFiles(Path.Combine(project.DirectoryPath, "App", "bin", "Debug", "net11.0"))
             .Select(Path.GetFileName).Should().Contain("DocumentAsData.dll")
             .And.NotContain(["DocumentAsData.CodeGeneration.dll", "DocumentAsData.Build.dll"]);
     }

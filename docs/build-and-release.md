@@ -2,7 +2,7 @@
 
 ## 今回の到達点
 
-リリース対象は `0.4.0`。この手引きのスクリプトは検証と梱包までを行い、公開操作は別に実施する。
+この手引きのスクリプトは現在のソースの検証と梱包を行い、公開操作は別に実施する。
 リリース候補の成果物を作ったことと、公開済みであることは区別する。
 利用者向けの変更点は[更新履歴](../CHANGELOG.md)、移行手順は[READMEの0.4.0への更新](../README.md#040への更新)にまとめる。
 
@@ -46,12 +46,12 @@ Coreだけでも通常のライブラリとして使える。0.4.0では生成�
 生成APIをアプリから直接呼ぶ場合は、CodeGenerationパッケージを明示的に参照する。
 統合パッケージ自身にはDLLやビルド設定を重複して梱包せず、Buildの`buildTransitive`設定を利用する。
 
-Buildパッケージでは、タスク本体と実行に必要なDLLを `tools/net10.0/` へ梱包する。
+Buildパッケージでは、タスク本体と実行に必要なDLLを `tools/net11.0/` へ梱包する。
 利用アプリにMSBuildのタスク型まで公開する必要はないので、タスクDLLを `lib/` に入れない。
 `IncludeBuildOutput=false` はこのための設定であり、「DLLを一切配布しない」という意味ではない。
 
-`lib/net10.0/_._` は空ファイルである。
-参照DLLを追加せずに.NET 10の依存関係と対象フレームワークを対応付け、NuGetのNU5128を解消する。
+`lib/net11.0/_._` は空ファイルである。
+参照DLLを追加せずに.NET 11の依存関係と対象フレームワークを対応付け、NuGetのNU5128を解消する。
 警告を抑制する設定ではない。[NuGet公式説明](https://learn.microsoft.com/en-us/nuget/reference/errors-and-warnings/nu5128)
 
 ## 初版のビルド連携をTDDで確認したこと
@@ -80,10 +80,10 @@ Visual Studio版MSBuildとパッケージ実行の確認など、最初から通
 
 ## 開発環境と検証範囲
 
-* .NET SDKは `global.json` の `10.0.302`（同一feature bandのパッチ更新を許可）。
+* .NET SDKは `global.json` の `11.0.100`（同一feature bandのパッチ更新を許可）。`net11.0` の既定である C# 15 を使用する。Visual Studioで開発する場合は .NET 11 に対応する Visual Studio 2026 18.12 以降を使用する。
 * テスト・検証スクリプトはPowerShell 7を使用する。ライブラリ利用者にPowerShellは不要。
 * Windowsでの全テストと、実際のパッケージ復元・ビルド・実行を検証する。
-* Visual Studio版MSBuildは `18.8.2`（RuntimeType=Full）、dotnet版は `18.6.11`（Core）でパッケージ利用を確認した。
+* .NET 10向けの `0.4.0` では、Visual Studio版MSBuild `18.8.2`（RuntimeType=Full）とdotnet版 `18.6.11`（Core）でパッケージ利用を確認した。
 * Visual Studioの画面操作、古いMSBuild、他OS、Blazor WASM上での実行そのものは、この検証の保証範囲ではない。
 * WordやLibreOfficeのインストールは自動テストに不要。
 
@@ -141,7 +141,7 @@ GitHub Actions上での実行結果はpush後に別途確認する。ローカ�
 </configuration>
 ```
 
-そのうえで、読み書きだけならCore、自動生成も使うならBuildをVersion="0.4.0"で参照する。
+そのうえで利用プロジェクトを `net11.0` に設定し、読み書きだけならCore、自動生成も使うならBuildを、梱包したバージョンで参照する。
 初めて試す場合は[READMEのコード生成入門](../README.md#はじめて使うコード生成でdocxを読み書きする)を参照する。
 設定の詳細は[機能リファレンスのMSBuild連携](reference.md#msbuildで自動生成する)を参照する。
 同じバージョンを再作成した際は、古いパッケージキャッシュを再利用していないことに注意する。

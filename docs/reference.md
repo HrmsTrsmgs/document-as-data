@@ -20,9 +20,9 @@ DocumentAsDataは、DOCXの本文に名前を付けた項目とプログラム�
 
 ### パッケージ
 
-現在は `.NET 10`（`net10.0`）が対象で、名前空間は `Marimo.DocumentAsData` です。
+現在のソースは .NET 11（`net11.0`）が対象で、名前空間は `Marimo.DocumentAsData` です。
 ライブラリの実行にWordのインストールは必要ありません。
-この文書は `0.4.0` のソースを対象とします。NuGetからの導入手順は[README](../README.md)を参照してください。
+パッケージ参照の例では、.NET 10 向けの公開済み `0.4.0` を使用します。NuGetからの導入手順は[README](../README.md)を参照してください。
 
 | パッケージ | 用途 |
 | --- | --- |
@@ -129,7 +129,7 @@ SDK形式の利用側プロジェクトで `Marimo.DocumentAsData` を参照し�
 生成コードの名前空間にはプロジェクトの `RootNamespace` を使用します。
 パッケージ内のprops/targetsは自動で読み込まれ、DLLパスの指定や手動importは不要です。
 `DocumentAsData` をビルドアクションの候補へ登録する設定も含みます。
-コード生成には.NET 10 SDKを使用します。Visual Studio版MSBuildの確認範囲は[手引き](build-and-release.md)に記載しています。
+この例のコード生成には .NET 10 SDKを使用します。現在のソースから作成したパッケージには .NET 11 SDKが必要です。Visual Studio版MSBuildの確認範囲は[手引き](build-and-release.md)に記載しています。
 
 #### 名前変換辞書
 
