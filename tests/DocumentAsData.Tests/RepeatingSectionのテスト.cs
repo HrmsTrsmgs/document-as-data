@@ -257,7 +257,7 @@ public class RepeatingSectionのテスト
     }
 
     [Fact]
-    public void Replaceで増やした明細は既存の識別IDが整数の上下限でも保存後にIDが重複しません()
+    public void Replaceで複数の明細を増やすと識別IDは整数の上限から折り返します()
     {
         var inputPath = Path.Combine("TestData", "識別IDが整数の上下限を含む2件の明細.docx");
 
@@ -271,12 +271,21 @@ public class RepeatingSectionのテスト
         {
             document.RepeatingSections["Items"].Items.Should().HaveCount(2);
             document.RepeatingSections["Items"].Replace<ItemData>(
-                [new() { ItemName = "商品C" }, new() { ItemName = "商品D" }, new() { ItemName = "商品E" }]);
+            [
+                new() { ItemName = "商品C" },
+                new() { ItemName = "商品D" },
+                new() { ItemName = "商品E" },
+                new() { ItemName = "商品F" }
+            ]);
             document.SaveAs(output);
         }
 
-        ReadSavedItemNames(output).Should().Equal("商品C", "商品D", "商品E");
-        ReadValidatedContentControlIds(output).Should().OnlyHaveUniqueItems();
+        ReadSavedItemNames(output).Should().Equal("商品C", "商品D", "商品E", "商品F");
+
+        // 複製のたびに元の明細の直後へ挿入するので、後から採番した複製が文書順では先になります。
+        ReadValidatedContentControlIds(output).Should().Equal(
+            int.MaxValue, int.MinValue, 143, 146, 144,
+            int.MinValue + 3, int.MinValue + 4, int.MinValue + 1, int.MinValue + 2);
     }
 
     [Fact]

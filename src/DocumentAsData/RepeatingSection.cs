@@ -81,9 +81,9 @@ public class RepeatingSection : ContentControl
             item.Remove();
         }
 
-        foreach (var _ in Enumerable.Range(0, count).Skip(existingItems.Count))
+        if (count > existingItems.Count)
         {
-            existingItems[^1].InsertCopyAfter();
+            existingItems[^1].InsertCopiesAfter(count - existingItems.Count);
         }
     }
 }

@@ -64,28 +64,38 @@ public class RepeatingSectionItem : ContentControl
         objectMapper.Replace(data);
 
     /// <summary>
-    /// w15:repeatingSectionItemを持つ明細の枠を内容ごと複製し、同じ親の直後へ挿入します。
+    /// w15:repeatingSectionItemを持つ明細の枠を内容ごと複製し、各複製を元の明細の直後へ挿入します。
     /// 内側の入力項目だけでなく明細の枠も残すことで、追加分を明細として取得できます。
-    /// w:idはTagとは別のContent Control識別子なので、複製分には文書内で未使用の番号を割り当てます。
+    /// 本文にあるContent Controlの識別子（w:id）を一度読み、複製間で採番状態を共有します。
     /// </summary>
-    internal void InsertCopyAfter()
+    /// <param name="count">複製する明細の件数。</param>
+    internal void InsertCopiesAfter(int count)
     {
-        var copy = Element.CloneNode(true);
-        var usedIds = Document.Elements.OfType<Wordprocessing.SdtId>().Select(it => it.Val?.Value).ToHashSet();
-        var lastId = usedIds.Max() ?? 0;
+        HashSet<int?>? usedIds = null;
+        var lastId = 0;
 
-        foreach (var id in copy.Descendants<Wordprocessing.SdtId>())
+        for (var i = 0; i < count; i++)
         {
-            do
+            var copy = Element.CloneNode(true);
+            if (usedIds is null)
             {
-                lastId = lastId == int.MaxValue ? int.MinValue : lastId + 1;
+                usedIds = Document.Elements.OfType<Wordprocessing.SdtId>().Select(it => it.Val?.Value).ToHashSet();
+                lastId = usedIds.Max() ?? 0;
             }
-            while (!usedIds.Add(lastId));
 
-            id.Val = lastId;
+            foreach (var id in copy.Descendants<Wordprocessing.SdtId>())
+            {
+                do
+                {
+                    lastId = lastId == int.MaxValue ? int.MinValue : lastId + 1;
+                }
+                while (!usedIds.Add(lastId));
+
+                id.Val = lastId;
+            }
+
+            Element.InsertAfterSelf(copy);
         }
-
-        Element.InsertAfterSelf(copy);
     }
 
     /// <summary>
