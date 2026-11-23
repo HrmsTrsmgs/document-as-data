@@ -42,8 +42,9 @@ static class GeneratedNameDiagnostics
     {
         var propertySourceNameScopes = PropertySourceNameScopes(document);
         var documentName = Path.GetFileNameWithoutExtension(filePath);
-        string[] reservedNames =
+        HashSet<string> reservedNames =
         [
+            with(StringComparer.Ordinal),
             .. ReservedMemberNames,
             options.DocumentTypeName(documentName).IdentifierComparisonKey,
             options.DataTypeName(documentName).IdentifierComparisonKey
@@ -131,7 +132,7 @@ static class GeneratedNameDiagnostics
     /// <returns>スコープ順・元名順の診断。</returns>
     static IEnumerable<CodeGenerationDiagnostic> PropertyNameDiagnostics(
         IEnumerable<IEnumerable<string>> scopes,
-        string[] reservedNames,
+        HashSet<string> reservedNames,
         CodeGenerationOptions options) =>
         from scope in scopes.Select((names, index) => (names, index))
         from sourceNames in
