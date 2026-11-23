@@ -134,7 +134,7 @@ static class GeneratedNameDiagnostics
         IEnumerable<IEnumerable<string>> scopes,
         HashSet<string> reservedNames,
         CodeGenerationOptions options) =>
-        from scope in scopes.Select((names, index) => (names, index))
+            from scope in scopes.Select((names, index) => (names, index))
         from sourceNames in
             (from sourceName in scope.names
              group sourceName by options.GeneratedName(sourceName).IdentifierComparisonKey)
