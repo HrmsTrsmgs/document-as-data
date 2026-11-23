@@ -4,10 +4,13 @@
 
 ## 停止位置と次の作業
 
-* C# 15／.NET 11への更新は `3971af4` でコミット済み。P01は削除済み明細のMERGEFIELD回収テストでRedを確認し、キャッシュの変更後にGreen、レビュー待ち。作業開始前からあるGeneratedNameDiagnostics.csのインデント変更は別件で未コミット。SDK 11.0.100は `artifacts/dotnet-sdk-11.0.100/` に展開済み。
+* C# 15／.NET 11への更新は `3971af4`、削除済み明細のMERGEFIELDをキャッシュが保持する問題の修正は `06a3edb` でコミット済み。作業開始前からあるGeneratedNameDiagnostics.csのインデント変更は別件で未コミット。SDK 11.0.100は `artifacts/dotnet-sdk-11.0.100/` に展開済み。
+* `06a3edb` 上で複合MERGEFIELDの読み取り状態を `readonly union` に変更。開始前、命令の収集中、表示結果の収集中を区別する。次は差分のレビュー。生成名の予約名を比較規則付きの集合で表す候補は保留。
 
 ## 最新の検証
 
+* 一時プログラムで複合MERGEFIELDの変更前後を比較。分割命令、区切りの重複、開始・終了要素の不足、空の結果を含む12ケースで名前・値・列挙順が一致した。検証コードは無視対象の `artifacts/mergefield-state-comparison/` にある。通常の複合フィールド1件につき状態オブジェクトを2個生成する。影響の計測は未実施。
+* `readonly union` 反映後の非増分ビルドと全テストは成功。639件成功、失敗0、既存Skip 5。変更ファイルのformatと差分検査は成功。全体formatには既存の空白11件とSkipの診断5件が残る。
 * P01は対象テストが回収されず失敗することを確認し、修正後に成功。全テスト639件成功・失敗0・既存Skip 5。非増分ビルドは警告・エラー0。formatは別件の空白11件とSkip 5件で終了。工程担当は委任ツールが利用できず統括が兼任した。
 * SDK 11.0.100で全6プロジェクトの `net11.0` と `LangVersion=15.0` を確認。Releaseの非増分ビルドは警告・エラー0、全テストは638件成功・失敗0・既存Skip 5。formatは既存のxUnit1004 5件とGeneratedNameDiagnostics.csの空白11件で終了。Visual Studio 2026 18.12以降のMSBuildは未検証。
 * P01追加調査はSDK 10.0.401、Release構成。明細を2件に増やして2件目のMERGEFIELDを取得し、1件に戻してローカル参照を解放後、Documentを保持したまま強制GCを実施。削除済みMERGEFIELDのWeakReferenceは生存していた。正常な共有を検証する既存テストは各コレクションにある。

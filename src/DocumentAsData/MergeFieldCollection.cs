@@ -262,24 +262,41 @@ public partial class MergeFieldCollection : IEnumerable<MergeField>
         sealed class ComplexFieldReader
         {
             /// <summary>
-            /// 現在読み取っている複合フィールドの開始要素です。読み取り中でない場合はnullです。
+            /// 複合フィールドの読み取り段階を保持します。defaultはフィールドの開始前を表します。
             /// </summary>
-            Wordprocessing.FieldChar? fieldStart;
+            ReadState state;
 
             /// <summary>
-            /// 開始要素から結果開始要素までに分割して保存された命令文字列を保持します。
+            /// 読み取り中の段階と、その段階で必要なデータを対応付けます。
             /// </summary>
-            string? fieldInstruction;
+            readonly union ReadState(CollectingInstruction, CollectingResult);
 
             /// <summary>
-            /// 命令部分と表示結果を区切る要素です。表示結果の開始前はnullです。
+            /// 開始要素と、表示結果の手前までに分割して保存された命令を保持します。
             /// </summary>
-            Wordprocessing.FieldChar? resultSeparator;
+            /// <param name="fieldStart">複合フィールドの開始要素。</param>
+            sealed class CollectingInstruction(Wordprocessing.FieldChar fieldStart)
+            {
+                public Wordprocessing.FieldChar FieldStart { get; } = fieldStart;
+
+                /// <summary>
+                /// 命令の断片を読み進めるたびに、同じ状態の中で文字列を連結します。
+                /// </summary>
+                public string? Instruction { get; set; }
+            }
 
             /// <summary>
-            /// 結果開始後に現れた表示用の文字列、タブ、改行要素を保持します。結果開始前はnullです。
+            /// 命令と区切り要素を保持し、終了まで表示結果の要素を収集します。
             /// </summary>
-            List<OpenXmlElement>? resultElements;
+            /// <param name="FieldStart">複合フィールドの開始要素。</param>
+            /// <param name="Instruction">分割された要素を連結したフィールド命令。</param>
+            /// <param name="ResultSeparator">命令部分と表示結果を区切る要素。</param>
+            /// <param name="ResultElements">区切り要素以降の文字列、タブ、改行要素。</param>
+            sealed record CollectingResult(
+                Wordprocessing.FieldChar FieldStart,
+                string? Instruction,
+                Wordprocessing.FieldChar ResultSeparator,
+                List<OpenXmlElement> ResultElements);
 
             /// <summary>
             /// OOXML要素を一つ読み進め、複合フィールドの終了要素に到達したときだけ完成した結果を返します。
@@ -291,20 +308,18 @@ public partial class MergeFieldCollection : IEnumerable<MergeField>
                 OpenXmlElement element,
                 [NotNullWhen(true)] out ComplexField? field)
             {
-                if (element is Wordprocessing.FieldChar fieldCharacter)
+                switch (element)
                 {
-                    return TryReadFieldCharacter(fieldCharacter, out field);
-                }
-
-                if (element is Wordprocessing.FieldCode instructionElement)
-                {
-                    AppendInstruction(instructionElement);
-                }
-                else if (element is Wordprocessing.Text or
-                    Wordprocessing.TabChar or
-                    Wordprocessing.Break)
-                {
-                    AppendResultElement(element);
+                    case Wordprocessing.FieldChar fieldCharacter:
+                        return TryReadFieldCharacter(fieldCharacter, out field);
+                    case Wordprocessing.FieldCode instructionElement
+                        when state is CollectingInstruction instruction:
+                        instruction.Instruction += instructionElement.Text;
+                        break;
+                    case Wordprocessing.Text or Wordprocessing.TabChar or Wordprocessing.Break
+                        when state is CollectingResult result:
+                        result.ResultElements.Add(element);
+                        break;
                 }
 
                 field = null;
@@ -325,7 +340,8 @@ public partial class MergeFieldCollection : IEnumerable<MergeField>
 
                 if (fieldCharacterType == Wordprocessing.FieldCharValues.Begin)
                 {
-                    StartField(fieldCharacter);
+                    // 未完了のフィールドがあっても新しい開始要素から読み直します。
+                    state = new CollectingInstruction(fieldCharacter);
                 }
                 else if (fieldCharacterType == Wordprocessing.FieldCharValues.Separate)
                 {
@@ -341,49 +357,29 @@ public partial class MergeFieldCollection : IEnumerable<MergeField>
             }
 
             /// <summary>
-            /// 複合フィールドの結果開始前に現れた命令文字列を順番に連結します。
-            /// </summary>
-            /// <param name="instructionElement">命令文字列を保持するOOXML要素。</param>
-            void AppendInstruction(Wordprocessing.FieldCode instructionElement)
-            {
-                if (fieldStart is not null && resultElements is null)
-                {
-                    fieldInstruction += instructionElement.Text;
-                }
-            }
-
-            /// <summary>
-            /// 複合フィールドの結果開始後に現れた表示用要素を保持します。
-            /// </summary>
-            /// <param name="element">表示値を構成する文字列、タブ、改行要素。</param>
-            void AppendResultElement(OpenXmlElement element) =>
-                resultElements?.Add(element);
-
-            /// <summary>
-            /// それまでの未完了状態を破棄し、新しい複合フィールドの読み取りを開始します。
-            /// </summary>
-            /// <param name="startElement">複合フィールドの開始要素。</param>
-            void StartField(Wordprocessing.FieldChar startElement)
-            {
-                Reset();
-                fieldStart = startElement;
-            }
-
-            /// <summary>
-            /// 複合フィールドの命令部分を終了し、表示結果の収集を開始します。
+            /// 複合フィールドの表示結果の収集を開始します。区切り要素が重複した場合は最後の区切りから読み直します。
             /// </summary>
             /// <param name="separatorElement">命令部分と表示結果を区切る要素。</param>
             void StartResult(Wordprocessing.FieldChar separatorElement)
             {
-                if (fieldStart is not null)
+                state = state switch
                 {
-                    resultSeparator = separatorElement;
-                    resultElements = [];
-                }
+                    CollectingInstruction instruction => new CollectingResult(
+                        instruction.FieldStart,
+                        instruction.Instruction,
+                        separatorElement,
+                        []),
+                    CollectingResult result => result with
+                    {
+                        ResultSeparator = separatorElement,
+                        ResultElements = []
+                    },
+                    null => default(ReadState)
+                };
             }
 
             /// <summary>
-            /// 開始要素と表示結果が揃っている場合だけ複合フィールドを完成させ、読み取り状態を初期化します。
+            /// 表示結果の収集に進んでいる場合だけ複合フィールドを完成させ、読み取り状態を初期化します。
             /// </summary>
             /// <param name="fieldEnd">複合フィールドの終了要素。</param>
             /// <param name="field">完成した複合フィールド。必要な要素が不足している場合はnull。</param>
@@ -392,32 +388,16 @@ public partial class MergeFieldCollection : IEnumerable<MergeField>
                 Wordprocessing.FieldChar fieldEnd,
                 [NotNullWhen(true)] out ComplexField? field)
             {
-                if (fieldStart is null || resultSeparator is null || resultElements is null)
-                {
-                    field = null;
-                    Reset();
-                    return false;
-                }
-
-                field = new ComplexField(
-                    fieldStart,
-                    fieldInstruction,
-                    resultSeparator,
-                    fieldEnd,
-                    resultElements);
-                Reset();
-                return true;
-            }
-
-            /// <summary>
-            /// 次の複合フィールドを読み取れるよう、保持中のOOXML要素と文字列を破棄します。
-            /// </summary>
-            void Reset()
-            {
-                fieldStart = null;
-                fieldInstruction = null;
-                resultSeparator = null;
-                resultElements = null;
+                field = state is CollectingResult result
+                    ? new(
+                        result.FieldStart,
+                        result.Instruction,
+                        result.ResultSeparator,
+                        fieldEnd,
+                        result.ResultElements)
+                    : null;
+                state = default;
+                return field is not null;
             }
         }
 
