@@ -119,6 +119,17 @@ sealed class DocumentObjectMapper
     /// </exception>
     internal void Replace<T>(T data)
     {
+        // 対応属性で名前が決まらない最初のプロパティを処理するときに、今回の名前解決用の索引を作ります。
+        ILookup<string, string>? namesByIdentifier = null;
+
+        string ResolveReplacementItemName(string propertyName)
+        {
+            namesByIdentifier ??= GetItemNames()
+                .ToLookup(it => it.ToCSharpIdentifier(), StringComparer.Ordinal);
+
+            return namesByIdentifier[propertyName].SingleOrDefault() ?? propertyName;
+        }
+
         var mappings = (
             from property in typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance)
             let attribute = property.GetCustomAttribute<DocumentItemNameAttribute>()
@@ -126,7 +137,7 @@ sealed class DocumentObjectMapper
             select new
             {
                 Property = property,
-                ItemName = attribute?.Name ?? ResolveItemName(property.Name),
+                ItemName = attribute?.Name ?? ResolveReplacementItemName(property.Name),
                 IsExplicitlyMapped = attribute is not null
             }
         ).ToArray();
@@ -157,28 +168,27 @@ sealed class DocumentObjectMapper
     }
 
     /// <summary>
-    /// 属性で名前を指定していないプロパティに対応する、元の文書項目名を取得します。
-    /// 文字列Content Control、CheckBox、日付選択のTagとMERGEFIELD名をまとめてC#識別子へ変換して照合します。
-    /// 該当しなければプロパティ名を使います。
+    /// 読み込み時は、プロパティのsetterで文書が変わり得るため、文書項目名をプロパティごとに取得します。
     /// </summary>
-    /// <param name="propertyName">読み書きするプロパティ名。</param>
+    /// <param name="propertyName">読み込み先のプロパティ名。</param>
     /// <returns>対応するTagまたはMERGEFIELD名、該当しなければ元のプロパティ名。</returns>
-    string ResolveItemName(string propertyName)
-    {
-        IEnumerable<string> names =
-        [
-            .. contentControls.Select(it => it.Tag),
-            .. mergeFields.Select(it => it.Name),
-            .. checkBoxes.Select(it => it.Tag),
-            .. datePickers.Select(it => it.Tag)
-        ];
-
-        return (
-            from name in names
+    string ResolveItemName(string propertyName) =>
+        (
+            from name in GetItemNames()
             where name.ToCSharpIdentifier() == propertyName
             select name
         ).SingleOrDefault() ?? propertyName;
-    }
+
+    /// <summary>
+    /// 識別子に変換する前に、対象のTagとMERGEFIELD名をすべて読み出します。
+    /// </summary>
+    IEnumerable<string> GetItemNames() =>
+    [
+        .. contentControls.Select(it => it.Tag),
+        .. mergeFields.Select(it => it.Name),
+        .. checkBoxes.Select(it => it.Tag),
+        .. datePickers.Select(it => it.Tag)
+    ];
 
     /// <summary>
     /// オブジェクトとの対応付けで扱えるプロパティ型かを取得します。
