@@ -55,9 +55,15 @@ public class RepeatingSection : ContentControl
     /// </summary>
     /// <typeparam name="T">明細1件分のデータを保持する型。</typeparam>
     /// <param name="items">1件以上の、置き換え後の明細データ。</param>
+    /// <exception cref="ArgumentException"><paramref name="items"/>に明細データが含まれていません。</exception>
     public void Replace<T>(IEnumerable<T> items)
     {
         var dataItems = items.ToArray();
+
+        if (dataItems.IsEmpty())
+        {
+            throw new ArgumentException("明細データを1件以上指定してください。", nameof(items));
+        }
 
         ResizeItems(dataItems.Length);
 

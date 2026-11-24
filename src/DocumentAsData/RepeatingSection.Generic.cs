@@ -24,6 +24,7 @@ public class RepeatingSection<T>(RepeatingSection source) : RepeatingSection(sou
     /// 明細の内容と件数を、指定した型付きデータで置き換えます。
     /// </summary>
     /// <param name="items">1件以上の、置き換え後の明細データ。</param>
+    /// <exception cref="ArgumentException"><paramref name="items"/>に明細データが含まれていません。</exception>
     public void Replace(IEnumerable<T> items) =>
         base.Replace(items);
 }

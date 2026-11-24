@@ -311,12 +311,17 @@ public class RepeatingSectionのテスト
         action.Should().Throw<NotSupportedException>();
     }
 
-    [Fact(Skip = "仕様未決定：0件にしたときの文書表現、再追加の複製元、保存後の再利用方法を決めてからテスト本体を書きます。")]
-    public void Replaceへ0件を渡す場合の契約を決める必要があります()
+    [Fact]
+    public void Replaceは0件の入力を拒否して既存の明細を保持します()
     {
-        // 空の明細を残すのか、別にテンプレートを保持するのか、0件を拒否するのか未決定です。
-        // 期待結果を捏造しないため、この1件は仕様テストではなく検討メモとして数えます。
-        throw new NotImplementedException();
+        using var document = Document.Open(
+            Path.Combine("TestData", "繰り返しセクションに2件の明細.docx"));
+        var tested = document.RepeatingSections["Items"];
+
+        var action = () => tested.Replace<ItemData>([]);
+
+        action.Should().ThrowExactly<ArgumentException>().Which.ParamName.Should().Be("items");
+        tested.Read<ItemData>().Select(it => it.ItemName).Should().Equal("商品A", "商品B");
     }
 
     /// <summary>
