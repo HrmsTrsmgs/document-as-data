@@ -331,7 +331,7 @@ public class Documentのテスト
         }
     }
 
-    [Fact(Skip = "RS-07：対応する繰り返しセクションもOOXML検証の対象にする予定です。検証対象の契約をレビューして解除します。")]
+    [Fact]
     public void Openは検証する場合正常な繰り返しセクションを開けます()
     {
         // w15:repeatingSectionは明細全体、w15:repeatingSectionItemは各明細を表す
@@ -342,7 +342,7 @@ public class Documentのテスト
         document.RepeatingSections["Items"].Items.Should().HaveCount(2);
     }
 
-    [Fact(Skip = "RS-07：対応する繰り返しセクションもOOXML検証の対象にする予定です。検証対象の契約をレビューして解除します。")]
+    [Fact]
     public void Stream版Openは検証する場合正常な繰り返しセクションを開けます()
     {
         using var stream = TestDocument.CreateMemoryStream(
@@ -352,7 +352,7 @@ public class Documentのテスト
         document.RepeatingSections["Items"].Items.Should().HaveCount(2);
     }
 
-    [Fact(Skip = "RS-07：繰り返しセクション固有の不正なOOXMLの拒否を追加予定です。検証対象の契約をレビューして解除します。")]
+    [Fact]
     public void Openは検証する場合セクション名の値が欠落した不正な繰り返しセクションを拒否します()
     {
         // 意図的な不正データです。w15:sectionTitleはWordに表示するセクション名を持ち、
@@ -367,7 +367,7 @@ public class Documentのテスト
         action.Should().Throw<InvalidDataException>();
     }
 
-    [Fact(Skip = "RS-07：繰り返しセクション固有の不正なOOXMLの拒否を追加予定です。検証対象の契約をレビューして解除します。")]
+    [Fact]
     public void Stream版Openは検証する場合セクション名の値が欠落した不正な繰り返しセクションを拒否します()
     {
         // 同じ不正文書をStreamからも検証します。詳細なOOXMLは直前のファイル版テストを参照します。
