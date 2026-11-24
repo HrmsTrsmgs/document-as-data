@@ -7,7 +7,7 @@
 * C# 15／.NET 11への更新は `3971af4`、削除済み明細のMERGEFIELDをキャッシュが保持する問題の修正は `06a3edb` でコミット済み。SDK 11.0.100は `artifacts/dotnet-sdk-11.0.100/` に展開済み。
 * 複合MERGEFIELDの読み取り状態を `readonly union` で表す変更は `d97df6a` でコミット済み。生成コードの予約名を `HashSet<string>` にし、比較規則に `StringComparer.Ordinal` を指定する変更も了承済み。C# 15で採用したリファクタリングは以上。残る性能候補と確認条件は[レビュー記録](refactoring-review.md#計測してから判断する候補)を参照。
 * P02の明細追加時のID走査は `c519ccb` でコミット済み。`DocumentObjectMapper.Replace<T>` の属性指定を持たない項目名の解決に、呼び出し内で共有する索引を追加し、レビュー完了。
-* RS-07は `623ca24` でコミット済み。[検証方針と互換性確認](repeating-sections-plan.md#rs-07openのooxml検証バージョンとの整合)を参照。明細0件を引数エラーにする判断を受け、`Replace` は既存明細を変更する前に `ArgumentException` を投げるようにした。レビュー済み。Skipは0件になった。次は残る書式診断を解消し、リリース準備スクリプトで検証する。
+* RS-07は `623ca24` でコミット済み。[検証方針と互換性確認](repeating-sections-plan.md#rs-07openのooxml検証バージョンとの整合)を参照。明細0件を引数エラーにする判断を受け、`Replace` は既存明細を変更する前に `ArgumentException` を投げるようにした。レビュー済み。Skipは0件になった。リリースは保留。先にSpreadsheetAsDataとの足並みを確認する。残る書式診断は下記を参照。
 
 ## 最新の検証
 
