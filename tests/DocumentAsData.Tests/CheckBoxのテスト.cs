@@ -184,7 +184,7 @@ public class CheckBoxのテスト
 
             using var saved = WordprocessingDocument.Open(outputPath, false);
             // 状態のw14:checkedと表示文字のw:tは別なので、保存後の文字も確認します。
-            saved.MainDocumentPart!.Document!
+            saved.RequiredDocument
                 .Descendants<Wordprocessing.Text>()
                 .Single().Text.Should().Be("☒");
         }
@@ -232,7 +232,7 @@ public class CheckBoxのテスト
             // Wordのチェック状態はw14:checked、表示文字はw:tに別々に保持されます。
             // この文書のw14:checkedStateに指定されたU+2612をw:tへ反映し、
             // Wordで開いたときにもチェック済みとして表示されることを確認します。
-            saved.MainDocumentPart!.Document!
+            saved.RequiredDocument
                 .Descendants<Wordprocessing.Text>()
                 .Single().Text.Should().Be("☒");
         }

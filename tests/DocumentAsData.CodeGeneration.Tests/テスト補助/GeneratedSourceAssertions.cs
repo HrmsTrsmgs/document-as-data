@@ -107,7 +107,7 @@ static class GeneratedSourceAssertions
             (
                 from method in self.Members.OfType<MethodDeclarationSyntax>()
                 where method.Identifier.ValueText == methodName
-                where method.ParameterList.Parameters.Count == 0
+                where method.ParameterList.Parameters.IsEmpty()
                 select method
             ).Single();
 

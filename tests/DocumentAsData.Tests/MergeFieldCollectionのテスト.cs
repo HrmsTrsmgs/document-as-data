@@ -1,5 +1,4 @@
 ﻿using FluentAssertions;
-using Marimo.DocumentAsData.Test.TestDocuments;
 
 namespace Marimo.DocumentAsData.Test;
 
@@ -25,19 +24,11 @@ public class MergeFieldCollectionのテスト
     [Fact]
     public void MergeFieldsは文書内のMERGEFIELDを列挙します()
     {
-        var filePath = TestDocument.CreateTemporaryCopy(TestFilePath);
-        try
-        {
-            using var document = Document.Open(filePath);
+        using var document = Document.Open(TestFilePath);
 
-            document.MergeFields
-                .Select(it => it.Name)
-                .Should().Equal("CustomerName", "Address");
-        }
-        finally
-        {
-            File.Delete(filePath);
-        }
+        document.MergeFields
+            .Select(it => it.Name)
+            .Should().Equal("CustomerName", "Address");
     }
 
     [Fact]
@@ -53,166 +44,99 @@ public class MergeFieldCollectionのテスト
     [Fact]
     public void MergeFieldsは名前からMERGEFIELDを取得します()
     {
-        var filePath = TestDocument.CreateTemporaryCopy(TestFilePath);
-        try
-        {
-            using var document = Document.Open(filePath);
+        using var document = Document.Open(TestFilePath);
 
-            document.MergeFields["CustomerName"].Name.Should().Be("CustomerName");
-        }
-        finally
-        {
-            File.Delete(filePath);
-        }
+        document.MergeFields["CustomerName"].Name.Should().Be("CustomerName");
     }
 
     [Fact]
     public void MergeFieldsは列挙と名前検索で同じMERGEFIELDを返します()
     {
-        var filePath = TestDocument.CreateTemporaryCopy(TestFilePath);
-        try
-        {
-            using var document = Document.Open(filePath);
-            var enumerated = (
-                from field in document.MergeFields
-                where field.Name == "CustomerName"
-                select field
-            ).Single();
+        using var document = Document.Open(TestFilePath);
+        var enumerated = (
+            from field in document.MergeFields
+            where field.Name == "CustomerName"
+            select field
+        ).Single();
 
-            document.MergeFields["CustomerName"].Should().BeSameAs(enumerated);
-        }
-        finally
-        {
-            File.Delete(filePath);
-        }
+        document.MergeFields["CustomerName"].Should().BeSameAs(enumerated);
     }
 
     [Fact]
     public void MergeFieldsは存在しない名前を指定した場合に失敗します()
     {
-        var filePath = TestDocument.CreateTemporaryCopy(TestFilePath);
-        try
-        {
-            using var document = Document.Open(filePath);
+        using var document = Document.Open(TestFilePath);
 
-            var action = () => _ = document.MergeFields["not_found"];
+        var action = () => _ = document.MergeFields["not_found"];
 
-            action.Should().Throw<KeyNotFoundException>();
-        }
-        finally
-        {
-            File.Delete(filePath);
-        }
+        action.Should().Throw<KeyNotFoundException>();
     }
 
     [Fact]
     public void MergeFieldsは同名のMERGEFIELDが複数存在する場合に失敗します()
     {
-        var filePath = TestDocument.CreateTemporaryCopy(DuplicateMergeFieldsPath);
-        try
-        {
-            using var document = Document.Open(filePath);
+        using var document = Document.Open(DuplicateMergeFieldsPath);
 
-            var action = () => _ = document.MergeFields["CustomerName"];
+        var action = () => _ = document.MergeFields["CustomerName"];
 
-            action.Should().Throw<InvalidOperationException>();
-        }
-        finally
-        {
-            File.Delete(filePath);
-        }
+        action.Should().Throw<InvalidOperationException>();
     }
 
     [Fact]
     public void MergeFieldsはMERGEFORMATスイッチをMERGEFIELD名に含めません()
     {
-        var filePath =
-            TestDocument.CreateTemporaryCopy(StandardComplexMergeFieldPath);
-        try
-        {
-            using var document = Document.Open(filePath);
+        using var document = Document.Open(StandardComplexMergeFieldPath);
 
-            // 複合フィールドは、w:fldCharのbegin、w:instrText、separate、
-            // 表示結果、endという要素列で保存されます。この固定データの
-            // w:instrTextは次のWord標準の命令を保持しています。
-            //   MERGEFIELD "CustomerName" \* MERGEFORMAT
-            // MERGEFORMATは差し込み後も結果の書式を維持するスイッチであり、
-            // 引用符で囲まれたCustomerNameだけがMERGEFIELD名です。
-            document.MergeFields.Single().Name.Should().Be("CustomerName");
-        }
-        finally
-        {
-            File.Delete(filePath);
-        }
+        // 複合フィールドは、w:fldCharのbegin、w:instrText、separate、
+        // 表示結果、endという要素列で保存されます。この固定データの
+        // w:instrTextは次のWord標準の命令を保持しています。
+        //   MERGEFIELD "CustomerName" \* MERGEFORMAT
+        // MERGEFORMATは差し込み後も結果の書式を維持するスイッチであり、
+        // 引用符で囲まれたCustomerNameだけがMERGEFIELD名です。
+        document.MergeFields.Single().Name.Should().Be("CustomerName");
     }
 
     [Fact]
     public void MergeFieldsは引用符なしの名前にMERGEFORMATスイッチを含めません()
     {
-        var filePath =
-            TestDocument.CreateTemporaryCopy(UnquotedComplexMergeFieldPath);
-        try
-        {
-            using var document = Document.Open(filePath);
+        using var document = Document.Open(UnquotedComplexMergeFieldPath);
 
-            // MERGEFIELD名は引用符なしでも保存できます。固定データの
-            // w:instrTextは次の命令を保持しています。
-            //   MERGEFIELD CustomerName \* MERGEFORMAT
-            // 空白に続くMERGEFORMATはフィールドの書式維持スイッチであり、
-            // CustomerNameだけがMERGEFIELD名です。
-            document.MergeFields.Single().Name.Should().Be("CustomerName");
-        }
-        finally
-        {
-            File.Delete(filePath);
-        }
+        // MERGEFIELD名は引用符なしでも保存できます。固定データの
+        // w:instrTextは次の命令を保持しています。
+        //   MERGEFIELD CustomerName \* MERGEFORMAT
+        // 空白に続くMERGEFORMATはフィールドの書式維持スイッチであり、
+        // CustomerNameだけがMERGEFIELD名です。
+        document.MergeFields.Single().Name.Should().Be("CustomerName");
     }
 
     [Fact]
     public void MergeFieldsは複数の複合MERGEFIELDを文書内の順序で列挙します()
     {
-        var filePath =
-            TestDocument.CreateTemporaryCopy(MultipleComplexMergeFieldsPath);
-        try
-        {
-            using var document = Document.Open(filePath);
+        using var document = Document.Open(MultipleComplexMergeFieldsPath);
 
-            // 固定データには、begin、instrText、separate、表示結果、endの
-            // 要素列で構成された複合MERGEFIELDが二つ続けて保存されています。
-            // 一つ目のw:instrTextはCustomerName、二つ目はAddressです。
-            // 一要素で完結するw:fldSimpleとは異なり、最初のendまで読み終えた
-            // 状態を次のbeginへ持ち越さず、二つを文書順に列挙することを
-            // 確認します。
-            document.MergeFields
-                .Select(it => it.Name)
-                .Should().Equal("CustomerName", "Address");
-        }
-        finally
-        {
-            File.Delete(filePath);
-        }
+        // 固定データには、begin、instrText、separate、表示結果、endの
+        // 要素列で構成された複合MERGEFIELDが二つ続けて保存されています。
+        // 一つ目のw:instrTextはCustomerName、二つ目はAddressです。
+        // 一要素で完結するw:fldSimpleとは異なり、最初のendまで読み終えた
+        // 状態を次のbeginへ持ち越さず、二つを文書順に列挙することを
+        // 確認します。
+        document.MergeFields
+            .Select(it => it.Name)
+            .Should().Equal("CustomerName", "Address");
     }
 
     [Fact]
     public void MergeFieldsはDATEフィールドを列挙しません()
     {
-        var filePath = TestDocument.CreateTemporaryCopy(DateFieldPath);
-        try
-        {
-            using var document = Document.Open(filePath);
+        using var document = Document.Open(DateFieldPath);
 
-            // 固定データには、MERGEFIELDと同じくbegin、instrText、
-            // separate、表示結果、endの要素列で構成されたDATEフィールドが
-            // 保存されています。w:instrTextの命令は次の内容です。
-            //   DATE \@ "yyyy/MM/dd"
-            // 複合フィールドという内部構造が同じでも、命令の種類がDATEなら
-            // 名前付きデータ項目であるMERGEFIELDとして扱わないことを
-            // 確認します。
-            document.MergeFields.Should().BeEmpty();
-        }
-        finally
-        {
-            File.Delete(filePath);
-        }
+        // 固定データには、MERGEFIELDと同じくbegin、instrText、
+        // separate、表示結果、endの要素列で構成されたDATEフィールドが
+        // 保存されています。w:instrTextの命令は次の内容です。
+        //   DATE \@ "yyyy/MM/dd"
+        // 複合フィールドという内部構造が同じでも、命令の種類がDATEなら
+        // 名前付きデータ項目であるMERGEFIELDとして扱わないことを
+        // 確認します。
+        document.MergeFields.Should().BeEmpty();
     }
 }

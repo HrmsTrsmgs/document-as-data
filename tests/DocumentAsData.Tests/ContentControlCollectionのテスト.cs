@@ -1,5 +1,4 @@
 ﻿using FluentAssertions;
-using Marimo.DocumentAsData.Test.TestDocuments;
 
 namespace Marimo.DocumentAsData.Test;
 
@@ -47,260 +46,142 @@ public class ContentControlCollectionのテスト
     [Fact]
     public void ContentControlsは文書内のContentControlを列挙します()
     {
-        var filePath = TestDocument.CreateTemporaryCopy(ContentControlsPath);
-        try
-        {
-            using var document = Document.Open(filePath);
+        using var document = Document.Open(ContentControlsPath);
 
-            document.ContentControls.Should().HaveCount(2);
-        }
-        finally
-        {
-            File.Delete(filePath);
-        }
+        document.ContentControls.Should().HaveCount(2);
     }
 
     [Fact]
     public void ContentControlsは文書内の順序で列挙します()
     {
-        var filePath = TestDocument.CreateTemporaryCopy(ContentControlsPath);
-        try
-        {
-            using var document = Document.Open(filePath);
+        using var document = Document.Open(ContentControlsPath);
 
-            document.ContentControls
-                .Select(it => it.Tag)
-                .Should().Equal("CustomerName", "Address");
-        }
-        finally
-        {
-            File.Delete(filePath);
-        }
+        document.ContentControls
+            .Select(it => it.Tag)
+            .Should().Equal("CustomerName", "Address");
     }
 
     [Fact]
     public void ContentControlsはTagからContentControlを取得します()
     {
-        var filePath = TestDocument.CreateTemporaryCopy(ContentControlPath);
-        try
-        {
-            using var document = Document.Open(filePath);
+        using var document = Document.Open(ContentControlPath);
 
-            document.ContentControls["CustomerName"].Tag.Should().Be("CustomerName");
-        }
-        finally
-        {
-            File.Delete(filePath);
-        }
+        document.ContentControls["CustomerName"].Tag.Should().Be("CustomerName");
     }
 
     [Fact]
     public void ContentControlsは列挙とTag検索で同じContentControlを返します()
     {
-        var filePath = TestDocument.CreateTemporaryCopy(ContentControlPath);
-        try
-        {
-            using var document = Document.Open(filePath);
-            var enumerated = document.ContentControls.Single();
+        using var document = Document.Open(ContentControlPath);
+        var enumerated = document.ContentControls.Single();
 
-            document.ContentControls["CustomerName"].Should().BeSameAs(enumerated);
-        }
-        finally
-        {
-            File.Delete(filePath);
-        }
+        document.ContentControls["CustomerName"].Should().BeSameAs(enumerated);
     }
 
     [Fact]
     public void ContentControlsは存在しないTagを指定した場合に失敗します()
     {
-        var filePath = TestDocument.CreateTemporaryCopy(EmptyDocumentPath);
-        try
-        {
-            using var document = Document.Open(filePath);
+        using var document = Document.Open(EmptyDocumentPath);
 
-            var action = () => _ = document.ContentControls["not_found"];
+        var action = () => _ = document.ContentControls["not_found"];
 
-            action.Should().Throw<KeyNotFoundException>();
-        }
-        finally
-        {
-            File.Delete(filePath);
-        }
+        action.Should().Throw<KeyNotFoundException>();
     }
 
     [Fact]
     public void ContentControlsは同じTagのContentControlが複数存在する場合に失敗します()
     {
-        var filePath = TestDocument.CreateTemporaryCopy(DuplicateContentControlsPath);
-        try
-        {
-            using var document = Document.Open(filePath);
+        using var document = Document.Open(DuplicateContentControlsPath);
 
-            var action = () => _ = document.ContentControls["CustomerName"];
+        var action = () => _ = document.ContentControls["CustomerName"];
 
-            action.Should().Throw<InvalidOperationException>();
-        }
-        finally
-        {
-            File.Delete(filePath);
-        }
+        action.Should().Throw<InvalidOperationException>();
     }
 
     [Fact]
     public void ContentControlsはTagのないContentControlを列挙しません()
     {
-        var filePath = TestDocument.CreateTemporaryCopy(ContentControlsWithoutTagPath);
-        try
-        {
-            using var document = Document.Open(filePath);
+        using var document = Document.Open(ContentControlsWithoutTagPath);
 
-            document.ContentControls.Single().Tag.Should().Be("CustomerName");
-        }
-        finally
-        {
-            File.Delete(filePath);
-        }
+        document.ContentControls.Single().Tag.Should().Be("CustomerName");
     }
 
     [Fact]
     public void ContentControlsはネストしたContentControlをそれぞれ列挙します()
     {
-        var filePath = TestDocument.CreateTemporaryCopy(NestedContentControlsPath);
-        try
-        {
-            using var document = Document.Open(filePath);
+        using var document = Document.Open(NestedContentControlsPath);
 
-            document.ContentControls
-                .Select(it => it.Tag)
-                .Should().Equal("Outer", "Inner");
-        }
-        finally
-        {
-            File.Delete(filePath);
-        }
+        document.ContentControls
+            .Select(it => it.Tag)
+            .Should().Equal("Outer", "Inner");
     }
 
     [Fact]
     public void ContentControlsはチェックボックスを列挙しません()
     {
-        var filePath =
-            TestDocument.CreateTemporaryCopy(CheckBoxContentControlPath);
-        try
-        {
-            using var document = Document.Open(filePath, true);
+        using var document = Document.Open(CheckBoxContentControlPath, validate: true);
 
-            // Wordのチェックボックスは、表示記号のw:tとは別に
-            // w:sdtPr/w14:checkbox/w14:checkedへチェック状態を保持します。
-            // 文字列用のTextプロパティでは両者を同期できないため、通常のContentControlsには含めません。
-            document.ContentControls.Should().BeEmpty();
-        }
-        finally
-        {
-            File.Delete(filePath);
-        }
+        // Wordのチェックボックスは、表示記号のw:tとは別に
+        // w:sdtPr/w14:checkbox/w14:checkedへチェック状態を保持します。
+        // 文字列用のTextプロパティでは両者を同期できないため、通常のContentControlsには含めません。
+        document.ContentControls.Should().BeEmpty();
     }
 
     [Fact]
     public void ContentControlsは日付選択ContentControlを列挙しません()
     {
-        var filePath =
-            TestDocument.CreateTemporaryCopy(DateContentControlPath);
-        try
-        {
-            using var document = Document.Open(filePath, true);
+        using var document = Document.Open(DateContentControlPath, validate: true);
 
-            // Wordの日付選択は、w:sdtContent/w:tの表示文字列とは別に
-            // w:sdtPr/w:dateへ日付、表示形式、言語、暦を保持します。
-            // 文字列用のTextプロパティでは両者を同期できないため、通常のContentControlsには含めません。
-            document.ContentControls.Should().BeEmpty();
-        }
-        finally
-        {
-            File.Delete(filePath);
-        }
+        // Wordの日付選択は、w:sdtContent/w:tの表示文字列とは別に
+        // w:sdtPr/w:dateへ日付、表示形式、言語、暦を保持します。
+        // 文字列用のTextプロパティでは両者を同期できないため、通常のContentControlsには含めません。
+        document.ContentControls.Should().BeEmpty();
     }
 
     [Fact]
     public void ContentControlsは画像ContentControlを列挙しません()
     {
-        var filePath =
-            TestDocument.CreateTemporaryCopy(PictureContentControlPath);
-        try
-        {
-            using var document = Document.Open(filePath, true);
+        using var document = Document.Open(PictureContentControlPath, validate: true);
 
-            // Wordの画像Content Controlはw:sdtPr/w:pictureで種類を示し、
-            // w:sdtContent内のw:drawingと関連する画像Partへ画像を保持します。
-            // 文字列用のTextプロパティでは扱えないため、通常のContentControlsには含めません。
-            document.ContentControls.Should().BeEmpty();
-        }
-        finally
-        {
-            File.Delete(filePath);
-        }
+        // Wordの画像Content Controlはw:sdtPr/w:pictureで種類を示し、
+        // w:sdtContent内のw:drawingと関連する画像Partへ画像を保持します。
+        // 文字列用のTextプロパティでは扱えないため、通常のContentControlsには含めません。
+        document.ContentControls.Should().BeEmpty();
     }
 
     [Fact]
     public void ContentControlsはドロップダウンリストを列挙しません()
     {
-        var filePath =
-            TestDocument.CreateTemporaryCopy(DropDownListContentControlPath);
-        try
-        {
-            using var document = Document.Open(filePath, true);
+        using var document = Document.Open(DropDownListContentControlPath, validate: true);
 
-            // Wordのドロップダウンリストは、w:sdtContent/w:tの表示文字列とは別に
-            // w:sdtPr/w:dropDownListへ選択肢と最後に選択された値を保持します。
-            // 文字列用のTextプロパティでは両者を同期できないため、通常のContentControlsには含めません。
-            document.ContentControls.Should().BeEmpty();
-        }
-        finally
-        {
-            File.Delete(filePath);
-        }
+        // Wordのドロップダウンリストは、w:sdtContent/w:tの表示文字列とは別に
+        // w:sdtPr/w:dropDownListへ選択肢と最後に選択された値を保持します。
+        // 文字列用のTextプロパティでは両者を同期できないため、通常のContentControlsには含めません。
+        document.ContentControls.Should().BeEmpty();
     }
 
     [Fact]
     public void ContentControlsはコンボボックスを列挙しません()
     {
-        var filePath =
-            TestDocument.CreateTemporaryCopy(ComboBoxContentControlPath);
-        try
-        {
-            using var document = Document.Open(filePath, true);
+        using var document = Document.Open(ComboBoxContentControlPath, validate: true);
 
-            // Wordのコンボボックスは、w:sdtContent/w:tの表示文字列とは別に
-            // w:sdtPr/w:comboBoxへ選択肢と最後に選択された値を保持します。
-            // 文字列用のTextプロパティでは両者を同期できないため、通常のContentControlsには含めません。
-            document.ContentControls.Should().BeEmpty();
-        }
-        finally
-        {
-            File.Delete(filePath);
-        }
+        // Wordのコンボボックスは、w:sdtContent/w:tの表示文字列とは別に
+        // w:sdtPr/w:comboBoxへ選択肢と最後に選択された値を保持します。
+        // 文字列用のTextプロパティでは両者を同期できないため、通常のContentControlsには含めません。
+        document.ContentControls.Should().BeEmpty();
     }
 
     [Fact]
     public void ContentControlsは繰り返しセクションのコンテナを列挙しません()
     {
-        var filePath =
-            TestDocument.CreateTemporaryCopy(RepeatingSectionContentControlPath);
-        try
-        {
-            using var document = Document.Open(filePath, true);
+        using var document = Document.Open(RepeatingSectionContentControlPath, validate: true);
 
-            // w15:repeatingSectionは繰り返し全体、w15:repeatingSectionItemは
-            // 1件分の領域を束ねるContent Controlで、どちらも値ではありません。
-            // それらの内側にある通常の入力項目だけを列挙します。
-            document.ContentControls
-                .Select(it => it.Tag)
-                .Should().Equal("ItemName");
-        }
-        finally
-        {
-            File.Delete(filePath);
-        }
+        // w15:repeatingSectionは繰り返し全体、w15:repeatingSectionItemは
+        // 1件分の領域を束ねるContent Controlで、どちらも値ではありません。
+        // それらの内側にある通常の入力項目だけを列挙します。
+        document.ContentControls
+            .Select(it => it.Tag)
+            .Should().Equal("ItemName");
     }
 
     [Fact]
@@ -325,132 +206,72 @@ public class ContentControlCollectionのテスト
     [Fact]
     public void ContentControlsは数式を列挙しません()
     {
-        var filePath = TestDocument.CreateTemporaryCopy(EquationContentControlPath);
-        try
-        {
-            using var document = Document.Open(filePath, true);
+        using var document = Document.Open(EquationContentControlPath, validate: true);
 
-            // w:sdtPr/w:equationは数式Content Controlを示し、内容は
-            // w:tではなくOffice Mathのm:oMath/m:r/m:tとして保持されます。
-            document.ContentControls.Should().BeEmpty();
-        }
-        finally
-        {
-            File.Delete(filePath);
-        }
+        // w:sdtPr/w:equationは数式Content Controlを示し、内容は
+        // w:tではなくOffice Mathのm:oMath/m:r/m:tとして保持されます。
+        document.ContentControls.Should().BeEmpty();
     }
 
     [Fact]
     public void ContentControlsは引用を列挙しません()
     {
-        var filePath = TestDocument.CreateTemporaryCopy(CitationContentControlPath);
-        try
-        {
-            using var document = Document.Open(filePath, true);
+        using var document = Document.Open(CitationContentControlPath, validate: true);
 
-            // w:sdtPr/w:citationはWordが引用として管理するContent Controlを示します。
-            // 表示文字列のみを値とする通常項目には含めません。
-            document.ContentControls.Should().BeEmpty();
-        }
-        finally
-        {
-            File.Delete(filePath);
-        }
+        // w:sdtPr/w:citationはWordが引用として管理するContent Controlを示します。
+        // 表示文字列のみを値とする通常項目には含めません。
+        document.ContentControls.Should().BeEmpty();
     }
 
     [Fact]
     public void ContentControlsはグループのコンテナを列挙しません()
     {
-        var filePath = TestDocument.CreateTemporaryCopy(GroupContentControlPath);
-        try
-        {
-            using var document = Document.Open(filePath, true);
+        using var document = Document.Open(GroupContentControlPath, validate: true);
 
-            // w:sdtPr/w:groupは複数の内容を束ねるコンテナで、値ではありません。
-            // 内側にある通常の入力項目だけを列挙します。
-            document.ContentControls
-                .Select(it => it.Tag)
-                .Should().Equal("CustomerName");
-        }
-        finally
-        {
-            File.Delete(filePath);
-        }
+        // w:sdtPr/w:groupは複数の内容を束ねるコンテナで、値ではありません。
+        // 内側にある通常の入力項目だけを列挙します。
+        document.ContentControls
+            .Select(it => it.Tag)
+            .Should().Equal("CustomerName");
     }
 
     [Fact]
     public void ContentControlsは文献目録を列挙しません()
     {
-        var filePath =
-            TestDocument.CreateTemporaryCopy(BibliographyContentControlPath);
-        try
-        {
-            using var document = Document.Open(filePath, true);
+        using var document = Document.Open(BibliographyContentControlPath, validate: true);
 
-            // w:sdtPr/w:bibliographyはWordが文献目録として管理する領域を示します。
-            // 表示文字列のみを値とする通常項目には含めません。
-            document.ContentControls.Should().BeEmpty();
-        }
-        finally
-        {
-            File.Delete(filePath);
-        }
+        // w:sdtPr/w:bibliographyはWordが文献目録として管理する領域を示します。
+        // 表示文字列のみを値とする通常項目には含めません。
+        document.ContentControls.Should().BeEmpty();
     }
 
     [Fact]
     public void ContentControlsは組み込み文書パーツを列挙しません()
     {
-        var filePath =
-            TestDocument.CreateTemporaryCopy(DocumentPartContentControlPath);
-        try
-        {
-            using var document = Document.Open(filePath, true);
+        using var document = Document.Open(DocumentPartContentControlPath, validate: true);
 
-            // w:sdtPr/w:docPartObjは組み込み文書パーツを表し、
-            // w:docPartGalleryなどの文書パーツ用情報を保持します。
-            document.ContentControls.Should().BeEmpty();
-        }
-        finally
-        {
-            File.Delete(filePath);
-        }
+        // w:sdtPr/w:docPartObjは組み込み文書パーツを表し、
+        // w:docPartGalleryなどの文書パーツ用情報を保持します。
+        document.ContentControls.Should().BeEmpty();
     }
 
     [Fact]
     public void ContentControlsは文書パーツギャラリーを列挙しません()
     {
-        var filePath =
-            TestDocument.CreateTemporaryCopy(DocumentPartListContentControlPath);
-        try
-        {
-            using var document = Document.Open(filePath, true);
+        using var document = Document.Open(DocumentPartListContentControlPath, validate: true);
 
-            // w:sdtPr/w:docPartListは文書パーツの選択肢を表し、
-            // w:docPartGalleryなどの文書パーツ用情報を保持します。
-            document.ContentControls.Should().BeEmpty();
-        }
-        finally
-        {
-            File.Delete(filePath);
-        }
+        // w:sdtPr/w:docPartListは文書パーツの選択肢を表し、
+        // w:docPartGalleryなどの文書パーツ用情報を保持します。
+        document.ContentControls.Should().BeEmpty();
     }
 
     [Fact]
     public void ContentControlsはエンティティピッカーを列挙しません()
     {
-        var filePath =
-            TestDocument.CreateTemporaryCopy(EntityPickerContentControlPath);
-        try
-        {
-            using var document = Document.Open(filePath, true);
+        using var document = Document.Open(EntityPickerContentControlPath, validate: true);
 
-            // w:sdtPr/w14:entityPickerはエンティティ選択用のContent Controlを示します。
-            // 選択状態を表示文字列だけで表せないため、通常項目には含めません。
-            document.ContentControls.Should().BeEmpty();
-        }
-        finally
-        {
-            File.Delete(filePath);
-        }
+        // w:sdtPr/w14:entityPickerはエンティティ選択用のContent Controlを示します。
+        // 選択状態を表示文字列だけで表せないため、通常項目には含めません。
+        document.ContentControls.Should().BeEmpty();
     }
 }

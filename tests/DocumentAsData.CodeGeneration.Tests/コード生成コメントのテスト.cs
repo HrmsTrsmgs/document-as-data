@@ -34,16 +34,7 @@ public sealed class コード生成コメントのテスト
         bool isChecked = documentAccessor.Research;
         isChecked.Should().BeTrue();
 
-        (
-            from source in sources
-            from diagnostic in
-                CSharpSyntaxTree.ParseText(
-                    source,
-                    new CSharpParseOptions(documentationMode: DocumentationMode.Diagnose))
-                    .GetDiagnostics()
-            where diagnostic.Severity is DiagnosticSeverity.Warning or DiagnosticSeverity.Error
-            select diagnostic
-        ).Should().BeEmpty();
+        GetDiagnosticsWithDocumentationComments(sources).Should().BeEmpty();
 
         sources.TypeDeclaration("AmpersandCheckBoxDocument")
             .PropertyDeclaration("Research")
@@ -63,16 +54,7 @@ public sealed class コード生成コメントのテスト
             @"TestData\コード生成\R&D.docx",
             options => options.NameMappings["R&D"] = "Research");
 
-        (
-            from source in sources
-            from diagnostic in
-                CSharpSyntaxTree.ParseText(
-                    source,
-                    new CSharpParseOptions(documentationMode: DocumentationMode.Diagnose))
-                    .GetDiagnostics()
-            where diagnostic.Severity is DiagnosticSeverity.Warning or DiagnosticSeverity.Error
-            select diagnostic
-        ).Should().BeEmpty();
+        GetDiagnosticsWithDocumentationComments(sources).Should().BeEmpty();
 
         sources.TypeDeclaration("ResearchDocument")
             .SummaryText().Should().Be("Word文書「R&D」を型付きで表します。");
@@ -89,16 +71,7 @@ public sealed class コード生成コメントのテスト
             @"TestData\コード生成\LessThanTag.docx",
             options => options.NameMappings["A<B"] = "Comparison");
 
-        (
-            from source in sources
-            from diagnostic in
-                CSharpSyntaxTree.ParseText(
-                    source,
-                    new CSharpParseOptions(documentationMode: DocumentationMode.Diagnose))
-                    .GetDiagnostics()
-            where diagnostic.Severity is DiagnosticSeverity.Warning or DiagnosticSeverity.Error
-            select diagnostic
-        ).Should().BeEmpty();
+        GetDiagnosticsWithDocumentationComments(sources).Should().BeEmpty();
 
         sources.TypeDeclaration("LessThanTagDocument")
             .PropertyDeclaration("Comparison")
@@ -255,4 +228,17 @@ public sealed class コード生成コメントのテスト
             .Should().Be(
                 "DatePicker「DeliveryDate」の日時を取得または設定します。");
     }
+
+    /// <summary>
+    /// XMLドキュメントコメントの診断を有効にして、生成ソースの警告とエラーを取得します。
+    /// </summary>
+    static IEnumerable<Diagnostic> GetDiagnosticsWithDocumentationComments(IEnumerable<string> sources) =>
+        from source in sources
+        from diagnostic in
+            CSharpSyntaxTree.ParseText(
+                source,
+                new CSharpParseOptions(documentationMode: DocumentationMode.Diagnose))
+                .GetDiagnostics()
+        where diagnostic.Severity is DiagnosticSeverity.Warning or DiagnosticSeverity.Error
+        select diagnostic;
 }

@@ -202,7 +202,7 @@ public class MergeFieldのテスト
             // 処理するアプリケーションが更新すべきことを表します。
             // DocumentAsDataが結果を書き換えた後は、既に新しい結果なので
             // この印が解除されることを確認します。
-            var field = saved.MainDocumentPart!.Document!
+            var field = saved.RequiredDocument
                 .Descendants<Wordprocessing.SimpleField>()
                 .Single(it =>
                     it.Instruction?.Value?.Contains("CustomerName") == true);
@@ -231,7 +231,7 @@ public class MergeFieldのテスト
             using var saved = WordprocessingDocument.Open(outputPath, false);
             // w:fldLockはWordによるフィールド結果の再計算を禁止します。
             // w:dirtyの解除だけでは、明示的な更新で書き込んだ値が失われます。
-            var field = saved.MainDocumentPart!.Document!
+            var field = saved.RequiredDocument
                 .Descendants<Wordprocessing.SimpleField>()
                 .Single(it =>
                     it.Instruction?.Value?.Contains("CustomerName") == true);
@@ -298,7 +298,7 @@ public class MergeFieldのテスト
             // DocumentAsDataが結果を書き換えた後は、現在の表示結果をWordが
             // 古い結果として再更新しないよう、この印が解除されることを
             // 確認します。
-            var fieldStart = saved.MainDocumentPart!.Document!
+            var fieldStart = saved.RequiredDocument
                 .Descendants<Wordprocessing.FieldChar>()
                 .Single(it =>
                     it.FieldCharType?.Value ==
@@ -328,7 +328,7 @@ public class MergeFieldのテスト
             using var saved = WordprocessingDocument.Open(outputPath, false);
             // 複合形式では開始側のw:fldCharにw:fldLockを設定します。
             // Wordのフィールド更新で、保存した結果が項目名へ戻ることを防ぎます。
-            var fieldStart = saved.MainDocumentPart!.Document!
+            var fieldStart = saved.RequiredDocument
                 .Descendants<Wordprocessing.FieldChar>()
                 .Single(it =>
                     it.FieldCharType?.Value ==
@@ -505,7 +505,7 @@ public class MergeFieldのテスト
             // XMLでは、前後の空白をWordの表示内容として保持するために
             // xml:space="preserve"が必要です。DocumentAsDataで開き直して
             // 文字列を読めるだけでなく、Wordでも失われないことを確認します。
-            var text = saved.MainDocumentPart!.Document!
+            var text = saved.RequiredDocument
                 .Descendants<Wordprocessing.Text>()
                 .Single(it => it.Text == value);
             text.Space?.Value.Should().Be(
@@ -536,7 +536,7 @@ public class MergeFieldのテスト
             using var saved = WordprocessingDocument.Open(outputPath, false);
             // 複合MERGEFIELDでは結果用のw:tを新しく作るため、その要素にも
             // xml:space="preserve"が設定されることを直接確認します。
-            var text = saved.MainDocumentPart!.Document!
+            var text = saved.RequiredDocument
                 .Descendants<Wordprocessing.Text>()
                 .Single(it => it.Text == value);
             text.Space?.Value.Should().Be(
@@ -567,7 +567,7 @@ public class MergeFieldのテスト
             // Wordのタブと改行はw:t内の制御文字ではなく、それぞれ
             // w:tabとw:brで表します。Wordで同じ表示になる内部構造を
             // 保存できていることを直接確認します。
-            var field = saved.MainDocumentPart!.Document!
+            var field = saved.RequiredDocument
                 .Descendants<Wordprocessing.SimpleField>()
                 .Single(it =>
                     it.Instruction?.Value?.Contains("CustomerName") == true);
@@ -600,7 +600,7 @@ public class MergeFieldのテスト
             using var saved = WordprocessingDocument.Open(outputPath, false);
             // .NETの文字列ではLF単独も改行として使われますが、Word文書では
             // w:t内のLFではなくw:br要素として保存する必要があります。
-            var field = saved.MainDocumentPart!.Document!
+            var field = saved.RequiredDocument
                 .Descendants<Wordprocessing.SimpleField>()
                 .Single(it =>
                     it.Instruction?.Value?.Contains("CustomerName") == true);
@@ -635,11 +635,10 @@ public class MergeFieldのテスト
             using var saved = WordprocessingDocument.Open(outputPath, false);
             // 複合MERGEFIELDの結果領域でも、Wordが解釈できるw:tabと
             // w:brを保存することを直接確認します。
-            saved.MainDocumentPart!.Document!
-                .Descendants<Wordprocessing.TabChar>()
+            var savedDocument = saved.RequiredDocument;
+            savedDocument.Descendants<Wordprocessing.TabChar>()
                 .Should().ContainSingle();
-            saved.MainDocumentPart.Document
-                .Descendants<Wordprocessing.Break>()
+            savedDocument.Descendants<Wordprocessing.Break>()
                 .Should().ContainSingle();
         }
         finally
@@ -667,7 +666,7 @@ public class MergeFieldのテスト
             // 単純MERGEFIELDの表示結果も、書式などによって複数のw:t要素へ
             // 分かれることがあります。Wordの差し込み後と同様に、古い結果の
             // 断片を残さず、新しい値だけになることを直接確認します。
-            saved.MainDocumentPart!.Document!
+            saved.RequiredDocument
                 .Descendants<Wordprocessing.SimpleField>()
                 .Single()
                 .Descendants<Wordprocessing.Text>()
@@ -701,7 +700,7 @@ public class MergeFieldのテスト
             }
 
             using var saved = WordprocessingDocument.Open(outputPath, false);
-            saved.MainDocumentPart!.Document!
+            saved.RequiredDocument
                 .Descendants<Wordprocessing.Text>()
                 .Select(it => it.Text)
                 .Should().Equal("前の本文", "変更後", "後の本文");
@@ -741,7 +740,7 @@ public class MergeFieldのテスト
             reopened.MergeFields["CustomerName"].Text.Should().Be("変更後");
 
             using var saved = WordprocessingDocument.Open(outputPath, false);
-            saved.MainDocumentPart!.Document!
+            saved.RequiredDocument
                 .Descendants<Wordprocessing.Text>()
                 .Select(it => it.Text)
                 .Should().Equal("前の本文", "変更後", "後の本文");
@@ -771,7 +770,7 @@ public class MergeFieldのテスト
             // MERGEFIELDの表示結果は、書式などによって複数のw:t要素へ
             // 分かれることがあります。Wordの差し込みと同様に、設定後は
             // 古い結果を残さず、新しい値だけになることを直接確認します。
-            var fieldCharacters = saved.MainDocumentPart!.Document!
+            var fieldCharacters = saved.RequiredDocument
                 .Descendants<Wordprocessing.FieldChar>();
             var resultStart = fieldCharacters.Single(
                 it => it.FieldCharType?.Value ==

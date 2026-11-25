@@ -4,6 +4,7 @@ using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Validation;
 using FluentAssertions;
+using Marimo.DocumentAsData.Test.TestDocuments;
 using Marimo.DocumentAsData.Test.テスト補助;
 using Word2013 = DocumentFormat.OpenXml.Office2013.Word;
 using Wordprocessing = DocumentFormat.OpenXml.Wordprocessing;
@@ -216,7 +217,7 @@ public class RepeatingSectionのテスト
         document.SaveAs(output);
         output.Position = 0;
         using var saved = WordprocessingDocument.Open(output, false);
-        var body = saved.MainDocumentPart?.Document?.Body;
+        var body = saved.RequiredDocument.Body;
 
         body.Should().NotBeNull();
 
@@ -248,10 +249,7 @@ public class RepeatingSectionのテスト
 
         // w:idはWordがContent Control自体を識別するIDです。
         // 各明細で同じTagを使うことは許しますが、複製元のw:idまで使い回してはいけません。
-        var savedDocument = saved.MainDocumentPart?.Document;
-        savedDocument.Should().NotBeNull();
-
-        savedDocument.Descendants<Wordprocessing.SdtId>()
+        saved.RequiredDocument.Descendants<Wordprocessing.SdtId>()
             .Select(it => it.Val?.Value)
             .Should().OnlyHaveUniqueItems();
     }
@@ -360,9 +358,7 @@ public class RepeatingSectionのテスト
     static int?[] ReadValidatedContentControlIds(WordprocessingDocument package)
     {
         new OpenXmlValidator(FileFormatVersions.Office2013).Validate(package).Should().BeEmpty();
-        var document = package.MainDocumentPart?.Document;
-        document.Should().NotBeNull();
-        return [.. document.Descendants<Wordprocessing.SdtId>().Select(it => it.Val?.Value)];
+        return [.. package.RequiredDocument.Descendants<Wordprocessing.SdtId>().Select(it => it.Val?.Value)];
     }
 
     /// <summary>
