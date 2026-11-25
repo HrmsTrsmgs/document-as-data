@@ -79,7 +79,7 @@ public class RepeatingSectionItem : ContentControl
             var copy = Element.CloneNode(true);
             if (usedIds is null)
             {
-                usedIds = Document.Elements.OfType<Wordprocessing.SdtId>().Select(it => it.Val?.Value).ToHashSet();
+                usedIds = [.. Document.Elements.OfType<Wordprocessing.SdtId>().Select(it => it.Val?.Value)];
                 lastId = usedIds.Max() ?? 0;
             }
 
