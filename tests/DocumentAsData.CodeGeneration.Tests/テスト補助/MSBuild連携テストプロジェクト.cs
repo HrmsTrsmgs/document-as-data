@@ -589,7 +589,7 @@ sealed class MSBuild連携テストプロジェクト : IDisposable
         string relativePath)
     {
         var destinationPath = Path.Combine(DirectoryPath, relativePath);
-        Directory.CreateDirectory(Path.GetDirectoryName(destinationPath)!);
+        CreateParentDirectory(destinationPath);
         File.Copy(sourcePath, destinationPath);
         return destinationPath;
     }
@@ -604,10 +604,17 @@ sealed class MSBuild連携テストプロジェクト : IDisposable
         string filePath,
         string json)
     {
-        Directory.CreateDirectory(Path.GetDirectoryName(filePath)!);
+        CreateParentDirectory(filePath);
         File.WriteAllText(filePath, json);
         return filePath;
     }
+
+    /// <summary>
+    /// 一時プロジェクト内に文書や辞書の配置先を用意します。
+    /// </summary>
+    /// <param name="filePath">プロジェクト内のファイルの絶対パス。必ず親ディレクトリを持ちます。</param>
+    static void CreateParentDirectory(string filePath) =>
+        Directory.CreateDirectory(Path.GetDirectoryName(filePath)!);
 
     /// <summary>
     /// Word文書名に対応する識別子名変換辞書のファイル名を作ります。

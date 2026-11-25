@@ -333,7 +333,7 @@ public sealed class コード生成型構造のテスト
                 BindingFlags.DeclaredOnly)
             .SingleOrDefault(it =>
                 it.Name == "Read" &&
-                it.GetParameters().Length == 0);
+                it.GetParameters().IsEmpty());
 
         tested.Should().NotBeNull();
         tested.IsGenericMethod.Should().BeFalse();
@@ -355,7 +355,7 @@ public sealed class コード生成型構造のテスト
                 BindingFlags.DeclaredOnly)
             .SingleOrDefault(it =>
                 it.Name == "Read" &&
-                it.GetParameters().Length == 0);
+                it.GetParameters().IsEmpty());
 
         tested.Should().NotBeNull();
         tested.ReturnType.Should().Be(generatedAssembly.GeneratedType("RepeatingTemplateData"));

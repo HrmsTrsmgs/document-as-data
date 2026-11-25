@@ -224,9 +224,7 @@ public class TextContentControlのテスト
             using var saved = WordprocessingDocument.Open(outputPath, false);
             // 二つ目のw:pには文字列ではなくw:drawing（画像）があります。
             // 段落ごと消すと画像への参照も失われるため、保存された要素を確認します。
-            saved.MainDocumentPart.Should().NotBeNull();
-            saved.MainDocumentPart.Document.Should().NotBeNull();
-            saved.MainDocumentPart.Document.Descendants<Wordprocessing.Drawing>()
+            saved.RequiredDocument.Descendants<Wordprocessing.Drawing>()
                 .Should().ContainSingle();
             new DocumentFormat.OpenXml.Validation.OpenXmlValidator(
                 DocumentFormat.OpenXml.FileFormatVersions.Office2010)
@@ -514,7 +512,7 @@ public class TextContentControlのテスト
             // XMLでは、前後の空白をWordの表示内容として保持するために
             // xml:space="preserve"が必要です。DocumentAsDataで開き直して
             // 文字列を読めるだけでなく、Wordでも失われないことを確認します。
-            var text = saved.MainDocumentPart!.Document!
+            var text = saved.RequiredDocument
                 .Descendants<Wordprocessing.Text>()
                 .Single(it => it.Text == value);
             text.Space?.Value.Should().Be(
@@ -546,7 +544,7 @@ public class TextContentControlのテスト
             // Wordのタブと改行はw:t内の制御文字ではなく、それぞれ
             // w:tabとw:brで表します。Wordで同じ表示になる内部構造を
             // 保存できていることを直接確認します。
-            var contentControl = saved.MainDocumentPart!.Document!
+            var contentControl = saved.RequiredDocument
                 .Descendants<Wordprocessing.SdtElement>()
                 .Single();
             contentControl.Descendants<Wordprocessing.TabChar>()
@@ -578,7 +576,7 @@ public class TextContentControlのテスト
             using var saved = WordprocessingDocument.Open(outputPath, false);
             // .NETの文字列ではLF単独も改行として使われますが、Word文書では
             // w:t内のLFではなくw:br要素として保存する必要があります。
-            var contentControl = saved.MainDocumentPart!.Document!
+            var contentControl = saved.RequiredDocument
                 .Descendants<Wordprocessing.SdtElement>()
                 .Single();
             contentControl.Descendants<Wordprocessing.Break>()
@@ -613,7 +611,7 @@ public class TextContentControlのテスト
             // 分かれることがあります。保存後のOOXMLでは先頭のw:tだけに
             // 設定値を残し、2個目以降を空にすることを直接確認します。
             // Valueの再取得だけでは、w:tごとの保存位置を区別できないためです。
-            saved.MainDocumentPart!.Document!
+            saved.RequiredDocument
                 .Descendants<Wordprocessing.Text>()
                 .Select(it => it.Text)
                 .Should().Equal("変更後", "");
@@ -644,7 +642,7 @@ public class TextContentControlのテスト
             // 場合と同様に、値の設定後はw:showingPlcHdrを除去して、次に
             // Wordで開いたときも設定値が通常の入力内容として扱われることを
             // 直接確認します。
-            var contentControl = saved.MainDocumentPart!.Document!
+            var contentControl = saved.RequiredDocument
                 .Descendants<Wordprocessing.SdtElement>()
                 .Single();
             contentControl.Descendants<Wordprocessing.ShowingPlaceholder>()

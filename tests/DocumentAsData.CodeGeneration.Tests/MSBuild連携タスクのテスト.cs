@@ -137,7 +137,7 @@ public sealed class MSBuild連携タスクのテスト
             metadata.Elements().Single(it => it.Name.LocalName == "license").Value.Should().Be("MIT");
             metadata.Elements().Single(it => it.Name.LocalName == "authors").Value.Should().Be("HrmsTrsmgs");
             metadata.Elements().Single(it => it.Name.LocalName == "description").Value.Should().NotBeNullOrWhiteSpace();
-            metadata.Elements().Single(it => it.Name.LocalName == "repository").Attribute("url")?.Value
+            (metadata.Elements().Single(it => it.Name.LocalName == "repository").Attribute("url")?.Value)
                 .Should().Be("https://github.com/HrmsTrsmgs/document-as-data");
             metadata.Elements().Single(it => it.Name.LocalName == "readme").Value.Should().Be("README.md");
             package.GetEntry("README.md").Should().NotBeNull();

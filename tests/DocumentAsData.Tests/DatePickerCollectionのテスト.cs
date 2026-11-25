@@ -1,5 +1,4 @@
 ﻿using FluentAssertions;
-using Marimo.DocumentAsData.Test.TestDocuments;
 
 namespace Marimo.DocumentAsData.Test;
 
@@ -20,104 +19,53 @@ public class DatePickerCollectionのテスト
     [Fact]
     public void DatePickersは文書内の日付選択ContentControlを列挙します()
     {
-        var filePath =
-            TestDocument.CreateTemporaryCopy(DatePickerContentControlPath);
-        try
-        {
-            using var document = Document.Open(filePath, true);
+        using var document = Document.Open(DatePickerContentControlPath, validate: true);
 
-            document.DatePickers.Should().ContainSingle();
-        }
-        finally
-        {
-            File.Delete(filePath);
-        }
+        document.DatePickers.Should().ContainSingle();
     }
 
     [Fact]
     public void DatePickersはTagから日付選択ContentControlを取得します()
     {
-        var filePath =
-            TestDocument.CreateTemporaryCopy(DatePickerContentControlPath);
-        try
-        {
-            using var document = Document.Open(filePath, true);
+        using var document = Document.Open(DatePickerContentControlPath, validate: true);
 
-            document.DatePickers["DeliveryDate"].Tag.Should().Be("DeliveryDate");
-        }
-        finally
-        {
-            File.Delete(filePath);
-        }
+        document.DatePickers["DeliveryDate"].Tag.Should().Be("DeliveryDate");
     }
 
     [Fact]
     public void DatePickersは列挙とTag検索で同じ日付選択ContentControlを返します()
     {
-        var filePath =
-            TestDocument.CreateTemporaryCopy(DatePickerContentControlPath);
-        try
-        {
-            using var document = Document.Open(filePath, true);
-            var enumerated = document.DatePickers.Single();
+        using var document = Document.Open(DatePickerContentControlPath, validate: true);
+        var enumerated = document.DatePickers.Single();
 
-            document.DatePickers["DeliveryDate"].Should().BeSameAs(enumerated);
-        }
-        finally
-        {
-            File.Delete(filePath);
-        }
+        document.DatePickers["DeliveryDate"].Should().BeSameAs(enumerated);
     }
 
     [Fact]
     public void DatePickersは存在しないTagを指定した場合に失敗します()
     {
-        var filePath = TestDocument.CreateTemporaryCopy(EmptyDocumentPath);
-        try
-        {
-            using var document = Document.Open(filePath, true);
+        using var document = Document.Open(EmptyDocumentPath, validate: true);
 
-            var action = () => _ = document.DatePickers["not_found"];
+        var action = () => _ = document.DatePickers["not_found"];
 
-            action.Should().Throw<KeyNotFoundException>();
-        }
-        finally
-        {
-            File.Delete(filePath);
-        }
+        action.Should().Throw<KeyNotFoundException>();
     }
 
     [Fact]
     public void DatePickersは同じTagの日付選択ContentControlが複数存在する場合に失敗します()
     {
-        var filePath = TestDocument.CreateTemporaryCopy(DuplicateDatePickersPath);
-        try
-        {
-            using var document = Document.Open(filePath, true);
+        using var document = Document.Open(DuplicateDatePickersPath, validate: true);
 
-            var action = () => _ = document.DatePickers["DeliveryDate"];
+        var action = () => _ = document.DatePickers["DeliveryDate"];
 
-            action.Should().Throw<InvalidOperationException>();
-        }
-        finally
-        {
-            File.Delete(filePath);
-        }
+        action.Should().Throw<InvalidOperationException>();
     }
 
     [Fact]
     public void DatePickersはTagのない日付選択ContentControlを列挙しません()
     {
-        var filePath = TestDocument.CreateTemporaryCopy(DatePickersWithoutTagPath);
-        try
-        {
-            using var document = Document.Open(filePath, true);
+        using var document = Document.Open(DatePickersWithoutTagPath, validate: true);
 
-            document.DatePickers.Single().Tag.Should().Be("DeliveryDate");
-        }
-        finally
-        {
-            File.Delete(filePath);
-        }
+        document.DatePickers.Single().Tag.Should().Be("DeliveryDate");
     }
 }

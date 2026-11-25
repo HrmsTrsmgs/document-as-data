@@ -4,7 +4,7 @@ static partial class DocumentWrapperComponents
 {
     /// <summary>
     /// 型付き文書を開くときの必須項目検査を生成します。
-    /// 文書全体の検査と明細ごとの検査をまとめ、宣言の生成とは分離します。
+    /// 文書直下の検査と明細ごとの検査をまとめ、宣言の生成とは分離します。
     /// </summary>
     static class Validation
     {
@@ -108,7 +108,7 @@ static partial class DocumentWrapperComponents
             """;
 
         /// <summary>
-        /// 各明細の文字列Content Controlを、生成元の最初の明細と照合する検査を生成します。
+        /// 各明細に必要な項目を、生成元の最初の明細と照合する検査を生成します。
         /// </summary>
         /// <param name="section">必要な項目の見本を持つ生成元のセクション。</param>
         /// <returns>各明細に既存の必須項目検査を適用するC#コード。</returns>
@@ -156,7 +156,7 @@ static partial class DocumentWrapperComponents
             string[] requiredNames,
             string actualNamesExpression,
             string itemKind) =>
-            requiredNames.Length == 0
+            requiredNames.IsEmpty()
                 ? ""
                 : $$"""
                           {

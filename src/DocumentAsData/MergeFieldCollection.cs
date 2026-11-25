@@ -91,25 +91,12 @@ public partial class MergeFieldCollection : IEnumerable<MergeField>
         {
             var complexFieldReader = new ComplexFieldReader();
 
-            return
-                from element in elements
-                from mergeField in GetMergeFields(element, complexFieldReader)
-                select mergeField;
-        }
-
-        /// <summary>
-        /// 一つのOOXML要素から得られる0件または1件のMERGEFIELDを、LINQで結合できる列挙として返します。
-        /// </summary>
-        /// <param name="element">読み取るOOXML要素。</param>
-        /// <param name="complexFieldReader">複合フィールドの読み取り状態。</param>
-        /// <returns>認識できた場合だけMERGEFIELDを含む列挙。</returns>
-        IEnumerable<MergeField> GetMergeFields(
-            OpenXmlElement element,
-            ComplexFieldReader complexFieldReader)
-        {
-            if (TryGetMergeField(element, complexFieldReader, out var mergeField))
+            foreach (var element in elements)
             {
-                yield return mergeField;
+                if (TryGetMergeField(element, complexFieldReader, out var mergeField))
+                {
+                    yield return mergeField;
+                }
             }
         }
 
