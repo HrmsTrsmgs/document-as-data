@@ -1,8 +1,7 @@
 ﻿namespace Marimo.DocumentAsData.CodeGeneration;
 
 /// <summary>
-/// 通常項目のプロパティ生成と名前診断で、同じ所属範囲を選びます。
-/// 文書全体を調べる必須項目検査や汎用Read/Replaceには適用しません。
+/// プロパティ生成、名前診断、必須項目検査で、文書直下に属する項目を同じ条件で選びます。
 /// </summary>
 static class DocumentItemScopes
 {

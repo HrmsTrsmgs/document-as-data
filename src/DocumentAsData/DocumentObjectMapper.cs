@@ -137,14 +137,11 @@ sealed class DocumentObjectMapper
             select new
             {
                 Property = property,
-                ItemName = attribute?.Name ?? ResolveReplacementItemName(property.Name),
-                IsExplicitlyMapped = attribute is not null
+                ItemName = attribute?.Name ?? ResolveReplacementItemName(property.Name)
             }
         ).ToArray();
 
-        if (mappings.Any(it =>
-            it.IsExplicitlyMapped &&
-            it.Property.GetMethod?.IsPublic != true))
+        if (mappings.Any(it => it.Property.GetMethod?.IsPublic != true))
         {
             throw new DocumentMappingException();
         }
@@ -163,6 +160,7 @@ sealed class DocumentObjectMapper
         {
             ReplaceValue(
                 mapping.ItemName,
+                // boolとDateTimeOffsetは値型です。stringの実行時のnullも従来どおり書き込み先へ渡します。
                 mapping.Property.GetValue(data)!);
         }
     }

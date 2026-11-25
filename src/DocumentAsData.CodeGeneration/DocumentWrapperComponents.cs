@@ -17,33 +17,37 @@ static partial class DocumentWrapperComponents
     internal static string SourceFile(
         string filePath,
         CodeGenerationOptions options,
-        Document document) =>
-        $$"""
-        using System;
-        using System.IO;
-        using System.Linq;
-        using Marimo.DocumentAsData;
+        Document document)
+    {
+        var documentName = Path.GetFileNameWithoutExtension(filePath);
 
-        namespace {{options.Namespace}};
+        return
+            $$"""
+            using System;
+            using System.IO;
+            using System.Linq;
+            using Marimo.DocumentAsData;
 
-        {{DocumentDeclaration(filePath, options, document)}}
+            namespace {{options.Namespace}};
 
-        {{DataDeclaration(filePath, options, document)}}
-        """;
+            {{DocumentDeclaration(documentName, options, document)}}
+
+            {{DataDeclaration(documentName, options, document)}}
+            """;
+    }
 
     /// <summary>
     /// 型付き文書の宣言を生成します。ファイルの構成とは分け、Open・項目検証・データ入出力をまとめます。
     /// </summary>
-    /// <param name="filePath">生成元のWord文書のパス。</param>
+    /// <param name="documentName">拡張子を除いた生成元の文書名。</param>
     /// <param name="options">コード生成時に適用する設定。</param>
     /// <param name="document">コード生成元の文書。</param>
     /// <returns>型付き文書のC#コード。</returns>
-    internal static string DocumentDeclaration(
-        string filePath,
+    static string DocumentDeclaration(
+        string documentName,
         CodeGenerationOptions options,
         Document document)
     {
-        var documentName = Path.GetFileNameWithoutExtension(filePath);
         var typeName = options.DocumentTypeName(documentName);
         var dataTypeName = options.DataTypeName(documentName);
 
@@ -188,35 +192,30 @@ static partial class DocumentWrapperComponents
     /// <summary>
     /// Word文書全体のデータを表す型の宣言を生成します。
     /// </summary>
-    /// <param name="filePath">生成元のWord文書のパス。</param>
+    /// <param name="documentName">拡張子を除いた生成元の文書名。</param>
     /// <param name="options">コード生成時に適用する設定。</param>
     /// <param name="document">コード生成元の文書。</param>
     /// <returns>文書データ型のC#コード。</returns>
-    internal static string DataDeclaration(
-        string filePath,
+    static string DataDeclaration(
+        string documentName,
         CodeGenerationOptions options,
-        Document document)
-    {
-        var documentName = Path.GetFileNameWithoutExtension(filePath);
-
-        return
-            $$"""
-            /// <summary>
-            /// Word文書「{{documentName.EscapeAmpersands()}}」のデータを表します。
-            /// </summary>
-            public partial class {{options.DataTypeName(documentName)}}
-            {
-            {{DataPropertyDeclarations(
-                [
-                    .. TopLevel(document.MergeFields).Select(it => it.Name),
-                    .. TopLevel(document.ContentControls).Select(it => it.Tag)
-                ],
-                TopLevel(document.CheckBoxes),
-                TopLevel(document.DatePickers),
-                options)}}
-            }
-            """;
-    }
+        Document document) =>
+        $$"""
+        /// <summary>
+        /// Word文書「{{documentName.EscapeAmpersands()}}」のデータを表します。
+        /// </summary>
+        public partial class {{options.DataTypeName(documentName)}}
+        {
+        {{DataPropertyDeclarations(
+            [
+                .. TopLevel(document.MergeFields).Select(it => it.Name),
+                .. TopLevel(document.ContentControls).Select(it => it.Tag)
+            ],
+            TopLevel(document.CheckBoxes),
+            TopLevel(document.DatePickers),
+            options)}}
+        }
+        """;
 
     /// <summary>
     /// 文書全体と明細のデータ型に共通する、値プロパティの並びを生成します。
@@ -247,7 +246,7 @@ static partial class DocumentWrapperComponents
     /// <param name="itemName">プロパティとして公開する文書項目の名前。</param>
     /// <param name="options">コード生成時に適用する設定。</param>
     /// <returns>文字列項目プロパティのC#コード。</returns>
-    internal static string DataTextPropertyDeclaration(
+    static string DataTextPropertyDeclaration(
         string itemName,
         CodeGenerationOptions options)
     {
@@ -268,7 +267,7 @@ static partial class DocumentWrapperComponents
     /// <param name="checkBox">プロパティとして公開するCheckBox。</param>
     /// <param name="options">コード生成時に適用する設定。</param>
     /// <returns>CheckBoxプロパティのC#コード。</returns>
-    internal static string DataCheckBoxPropertyDeclaration(
+    static string DataCheckBoxPropertyDeclaration(
         CheckBox checkBox,
         CodeGenerationOptions options)
     {
@@ -289,7 +288,7 @@ static partial class DocumentWrapperComponents
     /// <param name="datePicker">プロパティとして公開するDatePicker。</param>
     /// <param name="options">コード生成時に適用する設定。</param>
     /// <returns>DatePickerプロパティのC#コード。</returns>
-    internal static string DataDatePickerPropertyDeclaration(
+    static string DataDatePickerPropertyDeclaration(
         DatePicker datePicker,
         CodeGenerationOptions options)
     {
@@ -322,7 +321,7 @@ static partial class DocumentWrapperComponents
     /// <param name="mergeField">プロパティとして公開するMERGEFIELD。</param>
     /// <param name="options">コード生成時に適用する設定。</param>
     /// <returns>MERGEFIELDプロパティのC#コード。</returns>
-    internal static string MergeFieldPropertyDeclaration(
+    static string MergeFieldPropertyDeclaration(
         MergeField mergeField,
         CodeGenerationOptions options) =>
         $$"""
@@ -350,7 +349,7 @@ static partial class DocumentWrapperComponents
     /// <param name="datePicker">プロパティとして公開するDatePicker。</param>
     /// <param name="options">コード生成時に適用する設定。</param>
     /// <returns>DatePickerプロパティのC#コード。</returns>
-    internal static string DatePickerPropertyDeclaration(
+    static string DatePickerPropertyDeclaration(
         DatePicker datePicker,
         CodeGenerationOptions options) =>
         $$"""
@@ -372,7 +371,7 @@ static partial class DocumentWrapperComponents
     /// <param name="checkBox">プロパティとして公開するCheckBox。</param>
     /// <param name="options">コード生成時に適用する設定。</param>
     /// <returns>CheckBoxプロパティのC#コード。</returns>
-    internal static string CheckBoxPropertyDeclaration(
+    static string CheckBoxPropertyDeclaration(
         CheckBox checkBox,
         CodeGenerationOptions options) =>
         $$"""
@@ -394,7 +393,7 @@ static partial class DocumentWrapperComponents
     /// <param name="contentControl">プロパティとして公開する文字列Content Control。</param>
     /// <param name="options">コード生成時に適用する設定。</param>
     /// <returns>文字列Content ControlプロパティのC#コード。</returns>
-    internal static string TextContentControlPropertyDeclaration(
+    static string TextContentControlPropertyDeclaration(
         TextContentControl contentControl,
         CodeGenerationOptions options) =>
         $$"""
@@ -435,13 +434,13 @@ static partial class DocumentWrapperComponents
     /// <summary>
     /// 複数のテンプレート部品を、生成ソース上の行単位で連結します。
     /// </summary>
-    internal static string ForEach(IEnumerable<string> generatedBlocks) =>
+    static string ForEach(IEnumerable<string> generatedBlocks) =>
         string.Join(Environment.NewLine, generatedBlocks);
 
     /// <summary>
     /// 生成コード内へ埋め込む文字列リテラルを作ります。
     /// </summary>
-    internal static string StringLiteral(string value) =>
+    static string StringLiteral(string value) =>
         "\"" + value.Replace("\\", "\\\\").Replace("\"", "\\\"").EscapeLineBreaks() + "\"";
 
     extension(string self)

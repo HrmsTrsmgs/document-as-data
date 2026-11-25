@@ -40,7 +40,13 @@ static class GeneratedNameDiagnostics
         Document document,
         CodeGenerationOptions options)
     {
-        var propertySourceNameScopes = PropertySourceNameScopes(document);
+        var documentProperties = DocumentPropertySourceNames(document);
+        (string Tag, string[] PropertyNames)[] sections =
+        [
+            .. from section in document.RepeatingSections
+               select (section.Tag, DetailPropertySourceNames(section.Items[0]))
+        ];
+
         var documentName = Path.GetFileNameWithoutExtension(filePath);
         HashSet<string> reservedNames =
         [
@@ -52,27 +58,31 @@ static class GeneratedNameDiagnostics
 
         return
         [
-            .. InvalidDocumentNameDiagnostics(filePath, options),
-            .. PropertyNameDiagnostics(propertySourceNameScopes, reservedNames, options),
-            .. from section in document.RepeatingSections
+            .. InvalidDocumentNameDiagnostics(documentName, options),
+            .. PropertyNameDiagnostics(documentProperties, reservedNames, options, reserveRead: true),
+            .. from section in sections
+               from diagnostic in
+                   PropertyNameDiagnostics(section.PropertyNames, reservedNames, options, reserveRead: false)
+               select diagnostic,
+            .. from section in sections
                let generatedTypeName = options.DataTypeName(section.Tag).IdentifierComparisonKey
-               from propertySection in document.RepeatingSections
+               from propertySection in sections
                where options.GeneratedName(propertySection.Tag).IdentifierComparisonKey == generatedTypeName
                select new CodeGenerationDiagnostic(
                    true,
                    generatedTypeName,
                    [section.Tag, propertySection.Tag]),
-            .. from section in document.RepeatingSections
+            .. from section in sections
                let generatedTypeName = options.DataTypeName(section.Tag).IdentifierComparisonKey
                from sourceNames in
-                   from sourceName in DetailPropertySourceNames(section)
+                   from sourceName in section.PropertyNames
                    group sourceName by options.GeneratedName(sourceName).IdentifierComparisonKey
                where sourceNames.Key == generatedTypeName
                select new CodeGenerationDiagnostic(
                    true,
                    generatedTypeName,
                    [.. sourceNames]),
-            .. from section in document.RepeatingSections
+            .. from section in sections
                group section.Tag by options.DataTypeName(section.Tag).IdentifierComparisonKey
                into sourceNames
                where sourceNames.Count() > 1
@@ -84,80 +94,74 @@ static class GeneratedNameDiagnostics
     }
 
     /// <summary>
-    /// 通常項目とセクション名を文書型へ、最初の明細の文字列Content Control、MERGEFIELD、CheckBox、DatePickerを各明細型へ分けます。
+    /// 文書型のプロパティとして生成する通常項目名とセクション名を宣言順に取得します。
     /// </summary>
-    /// <param name="document">生成元の文書。</param>
-    /// <returns>同じ生成先へ配置される元名の列。</returns>
-    static IEnumerable<string>[] PropertySourceNameScopes(Document document) =>
+    static string[] DocumentPropertySourceNames(Document document) =>
         [
-            [
-                .. from mergeField in TopLevel(document.MergeFields)
-                   select mergeField.Name,
-                .. from contentControl in TopLevel(document.ContentControls)
-                   select contentControl.Tag,
-                .. from checkBox in TopLevel(document.CheckBoxes)
-                   select checkBox.Tag,
-                .. from datePicker in TopLevel(document.DatePickers)
-                   select datePicker.Tag,
-                .. from section in document.RepeatingSections
-                   select section.Tag
-            ],
+            .. from mergeField in TopLevel(document.MergeFields)
+               select mergeField.Name,
+            .. from contentControl in TopLevel(document.ContentControls)
+               select contentControl.Tag,
+            .. from checkBox in TopLevel(document.CheckBoxes)
+               select checkBox.Tag,
+            .. from datePicker in TopLevel(document.DatePickers)
+               select datePicker.Tag,
             .. from section in document.RepeatingSections
-               select DetailPropertySourceNames(section)
+               select section.Tag
         ];
 
     /// <summary>
     /// 明細型の生成元となる最初の明細から、文字列Content Control、MERGEFIELD、CheckBox、DatePickerの順に元名を取り出します。
     /// </summary>
-    /// <param name="section">明細型の生成元となるセクション。</param>
+    /// <param name="templateItem">明細型の生成元となる先頭明細。</param>
     /// <returns>明細プロパティへ変換する元名の列。</returns>
-    static IEnumerable<string> DetailPropertySourceNames(RepeatingSection section) =>
+    static string[] DetailPropertySourceNames(RepeatingSectionItem templateItem) =>
         [
-            .. from contentControl in section.Items[0].ContentControls
+            .. from contentControl in templateItem.ContentControls
                select contentControl.Tag,
-            .. from mergeField in section.Items[0].MergeFields
+            .. from mergeField in templateItem.MergeFields
                select mergeField.Name,
-            .. from checkBox in section.Items[0].CheckBoxes
+            .. from checkBox in templateItem.CheckBoxes
                select checkBox.Tag,
-            .. from datePicker in section.Items[0].DatePickers
+            .. from datePicker in templateItem.DatePickers
                select datePicker.Tag
         ];
 
     /// <summary>
     /// 同じ生成先に属する元名だけをまとめ、重複・空名・予約名との衝突を診断します。
     /// </summary>
-    /// <param name="scopes">生成先ごとに分けた元名の列。</param>
+    /// <param name="propertyNames">同じ型へ生成するプロパティの元名。</param>
     /// <param name="reservedNames">既存メンバー名と生成型名。</param>
     /// <param name="options">識別子への変換設定。</param>
-    /// <returns>スコープ順・元名順の診断。</returns>
+    /// <param name="reserveRead">文書型ではReadを予約し、明細型ではプロパティ名として許します。</param>
+    /// <returns>元名の順に並ぶ診断。</returns>
     static IEnumerable<CodeGenerationDiagnostic> PropertyNameDiagnostics(
-        IEnumerable<IEnumerable<string>> scopes,
+        IEnumerable<string> propertyNames,
         HashSet<string> reservedNames,
-        CodeGenerationOptions options) =>
-            from scope in scopes.Select((names, index) => (names, index))
-            from sourceNames in
-                (from sourceName in scope.names
-                 group sourceName by options.GeneratedName(sourceName).IdentifierComparisonKey)
-            where sourceNames.Count() > 1
-                || sourceNames.Key.IsEmpty()
-                || reservedNames.Contains(sourceNames.Key)
-                    && (scope.index == 0 || sourceNames.Key != nameof(Document.Read))
-            select new CodeGenerationDiagnostic(
-                true,
-                sourceNames.Key,
-                [.. sourceNames]);
+        CodeGenerationOptions options,
+        bool reserveRead) =>
+        from sourceName in propertyNames
+        group sourceName by options.GeneratedName(sourceName).IdentifierComparisonKey
+        into sourceNames
+        where sourceNames.Count() > 1
+            || sourceNames.Key.IsEmpty()
+            || reservedNames.Contains(sourceNames.Key)
+                && (reserveRead || sourceNames.Key != nameof(Document.Read))
+        select new CodeGenerationDiagnostic(
+            true,
+            sourceNames.Key,
+            [.. sourceNames]);
 
     /// <summary>
     /// 生成Document型の名前を作れない文書ファイル名を診断します。
     /// </summary>
-    /// <param name="filePath">診断対象のWord文書のパス。</param>
+    /// <param name="sourceName">拡張子を除いた生成元の文書名。</param>
     /// <param name="options">コード生成時に適用する設定。</param>
     /// <returns>文書名が無効な場合は、その名前を示す診断。</returns>
     static IEnumerable<CodeGenerationDiagnostic> InvalidDocumentNameDiagnostics(
-        string filePath,
+        string sourceName,
         CodeGenerationOptions options)
     {
-        var sourceName = Path.GetFileNameWithoutExtension(filePath);
         var generatedName = options.GeneratedName(sourceName);
 
         if (!generatedName.IsEmpty())

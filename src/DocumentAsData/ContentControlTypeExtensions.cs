@@ -17,7 +17,7 @@ static class ContentControlTypeExtensions
         /// 型要素がない場合は、OOXMLの規定によりリッチテキストとして扱います。
         /// </summary>
         internal bool IsText =>
-            ValueKinds(self).All(it => it == ValueKind.Text);
+            !self.PropertyElements<OpenXmlElement>().Any(IsNonTextProperty);
 
         /// <summary>
         /// このContent Controlがチェックボックスかを取得します。
@@ -40,27 +40,11 @@ static class ContentControlTypeExtensions
     }
 
     /// <summary>
-    /// 指定したContent Controlに明示された値の種類を列挙します。
+    /// 文字列として扱えない種類を明示するプロパティかを判定します。
     /// </summary>
-    /// <param name="element">種類を取得するContent ControlのOOXML要素。</param>
-    /// <returns>明示されている値の種類。型要素がない場合は空の列挙。</returns>
-    static IEnumerable<ValueKind> ValueKinds(
-        Wordprocessing.SdtElement element) =>
-        from property in element.PropertyElements<OpenXmlElement>()
-        let kind = ValueKindOf(property)
-        where kind != ValueKind.Unspecified
-        select kind;
-
-    /// <summary>
-    /// Content Controlの種類を表すOOXML要素を、公開APIが扱う値の種類へ変換します。
-    /// Tagやロックなど、Content Controlの種類を表さない要素は未指定とします。
-    /// </summary>
-    /// <param name="element">分類するContent ControlのOOXML要素。</param>
-    /// <returns>要素が表す値の種類。</returns>
-    static ValueKind ValueKindOf(OpenXmlElement element) => element switch
-    {
-        Wordprocessing.SdtContentText or
-        Wordprocessing.SdtContentRichText => ValueKind.Text,
+    /// <param name="property">Content Controlのプロパティ要素。</param>
+    /// <returns>文字列以外の種類が明示されている場合は<c>true</c>。</returns>
+    static bool IsNonTextProperty(OpenXmlElement property) => property is
         Wordprocessing.SdtContentEquation or
         Wordprocessing.SdtContentPicture or
         Wordprocessing.SdtContentCitation or
@@ -74,28 +58,5 @@ static class ContentControlTypeExtensions
         Word2010.EntityPickerEmpty or
         Word2010.SdtContentCheckBox or
         Word2013.SdtRepeatedSection or
-        Word2013.SdtRepeatedSectionItem => ValueKind.NonText,
-        _ => ValueKind.Unspecified
-    };
-
-    /// <summary>
-    /// Content Controlが公開APIで扱える値の種類を表します。
-    /// </summary>
-    enum ValueKind
-    {
-        /// <summary>
-        /// Content Controlの値の種類を表さない要素です。
-        /// </summary>
-        Unspecified,
-
-        /// <summary>
-        /// 文字列として読み書きできる値です。
-        /// </summary>
-        Text,
-
-        /// <summary>
-        /// 種類固有の構造を持ち、文字列としては扱わない値です。
-        /// </summary>
-        NonText
-    }
+        Word2013.SdtRepeatedSectionItem;
 }

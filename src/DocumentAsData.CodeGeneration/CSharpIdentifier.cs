@@ -18,19 +18,18 @@ static class CSharpIdentifier
                 from character in self.StartsWith('@') ? self[1..] : self
                 where char.GetUnicodeCategory(character) != UnicodeCategory.Format
                 select character);
-    }
 
-    /// <summary>
-    /// 文書内で使用されている名前を、生成コードで使用するC#識別子へ変換します。
-    /// </summary>
-    /// <param name="sourceName">文書内で使用されている名前。</param>
-    /// <returns>C#識別子として使用できる名前。</returns>
-    internal static string ToCSharpIdentifier(this string sourceName) =>
-        EnsureValidIdentifierStart(
-            ContainsNonAscii(sourceName)
-                ? CapitalizeFirstLetter(
-                    ReplaceInvalidIdentifierPartCharacters(sourceName))
-                : AsciiIdentifier(sourceName));
+        /// <summary>
+        /// 文書内で使用されている名前を、生成コードで使用するC#識別子へ変換します。
+        /// </summary>
+        /// <returns>C#識別子として使用できる名前。</returns>
+        internal string ToCSharpIdentifier() =>
+            EnsureValidIdentifierStart(
+                ContainsNonAscii(self)
+                    ? CapitalizeFirstLetter(
+                        ReplaceInvalidIdentifierPartCharacters(self))
+                    : AsciiIdentifier(self));
+    }
 
     /// <summary>
     /// ASCIIだけで構成された名前を、区切り文字と大文字小文字からPascalCaseへ変換します。
@@ -44,7 +43,7 @@ static class CSharpIdentifier
     /// C#識別子の開始文字として使えない場合に、先頭へアンダースコアを補います。
     /// </summary>
     static string EnsureValidIdentifierStart(string identifier) =>
-        identifier.Length == 0 || IsIdentifierStartCharacter(identifier[0])
+        identifier.IsEmpty() || IsIdentifierStartCharacter(identifier[0])
             ? identifier
             : $"_{identifier}";
 
@@ -125,7 +124,7 @@ static class CSharpIdentifier
     /// 先頭文字だけを大文字化します。
     /// </summary>
     static string CapitalizeFirstLetter(string word) =>
-        word.Length == 0
+        word.IsEmpty()
             ? word
             : $"{char.ToUpperInvariant(word[0])}{word[1..]}";
 }
