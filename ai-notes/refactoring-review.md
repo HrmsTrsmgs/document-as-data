@@ -272,6 +272,8 @@ Release全体テストは595件成功、Skip 1件です。以下は修正前の�
 
 * **P01 / P3：削除された要素のキャッシュ寿命。** [OpenXmlElementCache.cs](../src/DocumentAsData/OpenXmlElementCache.cs) は強参照Dictionaryです。明細の増減と取得を長時間繰り返す場合、削除した要素とwrapperがDocumentの生存中に残る構造です。保持量は未計測。同じ要素のwrapper共有という修正済みの契約を崩さず検討します。
 * **P02 / P3：一操作内の繰り返し走査。** [DocumentObjectMapper.cs](../src/DocumentAsData/DocumentObjectMapper.cs) はプロパティごとに全種類の名前列挙・識別子化を行い、明細追加は1件ごとに文書全体の最大IDを走査します。多数項目・多数明細で計測し、必要なら操作内だけ再利用します。可変文書へ長寿命キャッシュを追加することや、性能を理由にテストを減らすことは先に決めません。
+* **大規模DOCXの逐次処理（2026-11-25、検討候補）。** 文書パーツ全体のDOM展開を避け、`OpenXmlReader`／`OpenXmlWriter` で本文XMLを逐次処理する方式を比較する。[Microsoft LearnのWord向けSAX例](https://learn.microsoft.com/en-us/office/open-xml/word/how-to-replace-text-in-a-word-document-with-sax)は更新後のパーツを `MemoryStream` に保持する。読み込みと書き込みを分けて、パッケージや出力のバッファを含むピークメモリと処理時間を現行方式と比較し、書式・フィールド・繰り返し明細の契約を維持できる範囲と実装費用から採否を判断する。対象操作と効果は未確認。現行の一括 `Read`／`Replace` とは別の性能候補で、Ruby版・TypeScript版の完成条件には含めない。
+* **繰り返し明細向けLINQプロバイダー（2026-11-25、検討候補）。** 上記の逐次読み取りに続けて検討する。必要な項目だけを取り出し、条件と件数上限を可能な範囲で読み取り中に適用して、結果に含まれない明細のオブジェクト化を避けられるか確認する。既存の `Read<T>()` の結果に通常のLINQを適用する場合と比較し、ピークメモリ、処理時間、オブジェクトへ変換した明細数、対応可能なクエリから効果と実装費用を評価する。効果が費用に見合わなければ見送る。公開APIと対応演算は未決定で、Ruby版・TypeScript版の完成条件には含めない。
 
 ### 新たな不具合・追加要件に数えないもの
 
