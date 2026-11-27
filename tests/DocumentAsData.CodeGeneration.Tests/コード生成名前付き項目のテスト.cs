@@ -24,15 +24,19 @@ public sealed class コード生成名前付き項目のテスト : IDisposable
 
     readonly TemporaryDocumentFiles temporaryFiles = new();
 
+    static Document OpenGeneratedDocument(string filePath, string typeName) =>
+        GeneratedCodeInspection
+            .AssemblyFrom(GeneratedCodeInspection.GenerateSources(filePath))
+            .GeneratedType(typeName)
+            .InvokeStaticMethod<Document>("Open", filePath);
+
     [Fact]
     public void 生成DataのReadは通常項目と明細内の同名文字列ContentControlを区別せず重複として拒否します()
     {
         // 個別の生成プロパティとは異なり、Readは文書全体から対応付けます。
         // 通常項目1件と明細2件に同名のItemNameがあり、どれかを勝手に選びません。
-        using var document = GeneratedCodeInspection
-            .AssemblyFrom(GeneratedCodeInspection.GenerateSources(@"TestData\コード生成\repeatingOutside.docx"))
-            .GeneratedType("RepeatingOutsideDocument")
-            .InvokeStaticMethod<Document>("Open", @"TestData\コード生成\repeatingOutside.docx");
+        using var document = OpenGeneratedDocument(
+            @"TestData\コード生成\repeatingOutside.docx", "RepeatingOutsideDocument");
         dynamic documentAccessor = document;
         var action = () =>
         {
