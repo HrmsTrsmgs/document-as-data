@@ -14,11 +14,26 @@ sealed class DocumentObjectMapper
         Func<DocumentObjectMapper, string, object> Read,
         Action<DocumentObjectMapper, string, object> Write);
 
-    static readonly ItemMapping checkBoxMapping = new(
-        typeof(bool),
-        (mapper, name) => (mapper.checkBoxes.FindByTag(name) ?? throw new DocumentMappingException()).IsChecked,
+    static readonly ItemMapping stringMapping = new(
+        typeof(string),
+        (mapper, name) => (mapper.FindValueTarget(name) ?? throw new InvalidOperationException()).Text,
         (mapper, name, value) =>
-            (mapper.checkBoxes.FindByTag(name) ?? throw new DocumentMappingException()).IsChecked = (bool)value);
+            (mapper.FindValueTarget(name) ?? throw new DocumentMappingException()).Text = (string)value);
+
+    static readonly ItemMapping[] itemMappings =
+    [
+        stringMapping,
+        new(
+            typeof(bool),
+            (mapper, name) => (mapper.checkBoxes.FindByTag(name) ?? throw new DocumentMappingException()).IsChecked,
+            (mapper, name, value) =>
+                (mapper.checkBoxes.FindByTag(name) ?? throw new DocumentMappingException()).IsChecked = (bool)value),
+        new(
+            typeof(DateTimeOffset),
+            (mapper, name) => (mapper.datePickers.FindByTag(name) ?? throw new DocumentMappingException()).SelectedDateTime,
+            (mapper, name, value) =>
+                (mapper.datePickers.FindByTag(name) ?? throw new DocumentMappingException()).SelectedDateTime = (DateTimeOffset)value)
+    ];
 
     /// <summary>
     /// 対応付けの対象範囲にある文字列Content Controlです。
@@ -102,15 +117,7 @@ sealed class DocumentObjectMapper
     /// <param name="propertyType">読み込み先のプロパティ型。</param>
     /// <returns>文書から読み込んだ値。</returns>
     object ReadValue(string name, Type propertyType) =>
-        propertyType == typeof(DateTimeOffset)
-            ? (datePickers.FindByTag(name) ?? throw new DocumentMappingException())
-                .SelectedDateTime
-        : propertyType == checkBoxMapping.PropertyType
-            ? checkBoxMapping.Read(this, name)
-        : propertyType == typeof(string)
-            ? (FindValueTarget(name) ?? throw new InvalidOperationException())
-                .Text
-        : throw new DocumentMappingException();
+        (FindItemMapping(propertyType) ?? throw new DocumentMappingException()).Read(this, name);
 
     /// <summary>
     /// 指定したオブジェクトのプロパティを、対応するContent ControlまたはMERGEFIELDへ書き込みます。
@@ -203,10 +210,10 @@ sealed class DocumentObjectMapper
     /// </summary>
     /// <param name="type">確認するプロパティ型。</param>
     /// <returns>対応している型の場合は<c>true</c>。</returns>
-    static bool IsSupportedPropertyType(Type type) =>
-        type == typeof(string) ||
-        type == typeof(DateTimeOffset) ||
-        type == checkBoxMapping.PropertyType;
+    static bool IsSupportedPropertyType(Type type) => FindItemMapping(type) is not null;
+
+    static ItemMapping? FindItemMapping(Type type) =>
+        itemMappings.FirstOrDefault(it => it.PropertyType == type);
 
     /// <summary>
     /// 同じ名前の文書項目へ値を書き込みます。
@@ -214,25 +221,9 @@ sealed class DocumentObjectMapper
     /// <param name="name">書き込む名前。</param>
     /// <param name="value">書き込む値。</param>
     /// <exception cref="DocumentMappingException">対応する文書項目が存在しない場合。</exception>
-    void ReplaceValue(string name, object value)
-    {
-        switch (value)
-        {
-            case DateTimeOffset dateTime:
-                (datePickers.FindByTag(name) ?? throw new DocumentMappingException())
-                    .SelectedDateTime = dateTime;
-                return;
-
-            case bool:
-                checkBoxMapping.Write(this, name, value);
-                return;
-
-            default:
-                (FindValueTarget(name) ?? throw new DocumentMappingException())
-                    .Text = (string)value;
-                return;
-        }
-    }
+    void ReplaceValue(string name, object value) =>
+        // nullは文字列の書き込み先へ従来どおり渡します。
+        (FindItemMapping(value?.GetType() ?? typeof(string)) ?? stringMapping).Write(this, name, value!);
 
     /// <summary>
     /// 同じ名前のContent ControlとMERGEFIELDから、一件だけある読み書き対象を取得します。
