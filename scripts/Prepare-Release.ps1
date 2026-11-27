@@ -39,7 +39,7 @@ try {
     )
     Invoke-DotNet @(
         'test', './DocumentAsData.slnx', '--no-build', '--no-restore', '--configuration', 'Release',
-        '--logger', 'trx', '--results-directory', (Join-Path $runDirectory 'tests')
+        '--results-directory', (Join-Path $runDirectory 'tests'), '--', '--report-trx'
     )
     Invoke-DotNet @('format', './DocumentAsData.slnx', '--no-restore', '--verify-no-changes', '--severity', 'info')
 
@@ -47,8 +47,8 @@ try {
         $env:DOCUMENTASDATA_TEST_MSBUILD = $VisualStudioMSBuild
         Invoke-DotNet @(
             'test', './tests/DocumentAsData.CodeGeneration.Tests', '--no-build', '--no-restore',
-            '--configuration', 'Release', '--filter', 'FullyQualifiedName~パッケージ|FullyQualifiedName~共用ライブラリ',
-            '--logger', 'trx', '--results-directory', (Join-Path $runDirectory 'visual-studio-tests')
+            '--configuration', 'Release', '--results-directory', (Join-Path $runDirectory 'visual-studio-tests'),
+            '--', '--filter-method', '*パッケージ*', '*共用ライブラリ*', '--report-trx'
         )
         $env:DOCUMENTASDATA_TEST_MSBUILD = $null
     }
