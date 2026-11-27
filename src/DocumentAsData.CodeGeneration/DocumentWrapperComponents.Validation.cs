@@ -1,4 +1,6 @@
-﻿namespace Marimo.DocumentAsData.CodeGeneration;
+﻿using static Marimo.DocumentAsData.CodeGeneration.DocumentItemScopes;
+
+namespace Marimo.DocumentAsData.CodeGeneration;
 
 static partial class DocumentWrapperComponents
 {
@@ -8,6 +10,15 @@ static partial class DocumentWrapperComponents
     /// </summary>
     static class Validation
     {
+        /// <summary>
+        /// 文書直下の検査ブロック間には、テンプレート本体と同じ改行を使います。
+        /// </summary>
+        const string TemplateLineBreak =
+            """
+
+
+            """;
+
         /// <summary>
         /// 文書直下のMERGEFIELDと文字列Content Controlから名前を取得する生成コードです。
         /// </summary>
@@ -81,22 +92,7 @@ static partial class DocumentWrapperComponents
                 /// </exception>
                 void ValidateRequiredItems()
                 {
-            {{RequiredItemsValidation(
-                [.. from mergeField in DocumentItemScopes.TopLevel(document.MergeFields) select mergeField.Name],
-                TopLevelTextItemNames,
-                "MERGEFIELD")}}
-            {{RequiredItemsValidation(
-                [.. from contentControl in DocumentItemScopes.TopLevel(document.ContentControls) select contentControl.Tag],
-                TopLevelTextItemNames,
-                "文字列Content Control")}}
-            {{RequiredItemsValidation(
-                [.. from checkBox in DocumentItemScopes.TopLevel(document.CheckBoxes) select checkBox.Tag],
-                TopLevelTagNames("CheckBoxes"),
-                "CheckBox")}}
-            {{RequiredItemsValidation(
-                [.. from datePicker in DocumentItemScopes.TopLevel(document.DatePickers) select datePicker.Tag],
-                TopLevelTagNames("DatePickers"),
-                "DatePicker")}}
+            {{string.Join(TemplateLineBreak, ItemValidationBlocks(TopLevelItems(document), isDetail: false))}}
             {{RequiredItemsValidation(
                 [.. from section in document.RepeatingSections select section.Tag],
                 "RepeatingSections.Select(it => it.Tag)",
@@ -116,34 +112,41 @@ static partial class DocumentWrapperComponents
             $$"""
                     foreach (var item in RepeatingSections[{{StringLiteral(section.Tag)}}].Items)
                     {
-            {{Indent(ForEach(RepeatingItemValidationBlocks(section.Items[0])))}}
+            {{Indent(ForEach(ItemValidationBlocks(DetailItems(section), isDetail: true)))}}
                     }
             """;
 
         /// <summary>
-        /// 生成元の明細に含まれる種類ごとの必須項目検査を生成します。
+        /// 必須の名前を、文書直下または明細内の対応する項目と照合する検査を生成します。
+        /// 文字列項目はMERGEFIELDと文字列Content Controlの両方に照合します。
         /// </summary>
-        /// <param name="templateItem">必要な項目の見本となる生成元の先頭明細。</param>
-        /// <returns>明細内へ配置する必須項目検査の生成コード。</returns>
-        static IEnumerable<string> RepeatingItemValidationBlocks(RepeatingSectionItem templateItem) =>
-        [
-            RequiredItemsValidation(
-                [.. from contentControl in templateItem.ContentControls select contentControl.Tag],
-                RepeatingItemTextItemNames,
-                "文字列Content Control"),
-            RequiredItemsValidation(
-                [.. from mergeField in templateItem.MergeFields select mergeField.Name],
-                RepeatingItemTextItemNames,
-                "MERGEFIELD"),
-            RequiredItemsValidation(
-                [.. from checkBox in templateItem.CheckBoxes select checkBox.Tag],
-                RepeatingItemTagNames("CheckBoxes"),
-                "CheckBox"),
-            RequiredItemsValidation(
-                [.. from datePicker in templateItem.DatePickers select datePicker.Tag],
-                RepeatingItemTagNames("DatePickers"),
-                "DatePicker")
-        ];
+        static IEnumerable<string> ItemValidationBlocks(IEnumerable<ItemGroup> groups, bool isDetail) =>
+            from itemGroup in groups
+            let target = ValidationTarget(itemGroup.Kind, isDetail)
+            select RequiredItemsValidation([.. itemGroup.Names], target.NamesExpression, target.ItemKindLabel);
+
+        /// <summary>
+        /// 開いた文書での照合先と、不足時の例外メッセージに表示する種類名を取得します。
+        /// </summary>
+        static (string NamesExpression, string ItemKindLabel) ValidationTarget(ItemKind kind, bool isDetail)
+        {
+            var textItemNames = isDetail ? RepeatingItemTextItemNames : TopLevelTextItemNames;
+
+            return kind switch
+            {
+                ItemKind.MergeField =>
+                    (textItemNames, "MERGEFIELD"),
+                ItemKind.TextContentControl =>
+                    (textItemNames, "文字列Content Control"),
+                ItemKind.CheckBox =>
+                    (isDetail ? RepeatingItemTagNames(nameof(RepeatingSectionItem.CheckBoxes))
+                        : TopLevelTagNames(nameof(Document.CheckBoxes)), "CheckBox"),
+                ItemKind.DatePicker =>
+                    (isDetail ? RepeatingItemTagNames(nameof(RepeatingSectionItem.DatePickers))
+                        : TopLevelTagNames(nameof(Document.DatePickers)), "DatePicker"),
+                _ => throw new ArgumentOutOfRangeException(nameof(kind))
+            };
+        }
 
         /// <summary>
         /// 不足した名前と種類を例外メッセージへ含める検査コードを生成します。
