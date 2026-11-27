@@ -8,6 +8,13 @@ namespace Marimo.DocumentAsData.CodeGeneration.Test;
 
 public sealed class MSBuild連携タスクのテスト
 {
+    static void PackProjectReferences(MSBuild連携テストプロジェクト project)
+    {
+        var script = project.AddPowerShellPackSample(includeProjectReferences: true);
+        var packed = PowerShell実行結果.Run(script, project.DirectoryPath);
+        packed.ExitCode.Should().Be(0, packed.Output);
+    }
+
     [Fact]
     public void PowerShellの実行期限を過ぎると待機を打ち切りそれまでの診断を返します()
     {
@@ -47,9 +54,7 @@ public sealed class MSBuild連携タスクのテスト
     {
         using var project = MSBuild連携テストプロジェクト.Create();
         project.AddCustomerDataDocument("BasicStructure.docx");
-        var packScript = project.AddPowerShellPackSample(includeProjectReferences: true);
-        var packed = PowerShell実行結果.Run(packScript, project.DirectoryPath);
-        packed.ExitCode.Should().Be(0, packed.Output);
+        PackProjectReferences(project);
         var script = project.AddPowerShellPackageReferenceSample(build: true, run: true, sharedLibrary: true);
         var projectPath = Path.Combine(project.DirectoryPath, "PackageReference.csproj");
         var projectXml = XDocument.Load(projectPath);
