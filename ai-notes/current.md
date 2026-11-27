@@ -2,20 +2,14 @@
 
 確認日：2026-11-28。
 
-## Microsoft.Testing.Platform移行（レビュー待ち）
-
-* `codex/microsoft-testing-platform`、基準 `25ef063`。テスト基盤・リリース検証の5ファイルに未コミット差分がある。依存変更はPRまで進める指示で了承済み。コミット前の差分レビューと了承待ち。
-* Release検証で全644件、Visual Studio MSBuild追加13件、TRX、format、4パッケージの梱包が成功。成果物はローカル `artifacts/release/f7c8c111962945a79bb0b6865592fd0e/`。
-* Visual Studioでも全644件成功。移行直後に選択範囲の一部を検出できない警告が1件出たが、その後の本体323件の選択実行では警告0件。原因は未確定。
-* 次は未コミット差分の人間レビュー後にコミットし、Refactorを検討してPRを作成する。
 ## 停止位置
 
-* `codex/dry-refactoring`、基準 `1ccebad`。固定DOCXの4組の共有はコミット済み。本体テストの一時ファイル削除用補助と代表1件、同じ条件の70件への展開は確認済み。削除・解放順や失敗時の扱いが異なるケースは維持。空文書4件は用途と名前が異なるため独立を維持する候補。
+* `codex/dry-refactoring`、基準 `584350b`。固定DOCXの共有と本体テストの一時ファイル削除の共通化はコミット済み。`origin/main` のMicrosoft.Testing.Platform移行をマージし、テスト用パッケージ参照の共通propsと代表1プロジェクトの変更は確認済み。もう一方のテストプロジェクトへ展開する。削除・解放順や失敗時の扱いが異なるケースは維持。空文書4件は用途と名前が異なるため独立を維持する候補。
 * [GitHub Project](https://github.com/users/HrmsTrsmgs/projects/1)の「DocumentAsDataのコード生成で対象項目の列挙を共通化する」は進行中。コミット `468591e` はmainへの取り込み待ち。DTOマッピング、生成メソッド名、既定名前空間の対応はProjectで進行中。名前解決の共通化は複雑さに見合わず保留。MSBuild接尾辞の共有はAPI・構成の変更が必要なため未着手。テストの一時ファイルは本体側とコード生成側で削除条件が異なる。生成XMLコメントの警告と生成名衝突の扱いは別作業。リリースはSpreadsheetAsDataとの足並みを確認するまで保留。
 
 ## 検証
 
-* .NET 11で全6プロジェクトの非増分ビルドに成功。警告・エラー0。全644テスト成功（本体323、コード生成・MSBuild連携321）、失敗・Skip 0。`format --verify-no-changes --severity info` に成功。変更プロジェクトのSARIF診断0件。
+* マージ版 `584350b` で復元と.NET 11のRelease非増分ビルドに成功。警告・エラー0。全644テスト成功（本体323、コード生成・MSBuild連携321）、失敗・Skip 0。`format --verify-no-changes --severity info` に成功。変更プロジェクトのSARIF診断0件。
 * 固定DOCX 172件について基準版と変更版の生成ソース、診断、受け付けなかった入力の例外型と文言が一致した。
 
 ## 別作業
