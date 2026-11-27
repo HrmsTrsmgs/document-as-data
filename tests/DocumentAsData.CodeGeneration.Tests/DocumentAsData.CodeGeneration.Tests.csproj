@@ -60,6 +60,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Include="..\DocumentAsData.Tests\TestData\単一のContent Control.docx"
+          Link="TestData\コード生成\文字列ContentControl.docx"
+          CopyToOutputDirectory="PreserveNewest" />
     <None Include="..\DocumentAsData.Tests\TestData\複合形式のMERGEFIELD.docx"
           Link="TestData\コード生成\単一項目.docx"
           CopyToOutputDirectory="PreserveNewest" />
