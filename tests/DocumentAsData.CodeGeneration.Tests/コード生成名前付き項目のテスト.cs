@@ -72,10 +72,7 @@ public sealed class コード生成名前付き項目のテスト : IDisposable
     {
         // 個別の生成プロパティとは異なり、Readは文書全体から対応付けます。
         // 通常項目1件と明細2件に同名のCodeがあり、どれかを勝手に選びません。
-        using var document = GeneratedCodeInspection
-            .AssemblyFrom(GeneratedCodeInspection.GenerateSources(@"TestData\コード生成\repeatingOutsideMergeField.docx"))
-            .GeneratedType("RepeatingOutsideMergeFieldDocument")
-            .InvokeStaticMethod<Document>("Open", @"TestData\コード生成\repeatingOutsideMergeField.docx");
+        using var document = OpenGeneratedDocument(@"TestData\コード生成\repeatingOutsideMergeField.docx", "RepeatingOutsideMergeFieldDocument");
         dynamic documentAccessor = document;
         var action = () =>
         {
@@ -111,10 +108,7 @@ public sealed class コード生成名前付き項目のテスト : IDisposable
     {
         // 個別の生成プロパティとは異なり、Readは文書全体から対応付けます。
         // 通常項目1件と明細2件に同名のAgreementがあり、どれかを勝手に選びません。
-        using var document = GeneratedCodeInspection
-            .AssemblyFrom(GeneratedCodeInspection.GenerateSources(@"TestData\コード生成\repeatingOutsideCheckBox.docx"))
-            .GeneratedType("RepeatingOutsideCheckBoxDocument")
-            .InvokeStaticMethod<Document>("Open", @"TestData\コード生成\repeatingOutsideCheckBox.docx");
+        using var document = OpenGeneratedDocument(@"TestData\コード生成\repeatingOutsideCheckBox.docx", "RepeatingOutsideCheckBoxDocument");
         dynamic documentAccessor = document;
         var action = () =>
         {
@@ -150,10 +144,7 @@ public sealed class コード生成名前付き項目のテスト : IDisposable
     {
         // 個別の生成プロパティとは異なり、Readは文書全体から対応付けます。
         // 通常項目1件と明細2件に同名のDeliveryDateがあり、どれかを勝手に選びません。
-        using var document = GeneratedCodeInspection
-            .AssemblyFrom(GeneratedCodeInspection.GenerateSources(@"TestData\コード生成\repeatingOutsideDatePicker.docx"))
-            .GeneratedType("RepeatingOutsideDatePickerDocument")
-            .InvokeStaticMethod<Document>("Open", @"TestData\コード生成\repeatingOutsideDatePicker.docx");
+        using var document = OpenGeneratedDocument(@"TestData\コード生成\repeatingOutsideDatePicker.docx", "RepeatingOutsideDatePickerDocument");
         dynamic documentAccessor = document;
         var action = () =>
         {
@@ -187,10 +178,7 @@ public sealed class コード生成名前付き項目のテスト : IDisposable
     [Fact]
     public void 生成された繰り返し項目は明細が1件でもコレクションとして読み取れます()
     {
-        using var document = GeneratedCodeInspection
-            .AssemblyFrom(GeneratedCodeInspection.GenerateSources(@"TestData\コード生成\repeatingTemplate.docx"))
-            .GeneratedType("RepeatingTemplateDocument")
-            .InvokeStaticMethod<Document>("Open", @"TestData\コード生成\repeatingTemplate.docx");
+        using var document = OpenGeneratedDocument(@"TestData\コード生成\repeatingTemplate.docx", "RepeatingTemplateDocument");
         dynamic documentAccessor = document;
         IEnumerable<dynamic> items = documentAccessor.Items;
 
@@ -213,10 +201,7 @@ public sealed class コード生成名前付き項目のテスト : IDisposable
     [Fact]
     public void 複数の明細から生成しても同じ項目名を文書全体の重複として扱いません()
     {
-        using var document = GeneratedCodeInspection
-            .AssemblyFrom(GeneratedCodeInspection.GenerateSources(@"TestData\コード生成\repeatingItems.docx"))
-            .GeneratedType("RepeatingItemsDocument")
-            .InvokeStaticMethod<Document>("Open", @"TestData\コード生成\repeatingItems.docx");
+        using var document = OpenGeneratedDocument(@"TestData\コード生成\repeatingItems.docx", "RepeatingItemsDocument");
         dynamic documentAccessor = document;
         IEnumerable<dynamic> items = documentAccessor.Items;
 
@@ -255,10 +240,7 @@ public sealed class コード生成名前付き項目のテスト : IDisposable
     [Fact]
     public void 生成された通常項目と明細内の項目は同じ名前でも別々に読み取れます()
     {
-        using var document = GeneratedCodeInspection
-            .AssemblyFrom(GeneratedCodeInspection.GenerateSources(@"TestData\コード生成\repeatingOutside.docx"))
-            .GeneratedType("RepeatingOutsideDocument")
-            .InvokeStaticMethod<Document>("Open", @"TestData\コード生成\repeatingOutside.docx");
+        using var document = OpenGeneratedDocument(@"TestData\コード生成\repeatingOutside.docx", "RepeatingOutsideDocument");
         dynamic documentAccessor = document;
         IEnumerable<dynamic> items = documentAccessor.Items;
 
@@ -269,10 +251,7 @@ public sealed class コード生成名前付き項目のテスト : IDisposable
     [Fact]
     public void 生成された通常項目への書き込みは同名の明細内項目を変更しません()
     {
-        using var document = GeneratedCodeInspection
-            .AssemblyFrom(GeneratedCodeInspection.GenerateSources(@"TestData\コード生成\repeatingOutside.docx"))
-            .GeneratedType("RepeatingOutsideDocument")
-            .InvokeStaticMethod<Document>("Open", @"TestData\コード生成\repeatingOutside.docx");
+        using var document = OpenGeneratedDocument(@"TestData\コード生成\repeatingOutside.docx", "RepeatingOutsideDocument");
         dynamic documentAccessor = document;
 
         documentAccessor.ItemName = "変更後の商品名";
@@ -286,10 +265,7 @@ public sealed class コード生成名前付き項目のテスト : IDisposable
     public void 生成された通常MERGEFIELDは明細内の同名項目ではなく通常項目を読み取れます()
     {
         // 固定データは明細2件を通常項目より先に置き、それぞれ異なる値を持たせています。
-        using var document = GeneratedCodeInspection
-            .AssemblyFrom(GeneratedCodeInspection.GenerateSources(@"TestData\コード生成\repeatingOutsideMergeField.docx"))
-            .GeneratedType("RepeatingOutsideMergeFieldDocument")
-            .InvokeStaticMethod<Document>("Open", @"TestData\コード生成\repeatingOutsideMergeField.docx");
+        using var document = OpenGeneratedDocument(@"TestData\コード生成\repeatingOutsideMergeField.docx", "RepeatingOutsideMergeFieldDocument");
         dynamic documentAccessor = document;
 
         (documentAccessor.Code as object).Should().Be("文書全体のコード");
@@ -298,10 +274,7 @@ public sealed class コード生成名前付き項目のテスト : IDisposable
     [Fact]
     public void 生成された通常MERGEFIELDへの書き込みは同名の明細内項目を変更しません()
     {
-        using var document = GeneratedCodeInspection
-            .AssemblyFrom(GeneratedCodeInspection.GenerateSources(@"TestData\コード生成\repeatingOutsideMergeField.docx"))
-            .GeneratedType("RepeatingOutsideMergeFieldDocument")
-            .InvokeStaticMethod<Document>("Open", @"TestData\コード生成\repeatingOutsideMergeField.docx");
+        using var document = OpenGeneratedDocument(@"TestData\コード生成\repeatingOutsideMergeField.docx", "RepeatingOutsideMergeFieldDocument");
         dynamic documentAccessor = document;
 
         documentAccessor.Code = "変更後のコード";
@@ -314,10 +287,7 @@ public sealed class コード生成名前付き項目のテスト : IDisposable
     public void 生成された通常CheckBoxは明細内の同名項目ではなく通常項目を読み取れます()
     {
         // 最初の明細はfalse、通常項目はtrueなので、文書順の先頭を選ぶだけでは一致しません。
-        using var document = GeneratedCodeInspection
-            .AssemblyFrom(GeneratedCodeInspection.GenerateSources(@"TestData\コード生成\repeatingOutsideCheckBox.docx"))
-            .GeneratedType("RepeatingOutsideCheckBoxDocument")
-            .InvokeStaticMethod<Document>("Open", @"TestData\コード生成\repeatingOutsideCheckBox.docx");
+        using var document = OpenGeneratedDocument(@"TestData\コード生成\repeatingOutsideCheckBox.docx", "RepeatingOutsideCheckBoxDocument");
         dynamic documentAccessor = document;
 
         (documentAccessor.Agreement as object).Should().Be(true);
@@ -326,10 +296,7 @@ public sealed class コード生成名前付き項目のテスト : IDisposable
     [Fact]
     public void 生成された通常CheckBoxへの書き込みは同名の明細内項目を変更しません()
     {
-        using var document = GeneratedCodeInspection
-            .AssemblyFrom(GeneratedCodeInspection.GenerateSources(@"TestData\コード生成\repeatingOutsideCheckBox.docx"))
-            .GeneratedType("RepeatingOutsideCheckBoxDocument")
-            .InvokeStaticMethod<Document>("Open", @"TestData\コード生成\repeatingOutsideCheckBox.docx");
+        using var document = OpenGeneratedDocument(@"TestData\コード生成\repeatingOutsideCheckBox.docx", "RepeatingOutsideCheckBoxDocument");
         dynamic documentAccessor = document;
 
         documentAccessor.Agreement = false;
@@ -341,10 +308,7 @@ public sealed class コード生成名前付き項目のテスト : IDisposable
     [Fact]
     public void 生成された通常DatePickerは明細内の同名項目ではなく通常項目を読み取れます()
     {
-        using var document = GeneratedCodeInspection
-            .AssemblyFrom(GeneratedCodeInspection.GenerateSources(@"TestData\コード生成\repeatingOutsideDatePicker.docx"))
-            .GeneratedType("RepeatingOutsideDatePickerDocument")
-            .InvokeStaticMethod<Document>("Open", @"TestData\コード生成\repeatingOutsideDatePicker.docx");
+        using var document = OpenGeneratedDocument(@"TestData\コード生成\repeatingOutsideDatePicker.docx", "RepeatingOutsideDatePickerDocument");
         dynamic documentAccessor = document;
 
         (documentAccessor.DeliveryDate as object).Should().Be(new DateTimeOffset(2026, 10, 1, 0, 0, 0, TimeSpan.Zero));
@@ -353,10 +317,7 @@ public sealed class コード生成名前付き項目のテスト : IDisposable
     [Fact]
     public void 生成された通常DatePickerへの書き込みは同名の明細内項目を変更しません()
     {
-        using var document = GeneratedCodeInspection
-            .AssemblyFrom(GeneratedCodeInspection.GenerateSources(@"TestData\コード生成\repeatingOutsideDatePicker.docx"))
-            .GeneratedType("RepeatingOutsideDatePickerDocument")
-            .InvokeStaticMethod<Document>("Open", @"TestData\コード生成\repeatingOutsideDatePicker.docx");
+        using var document = OpenGeneratedDocument(@"TestData\コード生成\repeatingOutsideDatePicker.docx", "RepeatingOutsideDatePickerDocument");
         dynamic documentAccessor = document;
 
         documentAccessor.DeliveryDate = new DateTimeOffset(2026, 10, 2, 0, 0, 0, TimeSpan.Zero);
@@ -431,10 +392,7 @@ public sealed class コード生成名前付き項目のテスト : IDisposable
     [Fact]
     public void 生成された明細データの変更はReplaceするまで文書へ反映されません()
     {
-        using var document = GeneratedCodeInspection
-            .AssemblyFrom(GeneratedCodeInspection.GenerateSources(@"TestData\コード生成\repeatingTemplate.docx"))
-            .GeneratedType("RepeatingTemplateDocument")
-            .InvokeStaticMethod<Document>("Open", @"TestData\コード生成\repeatingTemplate.docx");
+        using var document = OpenGeneratedDocument(@"TestData\コード生成\repeatingTemplate.docx", "RepeatingTemplateDocument");
         dynamic documentAccessor = document;
         IEnumerable<dynamic> items = documentAccessor.Items;
         var data = items.Single();
@@ -447,10 +405,7 @@ public sealed class コード生成名前付き項目のテスト : IDisposable
     [Fact]
     public void 生成された明細データでMERGEFIELDの文字列を読み取れます()
     {
-        using var document = GeneratedCodeInspection
-            .AssemblyFrom(GeneratedCodeInspection.GenerateSources(@"TestData\コード生成\repeatingKinds.docx"))
-            .GeneratedType("RepeatingKindsDocument")
-            .InvokeStaticMethod<Document>("Open", @"TestData\コード生成\repeatingKinds.docx");
+        using var document = OpenGeneratedDocument(@"TestData\コード生成\repeatingKinds.docx", "RepeatingKindsDocument");
         dynamic documentAccessor = document;
         IEnumerable<dynamic> items = documentAccessor.Items;
 
@@ -460,10 +415,7 @@ public sealed class コード生成名前付き項目のテスト : IDisposable
     [Fact]
     public void 生成された明細データでチェック状態を読み取れます()
     {
-        using var document = GeneratedCodeInspection
-            .AssemblyFrom(GeneratedCodeInspection.GenerateSources(@"TestData\コード生成\repeatingKinds.docx"))
-            .GeneratedType("RepeatingKindsDocument")
-            .InvokeStaticMethod<Document>("Open", @"TestData\コード生成\repeatingKinds.docx");
+        using var document = OpenGeneratedDocument(@"TestData\コード生成\repeatingKinds.docx", "RepeatingKindsDocument");
         dynamic documentAccessor = document;
         IEnumerable<dynamic> items = documentAccessor.Items;
 
@@ -473,10 +425,7 @@ public sealed class コード生成名前付き項目のテスト : IDisposable
     [Fact]
     public void 生成された明細データで日時を読み取れます()
     {
-        using var document = GeneratedCodeInspection
-            .AssemblyFrom(GeneratedCodeInspection.GenerateSources(@"TestData\コード生成\repeatingKinds.docx"))
-            .GeneratedType("RepeatingKindsDocument")
-            .InvokeStaticMethod<Document>("Open", @"TestData\コード生成\repeatingKinds.docx");
+        using var document = OpenGeneratedDocument(@"TestData\コード生成\repeatingKinds.docx", "RepeatingKindsDocument");
         dynamic documentAccessor = document;
         IEnumerable<dynamic> items = documentAccessor.Items;
 
@@ -494,14 +443,7 @@ public sealed class コード生成名前付き項目のテスト : IDisposable
     [Fact]
     public void 生成されたDocument型のMERGEFIELDプロパティから文字列を直接読み取れます()
     {
-        using var document = GeneratedCodeInspection
-            .AssemblyFrom(
-                GeneratedCodeInspection.GenerateSources(
-                    MergeFieldsDocumentFilePath))
-            .GeneratedType("MergefieldDocument")
-            .InvokeStaticMethod<Document>(
-                "Open",
-                MergeFieldsDocumentFilePath);
+        using var document = OpenGeneratedDocument(MergeFieldsDocumentFilePath, "MergefieldDocument");
 
         dynamic documentAccessor = document;
         string tested = documentAccessor.CustomerName;
@@ -751,14 +693,7 @@ public sealed class コード生成名前付き項目のテスト : IDisposable
     {
         var savedPath = temporaryFiles.NewFilePath();
 
-        using (var document = GeneratedCodeInspection
-                   .AssemblyFrom(
-                       GeneratedCodeInspection.GenerateSources(
-                           MergeFieldsDocumentFilePath))
-                   .GeneratedType("MergefieldDocument")
-                   .InvokeStaticMethod<Document>(
-                       "Open",
-                       MergeFieldsDocumentFilePath))
+        using (var document = OpenGeneratedDocument(MergeFieldsDocumentFilePath, "MergefieldDocument"))
         {
             dynamic documentAccessor = document;
 
@@ -813,14 +748,7 @@ public sealed class コード生成名前付き項目のテスト : IDisposable
     [Fact]
     public void 生成されたDocument型の文字列ContentControlプロパティから文字列を直接読み取れます()
     {
-        using var document = GeneratedCodeInspection
-            .AssemblyFrom(
-                GeneratedCodeInspection.GenerateSources(
-                    TextContentControlDocumentFilePath))
-            .GeneratedType("文字列ContentControlDocument")
-            .InvokeStaticMethod<Document>(
-                "Open",
-                TextContentControlDocumentFilePath);
+        using var document = OpenGeneratedDocument(TextContentControlDocumentFilePath, "文字列ContentControlDocument");
 
         dynamic documentAccessor = document;
         string tested = documentAccessor.CustomerName;
@@ -892,14 +820,7 @@ public sealed class コード生成名前付き項目のテスト : IDisposable
     {
         var savedPath = temporaryFiles.NewFilePath();
 
-        using (var document = GeneratedCodeInspection
-                   .AssemblyFrom(
-                       GeneratedCodeInspection.GenerateSources(
-                           TextContentControlDocumentFilePath))
-                   .GeneratedType("文字列ContentControlDocument")
-                   .InvokeStaticMethod<Document>(
-                       "Open",
-                       TextContentControlDocumentFilePath))
+        using (var document = OpenGeneratedDocument(TextContentControlDocumentFilePath, "文字列ContentControlDocument"))
         {
             dynamic documentAccessor = document;
 
@@ -954,14 +875,7 @@ public sealed class コード生成名前付き項目のテスト : IDisposable
     [Fact]
     public void 生成されたDocument型のCheckBoxプロパティからチェック状態を直接読み取れます()
     {
-        using var document = GeneratedCodeInspection
-            .AssemblyFrom(
-                GeneratedCodeInspection.GenerateSources(
-                    CheckBoxDocumentFilePath))
-            .GeneratedType("チェック済みCheckBoxDocument")
-            .InvokeStaticMethod<Document>(
-                "Open",
-                CheckBoxDocumentFilePath);
+        using var document = OpenGeneratedDocument(CheckBoxDocumentFilePath, "チェック済みCheckBoxDocument");
 
         dynamic documentAccessor = document;
         bool tested = documentAccessor.Agreement;
@@ -972,14 +886,7 @@ public sealed class コード生成名前付き項目のテスト : IDisposable
     [Fact]
     public void 生成されたDocument型のReadでCheckBoxを文書データとして読み取れます()
     {
-        using var document = GeneratedCodeInspection
-            .AssemblyFrom(
-                GeneratedCodeInspection.GenerateSources(
-                    CheckBoxDocumentFilePath))
-            .GeneratedType("チェック済みCheckBoxDocument")
-            .InvokeStaticMethod<Document>(
-                "Open",
-                CheckBoxDocumentFilePath);
+        using var document = OpenGeneratedDocument(CheckBoxDocumentFilePath, "チェック済みCheckBoxDocument");
 
         dynamic documentAccessor = document;
         var data = documentAccessor.Read();
@@ -1014,14 +921,7 @@ public sealed class コード生成名前付き項目のテスト : IDisposable
     {
         var savedPath = temporaryFiles.NewFilePath();
 
-        using (var document = GeneratedCodeInspection
-                   .AssemblyFrom(
-                       GeneratedCodeInspection.GenerateSources(
-                           CheckBoxDocumentFilePath))
-                   .GeneratedType("チェック済みCheckBoxDocument")
-                   .InvokeStaticMethod<Document>(
-                       "Open",
-                       CheckBoxDocumentFilePath))
+        using (var document = OpenGeneratedDocument(CheckBoxDocumentFilePath, "チェック済みCheckBoxDocument"))
         {
             dynamic documentAccessor = document;
 
@@ -1037,14 +937,7 @@ public sealed class コード生成名前付き項目のテスト : IDisposable
     [Fact]
     public void 生成されたDocument型のReplaceで文書データをCheckBoxへ書き込めます()
     {
-        using var document = GeneratedCodeInspection
-            .AssemblyFrom(
-                GeneratedCodeInspection.GenerateSources(
-                    CheckBoxDocumentFilePath))
-            .GeneratedType("チェック済みCheckBoxDocument")
-            .InvokeStaticMethod<Document>(
-                "Open",
-                CheckBoxDocumentFilePath);
+        using var document = OpenGeneratedDocument(CheckBoxDocumentFilePath, "チェック済みCheckBoxDocument");
         dynamic documentAccessor = document;
         var data = documentAccessor.Read();
 
@@ -1057,14 +950,7 @@ public sealed class コード生成名前付き項目のテスト : IDisposable
     [Fact]
     public void 生成されたDocument型のDatePickerプロパティから日時を直接読み取れます()
     {
-        using var document = GeneratedCodeInspection
-            .AssemblyFrom(
-                GeneratedCodeInspection.GenerateSources(
-                    DatePickerDocumentFilePath))
-            .GeneratedType("日付選択ContentControlDocument")
-            .InvokeStaticMethod<Document>(
-                "Open",
-                DatePickerDocumentFilePath);
+        using var document = OpenGeneratedDocument(DatePickerDocumentFilePath, "日付選択ContentControlDocument");
 
         dynamic documentAccessor = document;
         DateTimeOffset tested = documentAccessor.DeliveryDate;
@@ -1122,14 +1008,7 @@ public sealed class コード生成名前付き項目のテスト : IDisposable
             0,
             TimeSpan.FromHours(9));
 
-        using (var document = GeneratedCodeInspection
-                   .AssemblyFrom(
-                       GeneratedCodeInspection.GenerateSources(
-                           DatePickerDocumentFilePath))
-                   .GeneratedType("日付選択ContentControlDocument")
-                   .InvokeStaticMethod<Document>(
-                       "Open",
-                       DatePickerDocumentFilePath))
+        using (var document = OpenGeneratedDocument(DatePickerDocumentFilePath, "日付選択ContentControlDocument"))
         {
             dynamic documentAccessor = document;
 
