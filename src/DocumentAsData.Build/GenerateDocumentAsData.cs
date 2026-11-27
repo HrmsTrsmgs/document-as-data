@@ -25,7 +25,7 @@ public sealed class GenerateDocumentAsData : Microsoft.Build.Utilities.Task
     /// <summary>
     /// 生成コードの名前空間を取得または設定します。既定値はGeneratedです。
     /// </summary>
-    public string RootNamespace { get; set; } = "Generated";
+    public string RootNamespace { get; set; } = CodeGenerationOptions.DefaultNamespace;
 
     /// <summary>
     /// 生成したC#ソースファイルを取得します。
