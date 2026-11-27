@@ -180,9 +180,7 @@ public sealed class MSBuild連携タスクのテスト
     public void パッケージ参照でDocumentAsDataをビルドアクション候補に登録します()
     {
         using var project = MSBuild連携テストプロジェクト.Create();
-        var packScriptFilePath = project.AddPowerShellPackSample(includeProjectReferences: true);
-        var packed = PowerShell実行結果.Run(packScriptFilePath, project.DirectoryPath);
-        packed.ExitCode.Should().Be(0, packed.Output);
+        PackProjectReferences(project);
         var scriptFilePath = project.AddPowerShellPackageReferenceSample();
 
         var tested = PowerShell実行結果.Run(scriptFilePath, project.DirectoryPath);
@@ -197,9 +195,7 @@ public sealed class MSBuild連携タスクのテスト
     {
         using var project = MSBuild連携テストプロジェクト.Create();
         project.AddBasicStructureDocument("BasicStructure.docx");
-        var packScriptFilePath = project.AddPowerShellPackSample(includeProjectReferences: true);
-        var packed = PowerShell実行結果.Run(packScriptFilePath, project.DirectoryPath);
-        packed.ExitCode.Should().Be(0, packed.Output);
+        PackProjectReferences(project);
         var scriptFilePath = project.AddPowerShellPackageReferenceSample(build: true);
 
         var tested = PowerShell実行結果.Run(scriptFilePath, project.DirectoryPath);
@@ -214,9 +210,7 @@ public sealed class MSBuild連携タスクのテスト
     {
         using var project = MSBuild連携テストプロジェクト.Create();
         var documentFilePath = project.AddBasicStructureDocument("BasicStructure.docx");
-        var packScriptFilePath = project.AddPowerShellPackSample(includeProjectReferences: true);
-        var packed = PowerShell実行結果.Run(packScriptFilePath, project.DirectoryPath);
-        packed.ExitCode.Should().Be(0, packed.Output);
+        PackProjectReferences(project);
         var buildScriptFilePath = project.AddPowerShellPackageReferenceSample(build: true);
         var built = PowerShell実行結果.Run(buildScriptFilePath, project.DirectoryPath);
         built.ExitCode.Should().Be(0, built.Output);
@@ -247,9 +241,7 @@ public sealed class MSBuild連携タスクのテスト
     {
         using var project = MSBuild連携テストプロジェクト.Create();
         project.AddBasicStructureDocument("BasicStructure.docx");
-        var packScriptFilePath = project.AddPowerShellPackSample(includeProjectReferences: true);
-        var packed = PowerShell実行結果.Run(packScriptFilePath, project.DirectoryPath);
-        packed.ExitCode.Should().Be(0, packed.Output);
+        PackProjectReferences(project);
         var buildScriptFilePath = project.AddPowerShellPackageReferenceSample(build: true);
         var built = PowerShell実行結果.Run(buildScriptFilePath, project.DirectoryPath);
         built.ExitCode.Should().Be(0, built.Output);
@@ -276,9 +268,7 @@ public sealed class MSBuild連携タスクのテスト
     {
         using var project = MSBuild連携テストプロジェクト.Create();
         project.AddCustomerDataDocument("BasicStructure.docx");
-        var packScriptFilePath = project.AddPowerShellPackSample(includeProjectReferences: true);
-        var packed = PowerShell実行結果.Run(packScriptFilePath, project.DirectoryPath);
-        packed.ExitCode.Should().Be(0, packed.Output);
+        PackProjectReferences(project);
         var scriptFilePath = project.AddPowerShellPackageReferenceSample(build: true, run: true);
 
         var tested = PowerShell実行結果.Run(scriptFilePath, project.DirectoryPath);
@@ -294,9 +284,7 @@ public sealed class MSBuild連携タスクのテスト
         using var project = MSBuild連携テストプロジェクト.Create();
         var documentPath = project.AddBasicStructureDocument("BasicStructure.docx");
         var original = File.ReadAllBytes(documentPath);
-        var packScriptFilePath = project.AddPowerShellPackSample(includeProjectReferences: true);
-        var packed = PowerShell実行結果.Run(packScriptFilePath, project.DirectoryPath);
-        packed.ExitCode.Should().Be(0, packed.Output);
+        PackProjectReferences(project);
         var buildScriptFilePath = project.AddPowerShellPackageReferenceSample(build: true);
         var built = PowerShell実行結果.Run(buildScriptFilePath, project.DirectoryPath);
         built.ExitCode.Should().Be(0, built.Output);
@@ -316,9 +304,7 @@ public sealed class MSBuild連携タスクのテスト
     {
         using var project = MSBuild連携テストプロジェクト.Create();
         project.AddBasicStructureDocument("BasicStructure.docx");
-        var packScriptFilePath = project.AddPowerShellPackSample(includeProjectReferences: true);
-        var packed = PowerShell実行結果.Run(packScriptFilePath, project.DirectoryPath);
-        packed.ExitCode.Should().Be(0, packed.Output);
+        PackProjectReferences(project);
         var scriptFilePath = project.AddPowerShellPackageReferenceSample(build: true);
 
         var tested = PowerShell実行結果.Run(scriptFilePath, project.DirectoryPath);
