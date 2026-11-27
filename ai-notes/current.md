@@ -4,8 +4,8 @@
 
 ## 停止位置
 
-* `codex/dry-refactoring`、基準 `e99ea60`。文字列Content Controlの固定DOCXの代表1組はコミット済み。残るMERGEFIELD・CheckBox・DatePickerの3組の共有は確認済み。次のDRY候補を確認する。空文書4件は用途と名前が異なるため独立を維持する候補。
-* [GitHub Project](https://github.com/users/HrmsTrsmgs/projects/1)の「DocumentAsDataのコード生成で対象項目の列挙を共通化する」は進行中。コミット `468591e` はmainへの取り込み待ち。DTOマッピング、生成メソッド名、既定名前空間の対応はProjectで進行中。名前解決の共通化は複雑さに見合わず保留。MSBuild接尾辞とテスト一時ファイルの共有はAPI・構成の変更が必要なため未着手。生成XMLコメントの警告と生成名衝突の扱いは別作業。リリースはSpreadsheetAsDataとの足並みを確認するまで保留。
+* `codex/dry-refactoring`、基準 `1ccebad`。固定DOCXの4組の共有はコミット済み。本体テストの一時ファイル削除用補助と代表1件、同じ条件の70件への展開は確認済み。削除・解放順や失敗時の扱いが異なるケースは維持。空文書4件は用途と名前が異なるため独立を維持する候補。
+* [GitHub Project](https://github.com/users/HrmsTrsmgs/projects/1)の「DocumentAsDataのコード生成で対象項目の列挙を共通化する」は進行中。コミット `468591e` はmainへの取り込み待ち。DTOマッピング、生成メソッド名、既定名前空間の対応はProjectで進行中。名前解決の共通化は複雑さに見合わず保留。MSBuild接尾辞の共有はAPI・構成の変更が必要なため未着手。テストの一時ファイルは本体側とコード生成側で削除条件が異なる。生成XMLコメントの警告と生成名衝突の扱いは別作業。リリースはSpreadsheetAsDataとの足並みを確認するまで保留。
 
 ## 検証
 

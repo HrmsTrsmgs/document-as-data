@@ -1,6 +1,7 @@
 ﻿using DocumentFormat.OpenXml.Packaging;
 using FluentAssertions;
 using Marimo.DocumentAsData.Test.TestDocuments;
+using Marimo.DocumentAsData.Test.テスト補助;
 using Wordprocessing = DocumentFormat.OpenXml.Wordprocessing;
 
 namespace Marimo.DocumentAsData.Test;
@@ -26,49 +27,31 @@ public class MergeFieldのテスト
     public void DocumentプロパティはMERGEFIELDが属する文書を取得します()
     {
         var filePath = TestDocument.CreateTemporaryCopy(TestFilePath);
-        try
-        {
-            using var document = Document.Open(filePath);
+        using var temporaryFile = new TemporaryFile(filePath);
+        using var document = Document.Open(filePath);
 
-            document.MergeFields["CustomerName"].Document.Should().BeSameAs(document);
-        }
-        finally
-        {
-            File.Delete(filePath);
-        }
+        document.MergeFields["CustomerName"].Document.Should().BeSameAs(document);
     }
 
     [Fact]
     public void NameプロパティはMERGEFIELD名を取得します()
     {
         var filePath = TestDocument.CreateTemporaryCopy(TestFilePath);
-        try
-        {
-            using var document = Document.Open(filePath);
+        using var temporaryFile = new TemporaryFile(filePath);
+        using var document = Document.Open(filePath);
 
-            document.MergeFields["CustomerName"].Name.Should().Be("CustomerName");
-        }
-        finally
-        {
-            File.Delete(filePath);
-        }
+        document.MergeFields["CustomerName"].Name.Should().Be("CustomerName");
     }
 
     [Fact]
     public void ToStringは種類と引用符で囲んだMERGEFIELD名を返します()
     {
         var filePath = TestDocument.CreateTemporaryCopy(TestFilePath);
-        try
-        {
-            using var document = Document.Open(filePath);
+        using var temporaryFile = new TemporaryFile(filePath);
+        using var document = Document.Open(filePath);
 
-            document.MergeFields["CustomerName"].ToString().Should().Be(
-                "MergeField { Name = \"CustomerName\" }");
-        }
-        finally
-        {
-            File.Delete(filePath);
-        }
+        document.MergeFields["CustomerName"].ToString().Should().Be(
+            "MergeField { Name = \"CustomerName\" }");
     }
 
     [Fact]
@@ -117,70 +100,46 @@ public class MergeFieldのテスト
     public void TextプロパティはMERGEFIELD文字列を取得します()
     {
         var filePath = TestDocument.CreateTemporaryCopy(TestFilePath);
-        try
-        {
-            using var document = Document.Open(filePath);
+        using var temporaryFile = new TemporaryFile(filePath);
+        using var document = Document.Open(filePath);
 
-            document.MergeFields["CustomerName"].Text.Should().Be("株式会社○○");
-        }
-        finally
-        {
-            File.Delete(filePath);
-        }
+        document.MergeFields["CustomerName"].Text.Should().Be("株式会社○○");
     }
 
     [Fact]
     public void 複合MERGEFIELDの名前と値を取得します()
     {
         var filePath = TestDocument.CreateTemporaryCopy(ComplexMergeFieldPath);
-        try
-        {
-            using var document = Document.Open(filePath);
-            var tested = document.MergeFields.Single();
+        using var temporaryFile = new TemporaryFile(filePath);
+        using var document = Document.Open(filePath);
+        var tested = document.MergeFields.Single();
 
-            tested.Name.Should().Be("CustomerName");
-            tested.Text.Should().Be("株式会社○○");
-        }
-        finally
-        {
-            File.Delete(filePath);
-        }
+        tested.Name.Should().Be("CustomerName");
+        tested.Text.Should().Be("株式会社○○");
     }
 
     [Fact]
     public void 複合MERGEFIELDが分割して保存されていても名前と値を取得します()
     {
         var filePath = TestDocument.CreateTemporaryCopy(SplitComplexMergeFieldPath);
-        try
-        {
-            using var document = Document.Open(filePath);
-            var tested = document.MergeFields.Single();
+        using var temporaryFile = new TemporaryFile(filePath);
+        using var document = Document.Open(filePath);
+        var tested = document.MergeFields.Single();
 
-            tested.Name.Should().Be("CustomerName");
-            tested.Text.Should().Be("株式会社○○");
-        }
-        finally
-        {
-            File.Delete(filePath);
-        }
+        tested.Name.Should().Be("CustomerName");
+        tested.Text.Should().Be("株式会社○○");
     }
 
     [Fact]
     public void TextプロパティはMERGEFIELD値を設定します()
     {
         var filePath = TestDocument.CreateTemporaryCopy(TestFilePath);
-        try
-        {
-            using var document = Document.Open(filePath);
+        using var temporaryFile = new TemporaryFile(filePath);
+        using var document = Document.Open(filePath);
 
-            document.MergeFields["CustomerName"].Text = "変更後";
+        document.MergeFields["CustomerName"].Text = "変更後";
 
-            document.MergeFields["CustomerName"].Text.Should().Be("変更後");
-        }
-        finally
-        {
-            File.Delete(filePath);
-        }
+        document.MergeFields["CustomerName"].Text.Should().Be("変更後");
     }
 
     [Fact]
@@ -248,18 +207,12 @@ public class MergeFieldのテスト
     public void Textプロパティは複合MERGEFIELDの値を設定します()
     {
         var filePath = TestDocument.CreateTemporaryCopy(ComplexMergeFieldPath);
-        try
-        {
-            using var document = Document.Open(filePath);
+        using var temporaryFile = new TemporaryFile(filePath);
+        using var document = Document.Open(filePath);
 
-            document.MergeFields["CustomerName"].Text = "変更後";
+        document.MergeFields["CustomerName"].Text = "変更後";
 
-            document.MergeFields["CustomerName"].Text.Should().Be("変更後");
-        }
-        finally
-        {
-            File.Delete(filePath);
-        }
+        document.MergeFields["CustomerName"].Text.Should().Be("変更後");
     }
 
     [Fact]
@@ -346,20 +299,14 @@ public class MergeFieldのテスト
     public void Textプロパティは空文字列を設定した複合MERGEFIELDへ値を再設定します()
     {
         var filePath = TestDocument.CreateTemporaryCopy(ComplexMergeFieldPath);
-        try
-        {
-            using var document = Document.Open(filePath);
-            var tested = document.MergeFields["CustomerName"];
-            tested.Text = "";
+        using var temporaryFile = new TemporaryFile(filePath);
+        using var document = Document.Open(filePath);
+        var tested = document.MergeFields["CustomerName"];
+        tested.Text = "";
 
-            tested.Text = "再設定";
+        tested.Text = "再設定";
 
-            tested.Text.Should().Be("再設定");
-        }
-        finally
-        {
-            File.Delete(filePath);
-        }
+        tested.Text.Should().Be("再設定");
     }
 
     [Fact]

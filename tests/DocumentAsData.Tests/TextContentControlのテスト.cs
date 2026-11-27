@@ -25,49 +25,31 @@ public class TextContentControlのテスト
     public void DocumentプロパティはContentControlが属する文書を取得します()
     {
         var filePath = TestDocument.CreateTemporaryCopy(ContentControlPath);
-        try
-        {
-            using var document = Document.Open(filePath);
+        using var temporaryFile = new TemporaryFile(filePath);
+        using var document = Document.Open(filePath);
 
-            document.ContentControls.Single().Document.Should().BeSameAs(document);
-        }
-        finally
-        {
-            File.Delete(filePath);
-        }
+        document.ContentControls.Single().Document.Should().BeSameAs(document);
     }
 
     [Fact]
     public void TagプロパティはContentControlのTagを取得します()
     {
         var filePath = TestDocument.CreateTemporaryCopy(ContentControlPath);
-        try
-        {
-            using var document = Document.Open(filePath);
+        using var temporaryFile = new TemporaryFile(filePath);
+        using var document = Document.Open(filePath);
 
-            document.ContentControls.Single().Tag.Should().Be("CustomerName");
-        }
-        finally
-        {
-            File.Delete(filePath);
-        }
+        document.ContentControls.Single().Tag.Should().Be("CustomerName");
     }
 
     [Fact]
     public void ToStringは種類と引用符で囲んだTagを返します()
     {
         var filePath = TestDocument.CreateTemporaryCopy(ContentControlPath);
-        try
-        {
-            using var document = Document.Open(filePath);
+        using var temporaryFile = new TemporaryFile(filePath);
+        using var document = Document.Open(filePath);
 
-            document.ContentControls.Single().ToString().Should().Be(
-                "TextContentControl { Tag = \"CustomerName\" }");
-        }
-        finally
-        {
-            File.Delete(filePath);
-        }
+        document.ContentControls.Single().ToString().Should().Be(
+            "TextContentControl { Tag = \"CustomerName\" }");
     }
 
     [Fact]
@@ -83,35 +65,23 @@ public class TextContentControlのテスト
     public void Tagプロパティは不正なOOXMLでTagに値がない場合に失敗します()
     {
         var filePath = TestDocument.CreateTemporaryCopy(InvalidContentControlWithoutTagValuePath);
-        try
-        {
-            using var document = Document.Open(filePath);
+        using var temporaryFile = new TemporaryFile(filePath);
+        using var document = Document.Open(filePath);
 
-            var action = () =>
-                _ = document.ContentControls.Single().Tag;
+        var action = () =>
+            _ = document.ContentControls.Single().Tag;
 
-            action.Should().Throw<InvalidOperationException>();
-        }
-        finally
-        {
-            File.Delete(filePath);
-        }
+        action.Should().Throw<InvalidOperationException>();
     }
 
     [Fact]
     public void TextプロパティはContentControlの値を取得します()
     {
         var filePath = TestDocument.CreateTemporaryCopy(ContentControlPath);
-        try
-        {
-            using var document = Document.Open(filePath);
+        using var temporaryFile = new TemporaryFile(filePath);
+        using var document = Document.Open(filePath);
 
-            document.ContentControls["CustomerName"].Text.Should().Be("山田太郎");
-        }
-        finally
-        {
-            File.Delete(filePath);
-        }
+        document.ContentControls["CustomerName"].Text.Should().Be("山田太郎");
     }
 
     [Fact]
@@ -131,19 +101,13 @@ public class TextContentControlのテスト
     public void CustomXMLに連結されたContentControlの文字列は書き込みません()
     {
         var filePath = TestDocument.CreateTemporaryCopy(BoundContentControlPath);
-        try
-        {
-            using var document = Document.Open(filePath, true);
-            var tested = document.ContentControls["CustomerName"];
+        using var temporaryFile = new TemporaryFile(filePath);
+        using var document = Document.Open(filePath, true);
+        var tested = document.ContentControls["CustomerName"];
 
-            var action = () => tested.Text = "変更後";
+        var action = () => tested.Text = "変更後";
 
-            action.Should().Throw<NotSupportedException>();
-        }
-        finally
-        {
-            File.Delete(filePath);
-        }
+        action.Should().Throw<NotSupportedException>();
     }
 
     [Fact]
@@ -151,17 +115,11 @@ public class TextContentControlのテスト
     {
         var filePath =
             TestDocument.CreateTemporaryCopy(SplitContentControlTextPath);
-        try
-        {
-            using var document = Document.Open(filePath);
+        using var temporaryFile = new TemporaryFile(filePath);
+        using var document = Document.Open(filePath);
 
-            document.ContentControls["CustomerName"].Text
-                .Should().Be("山田太郎");
-        }
-        finally
-        {
-            File.Delete(filePath);
-        }
+        document.ContentControls["CustomerName"].Text
+            .Should().Be("山田太郎");
     }
 
     [Fact]
@@ -169,20 +127,14 @@ public class TextContentControlのテスト
     {
         var filePath = TestDocument.CreateTemporaryCopy(
             Path.Combine("TestData", "二つの段落を持つContent Control.docx"));
-        try
-        {
-            // 一つのw:sdtContent内に「前半」と「後半」のw:pが一つずつあります。
-            // w:pは段落、w:rは文字のまとまり、w:tは文字列です。
-            // w:brによる段落内改行ではなく、段落の境界をCRLFとして読み取ります。
-            // 固定DOCXはこの構造を狙った最小OOXMLです。
-            using var document = Document.Open(filePath, validate: true);
+        using var temporaryFile = new TemporaryFile(filePath);
+        // 一つのw:sdtContent内に「前半」と「後半」のw:pが一つずつあります。
+        // w:pは段落、w:rは文字のまとまり、w:tは文字列です。
+        // w:brによる段落内改行ではなく、段落の境界をCRLFとして読み取ります。
+        // 固定DOCXはこの構造を狙った最小OOXMLです。
+        using var document = Document.Open(filePath, validate: true);
 
-            document.ContentControls["CustomerName"].Text.Should().Be("前半\r\n後半");
-        }
-        finally
-        {
-            File.Delete(filePath);
-        }
+        document.ContentControls["CustomerName"].Text.Should().Be("前半\r\n後半");
     }
 
     [Fact]
@@ -190,22 +142,16 @@ public class TextContentControlのテスト
     {
         var filePath = TestDocument.CreateTemporaryCopy(
             Path.Combine("TestData", "二つの段落を持つContent Control.docx"));
-        try
-        {
-            // w:sdtContent内に「前半」と「後半」のw:p（段落）が一つずつあります。
-            // 読み取りでは段落境界がCRLFになります。書き込みで後続段落を空にするだけだと、
-            // 再読み取り時にその空段落の分だけ末尾のCRLFが増えてしまいます。
-            using var document = Document.Open(filePath, validate: true);
-            var tested = document.ContentControls["CustomerName"];
+        using var temporaryFile = new TemporaryFile(filePath);
+        // w:sdtContent内に「前半」と「後半」のw:p（段落）が一つずつあります。
+        // 読み取りでは段落境界がCRLFになります。書き込みで後続段落を空にするだけだと、
+        // 再読み取り時にその空段落の分だけ末尾のCRLFが増えてしまいます。
+        using var document = Document.Open(filePath, validate: true);
+        var tested = document.ContentControls["CustomerName"];
 
-            tested.Text = tested.Text;
+        tested.Text = tested.Text;
 
-            tested.Text.Should().Be("前半\r\n後半");
-        }
-        finally
-        {
-            File.Delete(filePath);
-        }
+        tested.Text.Should().Be("前半\r\n後半");
     }
 
     [Fact]
@@ -266,18 +212,12 @@ public class TextContentControlのテスト
     public void TextプロパティはContentControlの値を設定します()
     {
         var filePath = TestDocument.CreateTemporaryCopy(ContentControlPath);
-        try
-        {
-            using var document = Document.Open(filePath);
+        using var temporaryFile = new TemporaryFile(filePath);
+        using var document = Document.Open(filePath);
 
-            document.ContentControls["CustomerName"].Text = "変更後";
+        document.ContentControls["CustomerName"].Text = "変更後";
 
-            document.ContentControls["CustomerName"].Text.Should().Be("変更後");
-        }
-        finally
-        {
-            File.Delete(filePath);
-        }
+        document.ContentControls["CustomerName"].Text.Should().Be("変更後");
     }
 
     [Fact]
@@ -285,16 +225,10 @@ public class TextContentControlのテスト
     {
         var filePath =
             TestDocument.CreateTemporaryCopy(PlaceholderContentControlPath);
-        try
-        {
-            using var document = Document.Open(filePath);
+        using var temporaryFile = new TemporaryFile(filePath);
+        using var document = Document.Open(filePath);
 
-            document.ContentControls["CustomerName"].Text.Should().BeEmpty();
-        }
-        finally
-        {
-            File.Delete(filePath);
-        }
+        document.ContentControls["CustomerName"].Text.Should().BeEmpty();
     }
 
     [Fact]
@@ -302,16 +236,10 @@ public class TextContentControlのテスト
     {
         var filePath = TestDocument.CreateTemporaryCopy(
             Path.Combine("TestData", "プレースホルダー表示がfalseのContent Control.docx"));
-        try
-        {
-            using var document = Document.Open(filePath, validate: true);
+        using var temporaryFile = new TemporaryFile(filePath);
+        using var document = Document.Open(filePath, validate: true);
 
-            document.ContentControls["CustomerName"].Text.Should().Be("入力済みの値");
-        }
-        finally
-        {
-            File.Delete(filePath);
-        }
+        document.ContentControls["CustomerName"].Text.Should().Be("入力済みの値");
     }
 
     [Fact]
@@ -319,18 +247,12 @@ public class TextContentControlのテスト
     {
         var filePath =
             TestDocument.CreateTemporaryCopy(PlaceholderContentControlPath);
-        try
-        {
-            using var document = Document.Open(filePath);
+        using var temporaryFile = new TemporaryFile(filePath);
+        using var document = Document.Open(filePath);
 
-            document.ContentControls["CustomerName"].Text = "変更後";
+        document.ContentControls["CustomerName"].Text = "変更後";
 
-            document.ContentControls["CustomerName"].Text.Should().Be("変更後");
-        }
-        finally
-        {
-            File.Delete(filePath);
-        }
+        document.ContentControls["CustomerName"].Text.Should().Be("変更後");
     }
 
     [Fact]
@@ -409,40 +331,28 @@ public class TextContentControlのテスト
     public void Textプロパティは改行とタブを含むContentControlへ再設定したとき最後の値だけを取得します()
     {
         var filePath = TestDocument.CreateTemporaryCopy(ContentControlPath);
-        try
-        {
-            using var document = Document.Open(filePath);
-            var tested = document.ContentControls["CustomerName"];
-            tested.Text = "一行目\t二列目\r\n二行目";
+        using var temporaryFile = new TemporaryFile(filePath);
+        using var document = Document.Open(filePath);
+        var tested = document.ContentControls["CustomerName"];
+        tested.Text = "一行目\t二列目\r\n二行目";
 
-            tested.Text = "再設定";
+        tested.Text = "再設定";
 
-            tested.Text.Should().Be("再設定");
-        }
-        finally
-        {
-            File.Delete(filePath);
-        }
+        tested.Text.Should().Be("再設定");
     }
 
     [Fact]
     public void Textプロパティは空文字列を設定したContentControlへ値を再設定します()
     {
         var filePath = TestDocument.CreateTemporaryCopy(ContentControlPath);
-        try
-        {
-            using var document = Document.Open(filePath);
-            var tested = document.ContentControls["CustomerName"];
-            tested.Text = "";
+        using var temporaryFile = new TemporaryFile(filePath);
+        using var document = Document.Open(filePath);
+        var tested = document.ContentControls["CustomerName"];
+        tested.Text = "";
 
-            tested.Text = "再設定";
+        tested.Text = "再設定";
 
-            tested.Text.Should().Be("再設定");
-        }
-        finally
-        {
-            File.Delete(filePath);
-        }
+        tested.Text.Should().Be("再設定");
     }
 
     [Theory]
@@ -452,22 +362,16 @@ public class TextContentControlのテスト
     public void Textプロパティはタブまたは改行だけを設定したContentControlへ値を再設定します(string value)
     {
         var filePath = TestDocument.CreateTemporaryCopy(ContentControlPath);
-        try
-        {
-            using var document = Document.Open(filePath);
-            var tested = document.ContentControls["CustomerName"];
-            // タブと改行はOOXMLではw:tではなくw:tabとw:brになります。
-            // それらだけの値を書いた後も、次の文字列を書き込める必要があります。
-            tested.Text = value;
+        using var temporaryFile = new TemporaryFile(filePath);
+        using var document = Document.Open(filePath);
+        var tested = document.ContentControls["CustomerName"];
+        // タブと改行はOOXMLではw:tではなくw:tabとw:brになります。
+        // それらだけの値を書いた後も、次の文字列を書き込める必要があります。
+        tested.Text = value;
 
-            tested.Text = "再設定";
+        tested.Text = "再設定";
 
-            tested.Text.Should().Be("再設定");
-        }
-        finally
-        {
-            File.Delete(filePath);
-        }
+        tested.Text.Should().Be("再設定");
     }
 
     [Fact]

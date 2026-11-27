@@ -24,16 +24,10 @@ public class DatePickerのテスト
     {
         var filePath =
             TestDocument.CreateTemporaryCopy(DatePickerContentControlPath);
-        try
-        {
-            using var document = Document.Open(filePath, true);
+        using var temporaryFile = new TemporaryFile(filePath);
+        using var document = Document.Open(filePath, true);
 
-            document.DatePickers.Single().Document.Should().BeSameAs(document);
-        }
-        finally
-        {
-            File.Delete(filePath);
-        }
+        document.DatePickers.Single().Document.Should().BeSameAs(document);
     }
 
     [Fact]
@@ -41,16 +35,10 @@ public class DatePickerのテスト
     {
         var filePath =
             TestDocument.CreateTemporaryCopy(DatePickerContentControlPath);
-        try
-        {
-            using var document = Document.Open(filePath, true);
+        using var temporaryFile = new TemporaryFile(filePath);
+        using var document = Document.Open(filePath, true);
 
-            document.DatePickers.Single().Tag.Should().Be("DeliveryDate");
-        }
-        finally
-        {
-            File.Delete(filePath);
-        }
+        document.DatePickers.Single().Tag.Should().Be("DeliveryDate");
     }
 
     [Fact]
@@ -58,17 +46,11 @@ public class DatePickerのテスト
     {
         var filePath =
             TestDocument.CreateTemporaryCopy(DatePickerContentControlPath);
-        try
-        {
-            using var document = Document.Open(filePath, true);
+        using var temporaryFile = new TemporaryFile(filePath);
+        using var document = Document.Open(filePath, true);
 
-            document.DatePickers.Single().ToString().Should().Be(
-                "DatePicker { Tag = \"DeliveryDate\" }");
-        }
-        finally
-        {
-            File.Delete(filePath);
-        }
+        document.DatePickers.Single().ToString().Should().Be(
+            "DatePicker { Tag = \"DeliveryDate\" }");
     }
 
     [Fact]
@@ -76,25 +58,19 @@ public class DatePickerのテスト
     {
         var filePath =
             TestDocument.CreateTemporaryCopy(DatePickerContentControlPath);
-        try
-        {
-            using var document = Document.Open(filePath, true);
+        using var temporaryFile = new TemporaryFile(filePath);
+        using var document = Document.Open(filePath, true);
 
-            document.DatePickers.Single().SelectedDateTime
-                .Should().Be(
-                    new DateTimeOffset(
-                        2026,
-                        9,
-                        4,
-                        0,
-                        0,
-                        0,
-                        TimeSpan.Zero));
-        }
-        finally
-        {
-            File.Delete(filePath);
-        }
+        document.DatePickers.Single().SelectedDateTime
+            .Should().Be(
+                new DateTimeOffset(
+                    2026,
+                    9,
+                    4,
+                    0,
+                    0,
+                    0,
+                    TimeSpan.Zero));
     }
 
     [Fact]
@@ -114,29 +90,23 @@ public class DatePickerのテスト
     {
         var filePath =
             TestDocument.CreateTemporaryCopy(OffsetDatePickerContentControlPath);
-        try
-        {
-            using var document = Document.Open(filePath, true);
-            var expected = new DateTimeOffset(
-                2026,
-                9,
-                4,
-                0,
-                0,
-                0,
-                TimeSpan.FromHours(9));
+        using var temporaryFile = new TemporaryFile(filePath);
+        using var document = Document.Open(filePath, true);
+        var expected = new DateTimeOffset(
+            2026,
+            9,
+            4,
+            0,
+            0,
+            0,
+            TimeSpan.FromHours(9));
 
-            // OOXMLではfullDateに完全なXML Schema DateTimeを保持します。
-            // 2026-09-04T00:00:00+09:00の日時と時差をそのまま読み取ります。
-            var actual = document.DatePickers.Single().SelectedDateTime;
+        // OOXMLではfullDateに完全なXML Schema DateTimeを保持します。
+        // 2026-09-04T00:00:00+09:00の日時と時差をそのまま読み取ります。
+        var actual = document.DatePickers.Single().SelectedDateTime;
 
-            actual.Should().Be(expected);
-            actual.Offset.Should().Be(expected.Offset);
-        }
-        finally
-        {
-            File.Delete(filePath);
-        }
+        actual.Should().Be(expected);
+        actual.Offset.Should().Be(expected.Offset);
     }
 
     [Fact]
@@ -144,48 +114,36 @@ public class DatePickerのテスト
     {
         var filePath =
             TestDocument.CreateTemporaryCopy(DatePickerContentControlPath);
-        try
-        {
-            using var document = Document.Open(filePath, true);
-            var tested = document.DatePickers.Single();
-            var value = new DateTimeOffset(
-                2026,
-                12,
-                31,
-                0,
-                0,
-                0,
-                TimeSpan.FromHours(9));
+        using var temporaryFile = new TemporaryFile(filePath);
+        using var document = Document.Open(filePath, true);
+        var tested = document.DatePickers.Single();
+        var value = new DateTimeOffset(
+            2026,
+            12,
+            31,
+            0,
+            0,
+            0,
+            TimeSpan.FromHours(9));
 
-            tested.SelectedDateTime = value;
+        tested.SelectedDateTime = value;
 
-            tested.SelectedDateTime.Should().Be(value);
-            tested.SelectedDateTime.Offset.Should().Be(value.Offset);
-        }
-        finally
-        {
-            File.Delete(filePath);
-        }
+        tested.SelectedDateTime.Should().Be(value);
+        tested.SelectedDateTime.Offset.Should().Be(value.Offset);
     }
 
     [Fact]
     public void CustomXMLに連結された日付選択の日時は書き込みません()
     {
         var filePath = TestDocument.CreateTemporaryCopy(BoundDatePickerPath);
-        try
-        {
-            using var document = Document.Open(filePath, true);
-            var tested = document.DatePickers["DeliveryDate"];
+        using var temporaryFile = new TemporaryFile(filePath);
+        using var document = Document.Open(filePath, true);
+        var tested = document.DatePickers["DeliveryDate"];
 
-            var action = () => tested.SelectedDateTime =
-                new DateTimeOffset(2026, 9, 5, 0, 0, 0, TimeSpan.Zero);
+        var action = () => tested.SelectedDateTime =
+            new DateTimeOffset(2026, 9, 5, 0, 0, 0, TimeSpan.Zero);
 
-            action.Should().Throw<NotSupportedException>();
-        }
-        finally
-        {
-            File.Delete(filePath);
-        }
+        action.Should().Throw<NotSupportedException>();
     }
 
     [Fact]
@@ -193,23 +151,17 @@ public class DatePickerのテスト
     {
         var filePath = TestDocument.CreateTemporaryCopy(
             Path.Combine("TestData", "日時が未入力の日付選択Content Control.docx"));
-        try
-        {
-            // w:dateはありますが、日時を保持するw:fullDate属性はなく、
-            // 表示文字列のw:tも空です。書式と表示言語は設定されています。
-            // 未入力状態を狙った最小OOXMLで、Wordのプレースホルダー表示は対象外です。
-            using var document = Document.Open(filePath, validate: true);
-            var tested = document.DatePickers.Single();
-            var value = new DateTimeOffset(2026, 12, 31, 0, 0, 0, TimeSpan.FromHours(9));
+        using var temporaryFile = new TemporaryFile(filePath);
+        // w:dateはありますが、日時を保持するw:fullDate属性はなく、
+        // 表示文字列のw:tも空です。書式と表示言語は設定されています。
+        // 未入力状態を狙った最小OOXMLで、Wordのプレースホルダー表示は対象外です。
+        using var document = Document.Open(filePath, validate: true);
+        var tested = document.DatePickers.Single();
+        var value = new DateTimeOffset(2026, 12, 31, 0, 0, 0, TimeSpan.FromHours(9));
 
-            tested.SelectedDateTime = value;
+        tested.SelectedDateTime = value;
 
-            tested.SelectedDateTime.Should().Be(value);
-        }
-        finally
-        {
-            File.Delete(filePath);
-        }
+        tested.SelectedDateTime.Should().Be(value);
     }
 
     [Fact]
