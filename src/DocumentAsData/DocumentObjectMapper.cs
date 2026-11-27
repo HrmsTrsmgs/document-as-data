@@ -9,6 +9,17 @@ namespace Marimo.DocumentAsData;
 /// </summary>
 sealed class DocumentObjectMapper
 {
+    sealed record ItemMapping(
+        Type PropertyType,
+        Func<DocumentObjectMapper, string, object> Read,
+        Action<DocumentObjectMapper, string, object> Write);
+
+    static readonly ItemMapping checkBoxMapping = new(
+        typeof(bool),
+        (mapper, name) => (mapper.checkBoxes.FindByTag(name) ?? throw new DocumentMappingException()).IsChecked,
+        (mapper, name, value) =>
+            (mapper.checkBoxes.FindByTag(name) ?? throw new DocumentMappingException()).IsChecked = (bool)value);
+
     /// <summary>
     /// 対応付けの対象範囲にある文字列Content Controlです。
     /// </summary>
@@ -94,9 +105,8 @@ sealed class DocumentObjectMapper
         propertyType == typeof(DateTimeOffset)
             ? (datePickers.FindByTag(name) ?? throw new DocumentMappingException())
                 .SelectedDateTime
-        : propertyType == typeof(bool)
-            ? (checkBoxes.FindByTag(name) ?? throw new DocumentMappingException())
-                .IsChecked
+        : propertyType == checkBoxMapping.PropertyType
+            ? checkBoxMapping.Read(this, name)
         : propertyType == typeof(string)
             ? (FindValueTarget(name) ?? throw new InvalidOperationException())
                 .Text
@@ -196,7 +206,7 @@ sealed class DocumentObjectMapper
     static bool IsSupportedPropertyType(Type type) =>
         type == typeof(string) ||
         type == typeof(DateTimeOffset) ||
-        type == typeof(bool);
+        type == checkBoxMapping.PropertyType;
 
     /// <summary>
     /// 同じ名前の文書項目へ値を書き込みます。
@@ -213,9 +223,8 @@ sealed class DocumentObjectMapper
                     .SelectedDateTime = dateTime;
                 return;
 
-            case bool isChecked:
-                (checkBoxes.FindByTag(name) ?? throw new DocumentMappingException())
-                    .IsChecked = isChecked;
+            case bool:
+                checkBoxMapping.Write(this, name, value);
                 return;
 
             default:
