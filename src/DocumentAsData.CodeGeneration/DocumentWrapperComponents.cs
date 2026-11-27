@@ -7,6 +7,9 @@ namespace Marimo.DocumentAsData.CodeGeneration;
 /// </summary>
 static partial class DocumentWrapperComponents
 {
+    /// <summary>生成Document型の必須項目検査メソッド名です。</summary>
+    internal const string ValidateRequiredItemsName = "ValidateRequiredItems";
+
     /// <summary>
     /// 生成するC#ソースファイル全体を表すテンプレート部品です。
     /// </summary>
@@ -164,7 +167,7 @@ static partial class DocumentWrapperComponents
 
                 try
                 {
-                    document.ValidateRequiredItems();
+                    document.{{ValidateRequiredItemsName}}();
                     return document;
                 }
                 catch

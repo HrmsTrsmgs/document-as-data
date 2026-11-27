@@ -90,7 +90,7 @@ static partial class DocumentWrapperComponents
                 /// <exception cref="DocumentMappingException">
                 /// 生成元の文書に対応する項目が不足している場合。
                 /// </exception>
-                void ValidateRequiredItems()
+                void {{ValidateRequiredItemsName}}()
                 {
             {{string.Join(TemplateLineBreak, ItemValidationBlocks(TopLevelItems(document), isDetail: false))}}
             {{RequiredItemsValidation(

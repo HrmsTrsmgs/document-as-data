@@ -25,7 +25,7 @@ static class GeneratedNameDiagnostics
         nameof(Document.CheckBoxes),
         nameof(Document.DatePickers),
         nameof(Document.RepeatingSections),
-        "ValidateRequiredItems"
+        DocumentWrapperComponents.ValidateRequiredItemsName
     ];
 
     /// <summary>

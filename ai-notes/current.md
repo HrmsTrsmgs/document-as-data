@@ -4,8 +4,8 @@
 
 ## 停止位置
 
-* `codex/dry-refactoring`、基準 `ee4cf5c`。生成対象の列挙とDTOマッピングのboolの代表例はコミット済み。string・DateTimeOffsetへ対応付けを展開した変更を確認済み。次のDRY候補を確認する。
-* [GitHub Project](https://github.com/users/HrmsTrsmgs/projects/1)の「DocumentAsDataのコード生成で対象項目の列挙を共通化する」は進行中。コミット `468591e` はmainへの取り込み待ち。DTOマッピングの対応はProjectで進行中。生成XMLコメントの警告と生成名衝突の扱いは別作業。リリースはSpreadsheetAsDataとの足並みを確認するまで保留。
+* `codex/dry-refactoring`、基準 `3e25951`。生成対象の列挙とDTOマッピングの型対応はコミット済み。生成メソッド `ValidateRequiredItems` の名前を共有した変更は確認済み。次のDRY候補を確認する。
+* [GitHub Project](https://github.com/users/HrmsTrsmgs/projects/1)の「DocumentAsDataのコード生成で対象項目の列挙を共通化する」は進行中。コミット `468591e` はmainへの取り込み待ち。DTOマッピングと生成メソッド名の対応はProjectで進行中。名前解決の共通化は複雑さに見合わず保留。MSBuild接尾辞とテスト一時ファイルの共有はAPI・構成の変更が必要なため未着手。生成XMLコメントの警告と生成名衝突の扱いは別作業。リリースはSpreadsheetAsDataとの足並みを確認するまで保留。
 
 ## 検証
 
