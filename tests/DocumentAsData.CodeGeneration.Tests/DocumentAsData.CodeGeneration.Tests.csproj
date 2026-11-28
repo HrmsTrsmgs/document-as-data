@@ -55,6 +55,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Include="..\DocumentAsData.Tests\TestData\空の文書.docx" Link="TestData\コード生成\BasicStructure.docx" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\DocumentAsData.Tests\TestData\空の文書.docx" Link="TestData\コード生成\salesReport.docx" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\DocumentAsData.Tests\TestData\空の文書.docx" Link="TestData\コード生成\統合.docx" CopyToOutputDirectory="PreserveNewest" />
     <None Include="..\DocumentAsData.Tests\TestData\単一のContent Control.docx"
           Link="TestData\コード生成\文字列ContentControl.docx"
           CopyToOutputDirectory="PreserveNewest" />
