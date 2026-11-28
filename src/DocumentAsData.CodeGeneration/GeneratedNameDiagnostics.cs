@@ -25,7 +25,7 @@ static class GeneratedNameDiagnostics
         nameof(Document.CheckBoxes),
         nameof(Document.DatePickers),
         nameof(Document.RepeatingSections),
-        "ValidateRequiredItems"
+        DocumentWrapperComponents.ValidateRequiredItemsName
     ];
 
     /// <summary>
@@ -44,7 +44,9 @@ static class GeneratedNameDiagnostics
         (string Tag, string[] PropertyNames)[] sections =
         [
             .. from section in document.RepeatingSections
-               select (section.Tag, DetailPropertySourceNames(section.Items[0]))
+               select (section.Tag, (from itemGroup in DetailItems(section)
+                                     from name in itemGroup.Names
+                                     select name).ToArray())
         ];
 
         var documentName = Path.GetFileNameWithoutExtension(filePath);
@@ -98,33 +100,11 @@ static class GeneratedNameDiagnostics
     /// </summary>
     static string[] DocumentPropertySourceNames(Document document) =>
         [
-            .. from mergeField in TopLevel(document.MergeFields)
-               select mergeField.Name,
-            .. from contentControl in TopLevel(document.ContentControls)
-               select contentControl.Tag,
-            .. from checkBox in TopLevel(document.CheckBoxes)
-               select checkBox.Tag,
-            .. from datePicker in TopLevel(document.DatePickers)
-               select datePicker.Tag,
+            .. from itemGroup in TopLevelItems(document)
+               from name in itemGroup.Names
+               select name,
             .. from section in document.RepeatingSections
                select section.Tag
-        ];
-
-    /// <summary>
-    /// 明細型の生成元となる最初の明細から、文字列Content Control、MERGEFIELD、CheckBox、DatePickerの順に元名を取り出します。
-    /// </summary>
-    /// <param name="templateItem">明細型の生成元となる先頭明細。</param>
-    /// <returns>明細プロパティへ変換する元名の列。</returns>
-    static string[] DetailPropertySourceNames(RepeatingSectionItem templateItem) =>
-        [
-            .. from contentControl in templateItem.ContentControls
-               select contentControl.Tag,
-            .. from mergeField in templateItem.MergeFields
-               select mergeField.Name,
-            .. from checkBox in templateItem.CheckBoxes
-               select checkBox.Tag,
-            .. from datePicker in templateItem.DatePickers
-               select datePicker.Tag
         ];
 
     /// <summary>

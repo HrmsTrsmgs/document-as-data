@@ -22,16 +22,10 @@ public class CheckBoxのテスト
     {
         var filePath =
             TestDocument.CreateTemporaryCopy(CheckBoxContentControlPath);
-        try
-        {
-            using var document = Document.Open(filePath, true);
+        using var temporaryFile = new TemporaryFile(filePath);
+        using var document = Document.Open(filePath, true);
 
-            document.CheckBoxes.Single().Document.Should().BeSameAs(document);
-        }
-        finally
-        {
-            File.Delete(filePath);
-        }
+        document.CheckBoxes.Single().Document.Should().BeSameAs(document);
     }
 
     [Fact]
@@ -39,16 +33,10 @@ public class CheckBoxのテスト
     {
         var filePath =
             TestDocument.CreateTemporaryCopy(CheckBoxContentControlPath);
-        try
-        {
-            using var document = Document.Open(filePath, true);
+        using var temporaryFile = new TemporaryFile(filePath);
+        using var document = Document.Open(filePath, true);
 
-            document.CheckBoxes.Single().Tag.Should().Be("Agreement");
-        }
-        finally
-        {
-            File.Delete(filePath);
-        }
+        document.CheckBoxes.Single().Tag.Should().Be("Agreement");
     }
 
     [Fact]
@@ -56,17 +44,11 @@ public class CheckBoxのテスト
     {
         var filePath =
             TestDocument.CreateTemporaryCopy(CheckBoxContentControlPath);
-        try
-        {
-            using var document = Document.Open(filePath, true);
+        using var temporaryFile = new TemporaryFile(filePath);
+        using var document = Document.Open(filePath, true);
 
-            document.CheckBoxes.Single().ToString().Should().Be(
-                "CheckBox { Tag = \"Agreement\" }");
-        }
-        finally
-        {
-            File.Delete(filePath);
-        }
+        document.CheckBoxes.Single().ToString().Should().Be(
+            "CheckBox { Tag = \"Agreement\" }");
     }
 
     [Fact]
@@ -140,21 +122,15 @@ public class CheckBoxのテスト
     {
         var filePath =
             TestDocument.CreateTemporaryCopy(CheckBoxContentControlPath);
-        try
-        {
-            using var document = Document.Open(filePath, true);
-            var tested = document.CheckBoxes.Single();
+        using var temporaryFile = new TemporaryFile(filePath);
+        using var document = Document.Open(filePath, true);
+        var tested = document.CheckBoxes.Single();
 
-            tested.IsChecked = true;
-            tested.IsChecked.Should().BeTrue();
+        tested.IsChecked = true;
+        tested.IsChecked.Should().BeTrue();
 
-            tested.IsChecked = false;
-            tested.IsChecked.Should().BeFalse();
-        }
-        finally
-        {
-            File.Delete(filePath);
-        }
+        tested.IsChecked = false;
+        tested.IsChecked.Should().BeFalse();
     }
 
     [Fact]
@@ -199,19 +175,13 @@ public class CheckBoxのテスト
     public void CustomXMLに連結されたチェックボックスの状態は書き込みません()
     {
         var filePath = TestDocument.CreateTemporaryCopy(BoundCheckBoxPath);
-        try
-        {
-            using var document = Document.Open(filePath, true);
-            var tested = document.CheckBoxes["Agreement"];
+        using var temporaryFile = new TemporaryFile(filePath);
+        using var document = Document.Open(filePath, true);
+        var tested = document.CheckBoxes["Agreement"];
 
-            var action = () => tested.IsChecked = true;
+        var action = () => tested.IsChecked = true;
 
-            action.Should().Throw<NotSupportedException>();
-        }
-        finally
-        {
-            File.Delete(filePath);
-        }
+        action.Should().Throw<NotSupportedException>();
     }
 
     [Fact]

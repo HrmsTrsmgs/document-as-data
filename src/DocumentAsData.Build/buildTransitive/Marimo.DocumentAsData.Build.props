@@ -1,7 +1,10 @@
 <Project>
+  <Import
+    Project="$(MSBuildThisFileDirectory)Marimo.DocumentAsData.Build.Naming.props"
+    Condition="'$(_DocumentAsDataBuildNamingImported)' != 'true'" />
   <!-- 生成コードはSDKの自動収集から除外し、現在の生成対象に対応するものだけをtargetsで登録します。 -->
   <PropertyGroup>
-    <DefaultItemExcludes>$(DefaultItemExcludes);**/*.DocumentAsData.g.cs</DefaultItemExcludes>
+    <DefaultItemExcludes>$(DefaultItemExcludes);**/*$(_DocumentAsDataGeneratedFileSuffix)</DefaultItemExcludes>
   </PropertyGroup>
 
   <!-- IDEへDocumentAsDataをビルドアクションの候補として公開します。 -->

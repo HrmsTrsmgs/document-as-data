@@ -1,4 +1,8 @@
 <Project>
+  <!-- ソースからtargetsだけを読み込む場合も、同じ接尾辞の定義を読み込みます。 -->
+  <Import
+    Project="$(MSBuildThisFileDirectory)Marimo.DocumentAsData.Build.Naming.props"
+    Condition="'$(_DocumentAsDataBuildNamingImported)' != 'true'" />
   <!-- 明示指定がない場合は、パッケージ内のタスクDLLを参照します。 -->
   <PropertyGroup>
     <DocumentAsDataTaskAssembly Condition="'$(DocumentAsDataTaskAssembly)' == ''">$(MSBuildThisFileDirectory)..\tools\net11.0\DocumentAsData.Build.dll</DocumentAsDataTaskAssembly>
@@ -12,8 +16,8 @@
     <!-- 元文書と生成ソースの対応を保持し、同じ評価内の項目登録・除外で共有します。 -->
     <DocumentAsData Update="@(DocumentAsData)">
       <DocumentAsDataDependentUpon>%(Filename)%(Extension)</DocumentAsDataDependentUpon>
-      <LastGenOutput>%(Filename).DocumentAsData.g.cs</LastGenOutput>
-      <DocumentAsDataGeneratedFilePath>%(RootDir)%(Directory)%(Filename).DocumentAsData.g.cs</DocumentAsDataGeneratedFilePath>
+      <LastGenOutput>%(Filename)$(_DocumentAsDataGeneratedFileSuffix)</LastGenOutput>
+      <DocumentAsDataGeneratedFilePath>%(RootDir)%(Directory)%(LastGenOutput)</DocumentAsDataGeneratedFilePath>
     </DocumentAsData>
     <!-- SDKの既定Compile項目に含まれる場合も、対象の生成ファイルを一度だけ登録します。 -->
     <Compile Remove="@(DocumentAsData->'%(DocumentAsDataGeneratedFilePath)')" />
@@ -38,6 +42,6 @@
   <!-- 標準Cleanはbin/obj外を削除しないため、現在の対象文書に対応する生成ソースだけを削除します。 -->
   <Target Name="CleanDocumentAsDataSources" AfterTargets="CoreClean">
     <!-- 評価後に追加・変更された項目も反映するため、実行時の対象文書から生成先を計算します。 -->
-    <Delete Files="@(DocumentAsData->'%(RootDir)%(Directory)%(Filename).DocumentAsData.g.cs')" />
+    <Delete Files="@(DocumentAsData->'%(RootDir)%(Directory)%(Filename)$(_DocumentAsDataGeneratedFileSuffix)')" />
   </Target>
 </Project>

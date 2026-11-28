@@ -7,6 +7,9 @@ namespace Marimo.DocumentAsData.CodeGeneration;
 /// </summary>
 static partial class DocumentWrapperComponents
 {
+    /// <summary>生成Document型の必須項目検査メソッド名です。</summary>
+    internal const string ValidateRequiredItemsName = "ValidateRequiredItems";
+
     /// <summary>
     /// 生成するC#ソースファイル全体を表すテンプレート部品です。
     /// </summary>
@@ -112,16 +115,9 @@ static partial class DocumentWrapperComponents
                 public void Replace(global::{{options.Namespace}}.{{dataTypeName}} data) =>
                     base.Replace(data);
             {{ForEach([
-                .. from mergeField in TopLevel(document.MergeFields)
-                   select MergeFieldPropertyDeclaration(mergeField, options),
-                .. from contentControl in TopLevel(document.ContentControls)
-                   select TextContentControlPropertyDeclaration(
-                       contentControl,
-                       options),
-                .. from checkBox in TopLevel(document.CheckBoxes)
-                   select CheckBoxPropertyDeclaration(checkBox, options),
-                .. from datePicker in TopLevel(document.DatePickers)
-                   select DatePickerPropertyDeclaration(datePicker, options),
+                .. from itemGroup in TopLevelItems(document)
+                   from name in itemGroup.Names
+                   select DocumentPropertyDeclaration(itemGroup.Kind, name, options),
                 .. from section in document.RepeatingSections
                    select RepeatingSectionDeclaration(section, options)
             ])}}
@@ -139,7 +135,6 @@ static partial class DocumentWrapperComponents
     static string RepeatingSectionDeclaration(RepeatingSection section, CodeGenerationOptions options)
     {
         var dataTypeName = options.DataTypeName(section.Tag);
-        var templateItem = section.Items[0];
 
         return $$"""
 
@@ -154,14 +149,7 @@ static partial class DocumentWrapperComponents
             /// </summary>
             public class {{dataTypeName}}
             {
-            {{DataPropertyDeclarations(
-                [
-                    .. templateItem.ContentControls.Select(it => it.Tag),
-                    .. templateItem.MergeFields.Select(it => it.Name)
-                ],
-                templateItem.CheckBoxes,
-                templateItem.DatePickers,
-                options)}}
+            {{DataPropertyDeclarations(DetailItems(section), options)}}
             }
         """;
     }
@@ -179,7 +167,7 @@ static partial class DocumentWrapperComponents
 
                 try
                 {
-                    document.ValidateRequiredItems();
+                    document.{{ValidateRequiredItemsName}}();
                     return document;
                 }
                 catch
@@ -206,39 +194,38 @@ static partial class DocumentWrapperComponents
         /// </summary>
         public partial class {{options.DataTypeName(documentName)}}
         {
-        {{DataPropertyDeclarations(
-            [
-                .. TopLevel(document.MergeFields).Select(it => it.Name),
-                .. TopLevel(document.ContentControls).Select(it => it.Tag)
-            ],
-            TopLevel(document.CheckBoxes),
-            TopLevel(document.DatePickers),
-            options)}}
+        {{DataPropertyDeclarations(TopLevelItems(document), options)}}
         }
         """;
 
     /// <summary>
-    /// 文書全体と明細のデータ型に共通する、値プロパティの並びを生成します。
-    /// 文字列項目の順序と対象範囲は呼び出し元で決め、ここでは種類ごとの部品へ接続します。
+    /// 通常項目の種類に応じた読み書きのプロパティ宣言を選びます。
     /// </summary>
-    /// <param name="textItemNames">生成順に並べた文字列項目の元名。</param>
-    /// <param name="checkBoxes">生成対象のチェックボックス。</param>
-    /// <param name="datePickers">生成対象の日付選択。</param>
-    /// <param name="options">名前変換の設定。</param>
-    /// <returns>データ型の値プロパティ宣言。</returns>
-    static string DataPropertyDeclarations(
-        IEnumerable<string> textItemNames,
-        IEnumerable<CheckBox> checkBoxes,
-        IEnumerable<DatePicker> datePickers,
-        CodeGenerationOptions options) =>
-        ForEach([
-            .. from name in textItemNames
-               select DataTextPropertyDeclaration(name, options),
-            .. from checkBox in checkBoxes
-               select DataCheckBoxPropertyDeclaration(checkBox, options),
-            .. from datePicker in datePickers
-               select DataDatePickerPropertyDeclaration(datePicker, options)
-        ]);
+    static string DocumentPropertyDeclaration(ItemKind kind, string name, CodeGenerationOptions options) =>
+        kind switch
+        {
+            ItemKind.MergeField => MergeFieldPropertyDeclaration(name, options),
+            ItemKind.TextContentControl => TextContentControlPropertyDeclaration(name, options),
+            ItemKind.CheckBox => CheckBoxPropertyDeclaration(name, options),
+            ItemKind.DatePicker => DatePickerPropertyDeclaration(name, options),
+            _ => throw new ArgumentOutOfRangeException(nameof(kind))
+        };
+
+    /// <summary>
+    /// 文書全体と明細のデータ型に共通する、値プロパティの並びを生成します。
+    /// MERGEFIELDと文字列Content Controlは同じデータ型を使います。
+    /// </summary>
+    static string DataPropertyDeclarations(IEnumerable<ItemGroup> groups, CodeGenerationOptions options) =>
+        ForEach(
+            from itemGroup in groups
+            from name in itemGroup.Names
+            select itemGroup.Kind switch
+            {
+                ItemKind.MergeField or ItemKind.TextContentControl => DataTextPropertyDeclaration(name, options),
+                ItemKind.CheckBox => DataCheckBoxPropertyDeclaration(name, options),
+                ItemKind.DatePicker => DataDatePickerPropertyDeclaration(name, options),
+                _ => throw new ArgumentOutOfRangeException(nameof(groups))
+            });
 
     /// <summary>
     /// 文書データ型に、文字列項目を表すプロパティ宣言を生成します。
@@ -264,42 +251,42 @@ static partial class DocumentWrapperComponents
     /// <summary>
     /// 文書データ型に、CheckBoxを表すプロパティ宣言を生成します。
     /// </summary>
-    /// <param name="checkBox">プロパティとして公開するCheckBox。</param>
+    /// <param name="itemName">プロパティとして公開する項目の元名。</param>
     /// <param name="options">コード生成時に適用する設定。</param>
     /// <returns>CheckBoxプロパティのC#コード。</returns>
     static string DataCheckBoxPropertyDeclaration(
-        CheckBox checkBox,
+        string itemName,
         CodeGenerationOptions options)
     {
-        var propertyName = options.GeneratedName(checkBox.Tag);
+        var propertyName = options.GeneratedName(itemName);
 
         return $$"""
 
             /// <summary>
-            /// CheckBox「{{checkBox.Tag.EscapeAmpersands().EscapeLineBreaks()}}」のチェック状態を取得または設定します。
+            /// CheckBox「{{itemName.EscapeAmpersands().EscapeLineBreaks()}}」のチェック状態を取得または設定します。
             /// </summary>
-            {{DataItemNameAttributeDeclaration(checkBox.Tag, propertyName)}}public bool {{propertyName}} { get; set; }
+            {{DataItemNameAttributeDeclaration(itemName, propertyName)}}public bool {{propertyName}} { get; set; }
         """;
     }
 
     /// <summary>
     /// 文書データ型に、DatePickerを表すプロパティ宣言を生成します。
     /// </summary>
-    /// <param name="datePicker">プロパティとして公開するDatePicker。</param>
+    /// <param name="itemName">プロパティとして公開する項目の元名。</param>
     /// <param name="options">コード生成時に適用する設定。</param>
     /// <returns>DatePickerプロパティのC#コード。</returns>
     static string DataDatePickerPropertyDeclaration(
-        DatePicker datePicker,
+        string itemName,
         CodeGenerationOptions options)
     {
-        var propertyName = options.GeneratedName(datePicker.Tag);
+        var propertyName = options.GeneratedName(itemName);
 
         return $$"""
 
             /// <summary>
-            /// DatePicker「{{datePicker.Tag.EscapeLineFeed()}}」の日時を取得または設定します。
+            /// DatePicker「{{itemName.EscapeLineFeed()}}」の日時を取得または設定します。
             /// </summary>
-            {{DataItemNameAttributeDeclaration(datePicker.Tag, propertyName)}}public DateTimeOffset {{propertyName}} { get; set; }
+            {{DataItemNameAttributeDeclaration(itemName, propertyName)}}public DateTimeOffset {{propertyName}} { get; set; }
         """;
     }
 
@@ -318,27 +305,27 @@ static partial class DocumentWrapperComponents
     /// <summary>
     /// 生成Document型から指定したMERGEFIELDを取得するプロパティ宣言を生成します。
     /// </summary>
-    /// <param name="mergeField">プロパティとして公開するMERGEFIELD。</param>
+    /// <param name="itemName">プロパティとして公開する項目の元名。</param>
     /// <param name="options">コード生成時に適用する設定。</param>
     /// <returns>MERGEFIELDプロパティのC#コード。</returns>
     static string MergeFieldPropertyDeclaration(
-        MergeField mergeField,
+        string itemName,
         CodeGenerationOptions options) =>
         $$"""
 
             /// <summary>
-            /// MERGEFIELD「{{mergeField.Name.EscapeLineFeed()}}」の文字列を取得または設定します。
+            /// MERGEFIELD「{{itemName.EscapeLineFeed()}}」の文字列を取得または設定します。
             /// </summary>
             /// <remarks>
             /// 読み取りと書き込みはMERGEFIELDを優先し、存在しない場合に同名の文字列Content Controlを使用します。
             /// どちらの種類も繰り返しセクション内の項目は対象にしません。
             /// </remarks>
-            public string {{options.GeneratedName(mergeField.Name)}}
+            public string {{options.GeneratedName(itemName)}}
             {
         {{PropertyAccessors(
             $$"""
-            (MergeFields.SingleOrDefault(it => !it.IsInRepeatingSection && it.Name == {{StringLiteral(mergeField.Name)}}) as IDocumentTextItem
-                ?? ContentControls.Single(it => !it.IsInRepeatingSection && it.Tag == {{StringLiteral(mergeField.Name)}})).Text
+            (MergeFields.SingleOrDefault(it => !it.IsInRepeatingSection && it.Name == {{StringLiteral(itemName)}}) as IDocumentTextItem
+                ?? ContentControls.Single(it => !it.IsInRepeatingSection && it.Tag == {{StringLiteral(itemName)}})).Text
             """)}}
             }
         """;
@@ -346,71 +333,71 @@ static partial class DocumentWrapperComponents
     /// <summary>
     /// 生成Document型から指定したDatePickerを取得するプロパティ宣言を生成します。
     /// </summary>
-    /// <param name="datePicker">プロパティとして公開するDatePicker。</param>
+    /// <param name="itemName">プロパティとして公開する項目の元名。</param>
     /// <param name="options">コード生成時に適用する設定。</param>
     /// <returns>DatePickerプロパティのC#コード。</returns>
     static string DatePickerPropertyDeclaration(
-        DatePicker datePicker,
+        string itemName,
         CodeGenerationOptions options) =>
         $$"""
 
             /// <summary>
-            /// DatePicker「{{datePicker.Tag.EscapeLineFeed()}}」の日時を取得または設定します。
+            /// DatePicker「{{itemName.EscapeLineFeed()}}」の日時を取得または設定します。
             /// </summary>
             /// <remarks>繰り返しセクション内の項目は対象にしません。</remarks>
-            public DateTimeOffset {{options.GeneratedName(datePicker.Tag)}}
+            public DateTimeOffset {{options.GeneratedName(itemName)}}
             {
         {{PropertyAccessors(
-            $"DatePickers.Single(it => !it.IsInRepeatingSection && it.Tag == {StringLiteral(datePicker.Tag)}).SelectedDateTime")}}
+            $"DatePickers.Single(it => !it.IsInRepeatingSection && it.Tag == {StringLiteral(itemName)}).SelectedDateTime")}}
             }
         """;
 
     /// <summary>
     /// 生成Document型から指定したCheckBoxを取得するプロパティ宣言を生成します。
     /// </summary>
-    /// <param name="checkBox">プロパティとして公開するCheckBox。</param>
+    /// <param name="itemName">プロパティとして公開する項目の元名。</param>
     /// <param name="options">コード生成時に適用する設定。</param>
     /// <returns>CheckBoxプロパティのC#コード。</returns>
     static string CheckBoxPropertyDeclaration(
-        CheckBox checkBox,
+        string itemName,
         CodeGenerationOptions options) =>
         $$"""
 
             /// <summary>
-            /// CheckBox「{{checkBox.Tag.EscapeAmpersands().EscapeLineBreaks()}}」のチェック状態を取得または設定します。
+            /// CheckBox「{{itemName.EscapeAmpersands().EscapeLineBreaks()}}」のチェック状態を取得または設定します。
             /// </summary>
             /// <remarks>繰り返しセクション内の項目は対象にしません。</remarks>
-            public bool {{options.GeneratedName(checkBox.Tag)}}
+            public bool {{options.GeneratedName(itemName)}}
             {
         {{PropertyAccessors(
-            $"CheckBoxes.Single(it => !it.IsInRepeatingSection && it.Tag == {StringLiteral(checkBox.Tag)}).IsChecked")}}
+            $"CheckBoxes.Single(it => !it.IsInRepeatingSection && it.Tag == {StringLiteral(itemName)}).IsChecked")}}
             }
         """;
 
     /// <summary>
     /// 生成Document型から指定した文字列Content Controlを取得するプロパティ宣言を生成します。
     /// </summary>
-    /// <param name="contentControl">プロパティとして公開する文字列Content Control。</param>
+    /// <param name="itemName">プロパティとして公開する項目の元名。</param>
     /// <param name="options">コード生成時に適用する設定。</param>
     /// <returns>文字列Content ControlプロパティのC#コード。</returns>
     static string TextContentControlPropertyDeclaration(
-        TextContentControl contentControl,
+        string itemName,
         CodeGenerationOptions options) =>
         $$"""
 
             /// <summary>
-            /// 文字列Content Control「{{contentControl.Tag.EscapeXmlCommentText()}}」の文字列を取得または設定します。
+            /// 文字列Content Control「{{itemName.EscapeXmlCommentText()}}」の文字列を取得または設定します。
             /// </summary>
             /// <remarks>
             /// 読み取りと書き込みは文字列Content Controlを優先し、存在しない場合に同名のMERGEFIELDを使用します。
             /// どちらの種類も繰り返しセクション内の項目は対象にしません。
             /// </remarks>
-            public string {{options.GeneratedName(contentControl.Tag)}}
+            public string {{options.GeneratedName(itemName)}}
             {
         {{PropertyAccessors(
             $$"""
-            (ContentControls.SingleOrDefault(it => !it.IsInRepeatingSection && it.Tag == {{StringLiteral(contentControl.Tag)}}) as IDocumentTextItem
-                ?? MergeFields.Single(it => !it.IsInRepeatingSection && it.Name == {{StringLiteral(contentControl.Tag)}})).Text
+            (ContentControls.SingleOrDefault(it => !it.IsInRepeatingSection && it.Tag == {{StringLiteral(itemName)}}) as IDocumentTextItem
+                ?? MergeFields.Single(it => !it.IsInRepeatingSection && it.Name == {{StringLiteral(itemName)}})).Text
             """)}}
             }
         """;

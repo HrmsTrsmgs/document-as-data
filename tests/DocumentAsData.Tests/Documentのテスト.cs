@@ -2,6 +2,7 @@
 using System.Xml;
 using FluentAssertions;
 using Marimo.DocumentAsData.Test.TestDocuments;
+using Marimo.DocumentAsData.Test.テスト補助;
 
 namespace Marimo.DocumentAsData.Test;
 
@@ -65,22 +66,16 @@ public class Documentのテスト
     public void Open中は他のStreamから元ファイルへ書き込めません()
     {
         var filePath = TestDocument.CreateTemporaryCopy(EmptyDocumentPath);
-        try
+        using var temporaryFile = new TemporaryFile(filePath);
+        using var document = Document.Open(filePath);
+        var action = () =>
         {
-            using var document = Document.Open(filePath);
-            var action = () =>
-            {
-                // 相手側は読み書き共有を許可し、Document側が書き込みを拒むことを確認します。
-                // 削除禁止だけでは、Open後の外部更新をSaveで上書きする事故を防げません。
-                using var writer = File.Open(filePath, FileMode.Open, FileAccess.Write, FileShare.ReadWrite);
-            };
+            // 相手側は読み書き共有を許可し、Document側が書き込みを拒むことを確認します。
+            // 削除禁止だけでは、Open後の外部更新をSaveで上書きする事故を防げません。
+            using var writer = File.Open(filePath, FileMode.Open, FileAccess.Write, FileShare.ReadWrite);
+        };
 
-            action.Should().Throw<IOException>();
-        }
-        finally
-        {
-            File.Delete(filePath);
-        }
+        action.Should().Throw<IOException>();
     }
 
     [Fact]
@@ -100,21 +95,15 @@ public class Documentのテスト
     public void OpenはFileStream上の文書を開きます()
     {
         var filePath = TestDocument.CreateTemporaryCopy(EmptyDocumentPath);
-        try
-        {
-            using var stream = File.Open(filePath, FileMode.Open, FileAccess.ReadWrite);
+        using var temporaryFile = new TemporaryFile(filePath);
+        using var stream = File.Open(filePath, FileMode.Open, FileAccess.ReadWrite);
 
-            var action = () =>
-            {
-                using var document = Document.Open(stream);
-            };
-
-            action.Should().NotThrow();
-        }
-        finally
+        var action = () =>
         {
-            File.Delete(filePath);
-        }
+            using var document = Document.Open(stream);
+        };
+
+        action.Should().NotThrow();
     }
 
     [Fact]
@@ -278,57 +267,39 @@ public class Documentのテスト
     public void Openは検証指定を省略した場合不正なOOXMLも開きます()
     {
         var filePath = TestDocument.CreateTemporaryCopy(InvalidContentControlWithoutTagValuePath);
-        try
+        using var temporaryFile = new TemporaryFile(filePath);
+        var action = () =>
         {
-            var action = () =>
-            {
-                using var document = Document.Open(filePath);
-            };
+            using var document = Document.Open(filePath);
+        };
 
-            action.Should().NotThrow();
-        }
-        finally
-        {
-            File.Delete(filePath);
-        }
+        action.Should().NotThrow();
     }
 
     [Fact]
     public void Openは検証しない場合正常なOOXMLを開きます()
     {
         var filePath = TestDocument.CreateTemporaryCopy(EmptyDocumentPath);
-        try
+        using var temporaryFile = new TemporaryFile(filePath);
+        var action = () =>
         {
-            var action = () =>
-            {
-                using var document = Document.Open(filePath, false);
-            };
+            using var document = Document.Open(filePath, false);
+        };
 
-            action.Should().NotThrow();
-        }
-        finally
-        {
-            File.Delete(filePath);
-        }
+        action.Should().NotThrow();
     }
 
     [Fact]
     public void Openは検証しない場合不正なOOXMLも開きます()
     {
         var filePath = TestDocument.CreateTemporaryCopy(InvalidContentControlWithoutTagValuePath);
-        try
+        using var temporaryFile = new TemporaryFile(filePath);
+        var action = () =>
         {
-            var action = () =>
-            {
-                using var document = Document.Open(filePath, false);
-            };
+            using var document = Document.Open(filePath, false);
+        };
 
-            action.Should().NotThrow();
-        }
-        finally
-        {
-            File.Delete(filePath);
-        }
+        action.Should().NotThrow();
     }
 
     [Fact]
@@ -385,38 +356,26 @@ public class Documentのテスト
     public void Openは検証する場合正常なOOXMLを開きます()
     {
         var filePath = TestDocument.CreateTemporaryCopy(EmptyDocumentPath);
-        try
+        using var temporaryFile = new TemporaryFile(filePath);
+        var action = () =>
         {
-            var action = () =>
-            {
-                using var document = Document.Open(filePath, true);
-            };
+            using var document = Document.Open(filePath, true);
+        };
 
-            action.Should().NotThrow();
-        }
-        finally
-        {
-            File.Delete(filePath);
-        }
+        action.Should().NotThrow();
     }
 
     [Fact]
     public void Openは検証する場合不正なOOXMLで失敗します()
     {
         var filePath = TestDocument.CreateTemporaryCopy(InvalidContentControlWithoutTagValuePath);
-        try
+        using var temporaryFile = new TemporaryFile(filePath);
+        var action = () =>
         {
-            var action = () =>
-            {
-                using var document = Document.Open(filePath, true);
-            };
+            using var document = Document.Open(filePath, true);
+        };
 
-            action.Should().Throw<InvalidDataException>();
-        }
-        finally
-        {
-            File.Delete(filePath);
-        }
+        action.Should().Throw<InvalidDataException>();
     }
 
     [Fact]
@@ -424,23 +383,17 @@ public class Documentのテスト
     {
         var filePath = TestDocument.CreateTemporaryCopy(
             Path.Combine("TestData", "不正なチェック状態を持つCheckBox.docx"));
-        try
+        using var temporaryFile = new TemporaryFile(filePath);
+        // w14:checkboxはOffice 2010の要素です。w14:checkedのvalを、
+        // 真偽値として無効な「invalid」にした、意図的に不正な固定DOCXです。
+        // mc:Ignorable="w14"があるため、Office 2007対象の検証では無視されます。
+        // IsCheckedを読んだときではなく、検証を依頼したOpenで拒否する仕様です。
+        var action = () =>
         {
-            // w14:checkboxはOffice 2010の要素です。w14:checkedのvalを、
-            // 真偽値として無効な「invalid」にした、意図的に不正な固定DOCXです。
-            // mc:Ignorable="w14"があるため、Office 2007対象の検証では無視されます。
-            // IsCheckedを読んだときではなく、検証を依頼したOpenで拒否する仕様です。
-            var action = () =>
-            {
-                using var document = Document.Open(filePath, validate: true);
-            };
+            using var document = Document.Open(filePath, validate: true);
+        };
 
-            action.Should().Throw<InvalidDataException>();
-        }
-        finally
-        {
-            File.Delete(filePath);
-        }
+        action.Should().Throw<InvalidDataException>();
     }
 
     [Fact]
@@ -606,43 +559,31 @@ public class Documentのテスト
     public void Readはプロパティ名と同じTagのContentControlからオブジェクトを読み込みます()
     {
         var filePath = TestDocument.CreateTemporaryCopy(ContentControlsPath);
-        try
-        {
-            using var document = Document.Open(filePath);
+        using var temporaryFile = new TemporaryFile(filePath);
+        using var document = Document.Open(filePath);
 
-            document.Read<DocumentData>()
-                .Should().BeEquivalentTo(
-                    new DocumentData
-                    {
-                        CustomerName = "山田太郎",
-                        Address = "東京都"
-                    });
-        }
-        finally
-        {
-            File.Delete(filePath);
-        }
+        document.Read<DocumentData>()
+            .Should().BeEquivalentTo(
+                new DocumentData
+                {
+                    CustomerName = "山田太郎",
+                    Address = "東京都"
+                });
     }
 
     [Fact]
     public void Readはプロパティ名と同じMERGEFIELDからオブジェクトを読み込みます()
     {
         var filePath = TestDocument.CreateTemporaryCopy(SimpleMergeFieldsPath);
-        try
-        {
-            using var document = Document.Open(filePath);
+        using var temporaryFile = new TemporaryFile(filePath);
+        using var document = Document.Open(filePath);
 
-            document.Read<CustomerNameOnlyDocumentData>()
-                .Should().BeEquivalentTo(
-                    new CustomerNameOnlyDocumentData
-                    {
-                        CustomerName = "株式会社○○"
-                    });
-        }
-        finally
-        {
-            File.Delete(filePath);
-        }
+        document.Read<CustomerNameOnlyDocumentData>()
+            .Should().BeEquivalentTo(
+                new CustomerNameOnlyDocumentData
+                {
+                    CustomerName = "株式会社○○"
+                });
     }
 
     [Fact]
@@ -720,22 +661,16 @@ public class Documentのテスト
     public void ReadはDocumentItemName属性で指定した名前からオブジェクトを読み込みます()
     {
         var filePath = TestDocument.CreateTemporaryCopy(ContentControlsPath);
-        try
-        {
-            using var document = Document.Open(filePath);
+        using var temporaryFile = new TemporaryFile(filePath);
+        using var document = Document.Open(filePath);
 
-            document.Read<AttributedDocumentData>()
-                .Should().BeEquivalentTo(
-                    new AttributedDocumentData
-                    {
-                        Name = "山田太郎",
-                        Location = "東京都"
-                    });
-        }
-        finally
-        {
-            File.Delete(filePath);
-        }
+        document.Read<AttributedDocumentData>()
+            .Should().BeEquivalentTo(
+                new AttributedDocumentData
+                {
+                    Name = "山田太郎",
+                    Location = "東京都"
+                });
     }
 
     [Fact]
@@ -743,25 +678,19 @@ public class Documentのテスト
     {
         var filePath =
             TestDocument.CreateTemporaryCopy(DatePickerContentControlPath);
-        try
-        {
-            using var document = Document.Open(filePath, true);
+        using var temporaryFile = new TemporaryFile(filePath);
+        using var document = Document.Open(filePath, true);
 
-            document.Read<DateDocumentData>().DeliveryDate
-                .Should().Be(
-                    new DateTimeOffset(
-                        2026,
-                        9,
-                        4,
-                        0,
-                        0,
-                        0,
-                        TimeSpan.Zero));
-        }
-        finally
-        {
-            File.Delete(filePath);
-        }
+        document.Read<DateDocumentData>().DeliveryDate
+            .Should().Be(
+                new DateTimeOffset(
+                    2026,
+                    9,
+                    4,
+                    0,
+                    0,
+                    0,
+                    TimeSpan.Zero));
     }
 
     [Fact]
@@ -769,18 +698,12 @@ public class Documentのテスト
     {
         var filePath =
             TestDocument.CreateTemporaryCopy(DatePickerContentControlPath);
-        try
-        {
-            using var document = Document.Open(filePath, true);
+        using var temporaryFile = new TemporaryFile(filePath);
+        using var document = Document.Open(filePath, true);
 
-            var action = () => document.Read<MissingDateDocumentData>();
+        var action = () => document.Read<MissingDateDocumentData>();
 
-            action.Should().Throw<DocumentMappingException>();
-        }
-        finally
-        {
-            File.Delete(filePath);
-        }
+        action.Should().Throw<DocumentMappingException>();
     }
 
     [Fact]
@@ -797,45 +720,33 @@ public class Documentのテスト
     public void Readは同名のMERGEFIELDとContentControlがある場合に失敗します()
     {
         var filePath = TestDocument.CreateTemporaryCopy(AmbiguousCustomerNamePath);
-        try
-        {
-            using var document = Document.Open(filePath, true);
+        using var temporaryFile = new TemporaryFile(filePath);
+        using var document = Document.Open(filePath, true);
 
-            var action = () =>
-                document.Read<CustomerNameOnlyDocumentData>();
+        var action = () =>
+            document.Read<CustomerNameOnlyDocumentData>();
 
-            action.Should().Throw<InvalidOperationException>();
-        }
-        finally
-        {
-            File.Delete(filePath);
-        }
+        action.Should().Throw<InvalidOperationException>();
     }
 
     [Fact]
     public void Replaceはプロパティ名と同じTagのContentControlへオブジェクトを書き込みます()
     {
         var filePath = TestDocument.CreateTemporaryCopy(ContentControlsPath);
-        try
-        {
-            using var document = Document.Open(filePath);
+        using var temporaryFile = new TemporaryFile(filePath);
+        using var document = Document.Open(filePath);
 
-            document.Replace(
-                new DocumentData
-                {
-                    CustomerName = "変更後の氏名",
-                    Address = "変更後の住所"
-                });
+        document.Replace(
+            new DocumentData
+            {
+                CustomerName = "変更後の氏名",
+                Address = "変更後の住所"
+            });
 
-            document.ContentControls["CustomerName"].Text
-                .Should().Be("変更後の氏名");
-            document.ContentControls["Address"].Text
-                .Should().Be("変更後の住所");
-        }
-        finally
-        {
-            File.Delete(filePath);
-        }
+        document.ContentControls["CustomerName"].Text
+            .Should().Be("変更後の氏名");
+        document.ContentControls["Address"].Text
+            .Should().Be("変更後の住所");
     }
 
     [Fact]
@@ -906,139 +817,103 @@ public class Documentのテスト
     public void ReplaceはDocumentItemName属性で指定した名前へオブジェクトを書き込みます()
     {
         var filePath = TestDocument.CreateTemporaryCopy(ContentControlsPath);
-        try
-        {
-            using var document = Document.Open(filePath);
+        using var temporaryFile = new TemporaryFile(filePath);
+        using var document = Document.Open(filePath);
 
-            document.Replace(
-                new AttributedDocumentData
-                {
-                    Name = "変更後の氏名",
-                    Location = "変更後の住所"
-                });
+        document.Replace(
+            new AttributedDocumentData
+            {
+                Name = "変更後の氏名",
+                Location = "変更後の住所"
+            });
 
-            document.ContentControls["CustomerName"].Text
-                .Should().Be("変更後の氏名");
-            document.ContentControls["Address"].Text
-                .Should().Be("変更後の住所");
-        }
-        finally
-        {
-            File.Delete(filePath);
-        }
+        document.ContentControls["CustomerName"].Text
+            .Should().Be("変更後の氏名");
+        document.ContentControls["Address"].Text
+            .Should().Be("変更後の住所");
     }
 
     [Fact]
     public void ReplaceはDocumentItemName属性で指定した項目が存在しない場合に失敗します()
     {
         var filePath = TestDocument.CreateTemporaryCopy(ContentControlsPath);
-        try
-        {
-            using var document = Document.Open(filePath);
+        using var temporaryFile = new TemporaryFile(filePath);
+        using var document = Document.Open(filePath);
 
-            var action = () =>
-                document.Replace(
-                    new MissingDocumentItemData
-                    {
-                        Value = "変更後"
-                    });
+        var action = () =>
+            document.Replace(
+                new MissingDocumentItemData
+                {
+                    Value = "変更後"
+                });
 
-            action.Should().Throw<DocumentMappingException>();
-        }
-        finally
-        {
-            File.Delete(filePath);
-        }
+        action.Should().Throw<DocumentMappingException>();
     }
 
     [Fact]
     public void Replaceは複数プロパティが同じ文書項目を指定した場合に失敗します()
     {
         var filePath = TestDocument.CreateTemporaryCopy(ContentControlsPath);
-        try
-        {
-            using var document = Document.Open(filePath);
+        using var temporaryFile = new TemporaryFile(filePath);
+        using var document = Document.Open(filePath);
 
-            var action = () =>
-                document.Replace(
-                    new DuplicateDocumentItemData
-                    {
-                        FirstValue = "1",
-                        SecondValue = "2"
-                    });
+        var action = () =>
+            document.Replace(
+                new DuplicateDocumentItemData
+                {
+                    FirstValue = "1",
+                    SecondValue = "2"
+                });
 
-            action.Should().Throw<DocumentMappingException>();
-        }
-        finally
-        {
-            File.Delete(filePath);
-        }
+        action.Should().Throw<DocumentMappingException>();
     }
 
     [Fact]
     public void ReplaceはDocumentItemName属性を付けたプロパティにpublicなgetterがない場合に失敗します()
     {
         var filePath = TestDocument.CreateTemporaryCopy(ContentControlsPath);
-        try
-        {
-            using var document = Document.Open(filePath);
+        using var temporaryFile = new TemporaryFile(filePath);
+        using var document = Document.Open(filePath);
 
-            var action = () =>
-                document.Replace(
-                    new AttributedPropertyWithoutPublicGetterData());
+        var action = () =>
+            document.Replace(
+                new AttributedPropertyWithoutPublicGetterData());
 
-            action.Should().Throw<DocumentMappingException>();
-        }
-        finally
-        {
-            File.Delete(filePath);
-        }
+        action.Should().Throw<DocumentMappingException>();
     }
 
     [Fact]
     public void ReplaceはDocumentItemName属性のない書き込み専用プロパティを無視します()
     {
         var filePath = TestDocument.CreateTemporaryCopy(ContentControlsPath);
-        try
-        {
-            using var document = Document.Open(filePath);
+        using var temporaryFile = new TemporaryFile(filePath);
+        using var document = Document.Open(filePath);
 
-            document.Replace(
-                new DocumentDataWithWriteOnlyProperty
-                {
-                    CustomerName = "変更後の氏名"
-                });
+        document.Replace(
+            new DocumentDataWithWriteOnlyProperty
+            {
+                CustomerName = "変更後の氏名"
+            });
 
-            document.ContentControls["CustomerName"].Text
-                .Should().Be("変更後の氏名");
-        }
-        finally
-        {
-            File.Delete(filePath);
-        }
+        document.ContentControls["CustomerName"].Text
+            .Should().Be("変更後の氏名");
     }
 
     [Fact]
     public void Replaceは対応していないプロパティ型の場合に失敗します()
     {
         var filePath = TestDocument.CreateTemporaryCopy(ContentControlsPath);
-        try
-        {
-            using var document = Document.Open(filePath);
+        using var temporaryFile = new TemporaryFile(filePath);
+        using var document = Document.Open(filePath);
 
-            var action = () =>
-                document.Replace(
-                    new UnsupportedPropertyTypeData
-                    {
-                        Value = DateTime.Today
-                    });
+        var action = () =>
+            document.Replace(
+                new UnsupportedPropertyTypeData
+                {
+                    Value = DateTime.Today
+                });
 
-            action.Should().Throw<DocumentMappingException>();
-        }
-        finally
-        {
-            File.Delete(filePath);
-        }
+        action.Should().Throw<DocumentMappingException>();
     }
 
     [Fact]
@@ -1046,12 +921,45 @@ public class Documentのテスト
     {
         var filePath =
             TestDocument.CreateTemporaryCopy(DatePickerContentControlPath);
-        try
-        {
-            using var document = Document.Open(filePath, true);
+        using var temporaryFile = new TemporaryFile(filePath);
+        using var document = Document.Open(filePath, true);
 
+        document.Replace(
+            new DateDocumentData
+            {
+                DeliveryDate = new DateTimeOffset(
+                    2027,
+                    1,
+                    2,
+                    0,
+                    0,
+                    0,
+                    TimeSpan.FromHours(9))
+            });
+
+        document.DatePickers["DeliveryDate"].SelectedDateTime
+            .Should().Be(
+                new DateTimeOffset(
+                    2027,
+                    1,
+                    2,
+                    0,
+                    0,
+                    0,
+                    TimeSpan.FromHours(9)));
+    }
+
+    [Fact]
+    public void Replaceは対応する日付選択ContentControlがない場合に失敗します()
+    {
+        var filePath =
+            TestDocument.CreateTemporaryCopy(DatePickerContentControlPath);
+        using var temporaryFile = new TemporaryFile(filePath);
+        using var document = Document.Open(filePath, true);
+
+        var action = () =>
             document.Replace(
-                new DateDocumentData
+                new MissingDateDocumentData
                 {
                     DeliveryDate = new DateTimeOffset(
                         2027,
@@ -1063,75 +971,24 @@ public class Documentのテスト
                         TimeSpan.FromHours(9))
                 });
 
-            document.DatePickers["DeliveryDate"].SelectedDateTime
-                .Should().Be(
-                    new DateTimeOffset(
-                        2027,
-                        1,
-                        2,
-                        0,
-                        0,
-                        0,
-                        TimeSpan.FromHours(9)));
-        }
-        finally
-        {
-            File.Delete(filePath);
-        }
-    }
-
-    [Fact]
-    public void Replaceは対応する日付選択ContentControlがない場合に失敗します()
-    {
-        var filePath =
-            TestDocument.CreateTemporaryCopy(DatePickerContentControlPath);
-        try
-        {
-            using var document = Document.Open(filePath, true);
-
-            var action = () =>
-                document.Replace(
-                    new MissingDateDocumentData
-                    {
-                        DeliveryDate = new DateTimeOffset(
-                            2027,
-                            1,
-                            2,
-                            0,
-                            0,
-                            0,
-                            TimeSpan.FromHours(9))
-                    });
-
-            action.Should().Throw<DocumentMappingException>();
-        }
-        finally
-        {
-            File.Delete(filePath);
-        }
+        action.Should().Throw<DocumentMappingException>();
     }
 
     [Fact]
     public void Replaceはプロパティ名と同じMERGEFIELDへオブジェクトを書き込みます()
     {
         var filePath = TestDocument.CreateTemporaryCopy(SimpleMergeFieldsPath);
-        try
-        {
-            using var document = Document.Open(filePath);
+        using var temporaryFile = new TemporaryFile(filePath);
+        using var document = Document.Open(filePath);
 
-            document.Replace(
-                new CustomerNameOnlyDocumentData
-                {
-                    CustomerName = "変更後の氏名"
-                });
+        document.Replace(
+            new CustomerNameOnlyDocumentData
+            {
+                CustomerName = "変更後の氏名"
+            });
 
-            document.MergeFields["CustomerName"].Text
-                .Should().Be("変更後の氏名");
-        }
-        finally
-        {
-            File.Delete(filePath);
-        }
+        document.MergeFields["CustomerName"].Text
+            .Should().Be("変更後の氏名");
     }
 
     [Fact]
@@ -1153,69 +1010,51 @@ public class Documentのテスト
     public void Replaceは同名のMERGEFIELDとContentControlがある場合に失敗します()
     {
         var filePath = TestDocument.CreateTemporaryCopy(AmbiguousCustomerNamePath);
-        try
-        {
-            using var document = Document.Open(filePath, true);
+        using var temporaryFile = new TemporaryFile(filePath);
+        using var document = Document.Open(filePath, true);
 
-            var action = () =>
-                document.Replace(
-                    new CustomerNameOnlyDocumentData
-                    {
-                        CustomerName = "変更後"
-                    });
+        var action = () =>
+            document.Replace(
+                new CustomerNameOnlyDocumentData
+                {
+                    CustomerName = "変更後"
+                });
 
-            action.Should().Throw<InvalidOperationException>();
-        }
-        finally
-        {
-            File.Delete(filePath);
-        }
+        action.Should().Throw<InvalidOperationException>();
     }
 
     [Fact]
     public void Replaceは書き込み元に対応プロパティがないContentControlを変更しません()
     {
         var filePath = TestDocument.CreateTemporaryCopy(ContentControlsPath);
-        try
-        {
-            using var document = Document.Open(filePath);
+        using var temporaryFile = new TemporaryFile(filePath);
+        using var document = Document.Open(filePath);
 
-            document.Replace(
-                new CustomerNameOnlyDocumentData
-                {
-                    CustomerName = "変更後の氏名"
-                });
+        document.Replace(
+            new CustomerNameOnlyDocumentData
+            {
+                CustomerName = "変更後の氏名"
+            });
 
-            document.ContentControls["CustomerName"].Text
-                .Should().Be("変更後の氏名");
-            document.ContentControls["Address"].Text
-                .Should().Be("東京都");
-        }
-        finally
-        {
-            File.Delete(filePath);
-        }
+        document.ContentControls["CustomerName"].Text
+            .Should().Be("変更後の氏名");
+        document.ContentControls["Address"].Text
+            .Should().Be("東京都");
     }
 
     [Fact]
     public void Saveは開いているファイルへ変更を保存します()
     {
         var filePath = TestDocument.CreateTemporaryCopy(SimpleMergeFieldsPath);
-        try
+        using var temporaryFile = new TemporaryFile(filePath);
+        using (var document = Document.Open(filePath))
         {
-            using (var document = Document.Open(filePath))
-            {
-                document.MergeFields["CustomerName"].Text = "変更後";
-                document.Save();
-            }
+            document.MergeFields["CustomerName"].Text = "変更後";
+            document.Save();
+        }
 
-            using var saved = Document.Open(filePath);
-            saved.MergeFields["CustomerName"].Text.Should().Be("変更後");
-        }
-        finally
-        {
-            File.Delete(filePath);
-        }
+        using var saved = Document.Open(filePath);
+        saved.MergeFields["CustomerName"].Text.Should().Be("変更後");
     }
 
     [Fact]
@@ -1261,101 +1100,77 @@ public class Documentのテスト
     public void Save後も他のStreamから元ファイルへ書き込めません()
     {
         var filePath = TestDocument.CreateTemporaryCopy(EmptyDocumentPath);
-        try
-        {
-            using var document = Document.Open(filePath);
-            document.Save();
+        using var temporaryFile = new TemporaryFile(filePath);
+        using var document = Document.Open(filePath);
+        document.Save();
 
-            var action = () =>
-            {
-                // Saveは保存中だけ元ファイルの束縛を解除するため、戻った後に書き込み禁止が復元されることを確認します。
-                using var writer = File.Open(filePath, FileMode.Open, FileAccess.Write, FileShare.ReadWrite);
-            };
-
-            action.Should().Throw<IOException>();
-        }
-        finally
+        var action = () =>
         {
-            File.Delete(filePath);
-        }
+            // Saveは保存中だけ元ファイルの束縛を解除するため、戻った後に書き込み禁止が復元されることを確認します。
+            using var writer = File.Open(filePath, FileMode.Open, FileAccess.Write, FileShare.ReadWrite);
+        };
+
+        action.Should().Throw<IOException>();
     }
 
     [Fact]
     public void Saveに失敗した後も他のStreamから元ファイルへ書き込めません()
     {
         var filePath = TestDocument.CreateTemporaryCopy(EmptyDocumentPath);
-        try
+        using var temporaryFile = new TemporaryFile(filePath);
+        using var document = Document.Open(filePath);
+        // 別の読み取り用Streamが書き込みを拒否することで、Saveを失敗させます。
+        using (var reader = File.OpenRead(filePath))
         {
-            using var document = Document.Open(filePath);
-            // 別の読み取り用Streamが書き込みを拒否することで、Saveを失敗させます。
-            using (var reader = File.OpenRead(filePath))
-            {
-                FluentActions.Invoking(document.Save).Should().Throw<IOException>();
-            }
-
-            var action = () =>
-            {
-                // readerを閉じた後なので、ここでの書き込み禁止はDocument自身によるものです。
-                using var writer = File.Open(filePath, FileMode.Open, FileAccess.Write, FileShare.ReadWrite);
-            };
-
-            action.Should().Throw<IOException>();
+            FluentActions.Invoking(document.Save).Should().Throw<IOException>();
         }
-        finally
+
+        var action = () =>
         {
-            File.Delete(filePath);
-        }
+            // readerを閉じた後なので、ここでの書き込み禁止はDocument自身によるものです。
+            using var writer = File.Open(filePath, FileMode.Open, FileAccess.Write, FileShare.ReadWrite);
+        };
+
+        action.Should().Throw<IOException>();
     }
 
     [Fact]
     public void Saveは元ファイルの書き込みが禁止されている場合に内容を変更せず失敗します()
     {
         var filePath = TestDocument.CreateTemporaryCopy(SimpleMergeFieldsPath);
-        try
-        {
-            var original = File.ReadAllBytes(filePath);
-            using var tested = Document.Open(filePath);
-            tested.MergeFields["CustomerName"].Text = "変更後";
-            // 別の読み取り用Streamで書き込み開始を妨げます。
-            // 保存途中の任意の失敗ではなく、保存先を開けない場合の元ファイル保護を確認します。
-            using var reader = File.OpenRead(filePath);
+        using var temporaryFile = new TemporaryFile(filePath);
+        var original = File.ReadAllBytes(filePath);
+        using var tested = Document.Open(filePath);
+        tested.MergeFields["CustomerName"].Text = "変更後";
+        // 別の読み取り用Streamで書き込み開始を妨げます。
+        // 保存途中の任意の失敗ではなく、保存先を開けない場合の元ファイル保護を確認します。
+        using var reader = File.OpenRead(filePath);
 
-            FluentActions.Invoking(tested.Save)
-                .Should().Throw<IOException>();
+        FluentActions.Invoking(tested.Save)
+            .Should().Throw<IOException>();
 
-            File.ReadAllBytes(filePath).Should().Equal(original);
-        }
-        finally
-        {
-            File.Delete(filePath);
-        }
+        File.ReadAllBytes(filePath).Should().Equal(original);
     }
 
     [Fact]
     public void Saveが元ファイルへの書き込みに失敗しても編集内容を保持して再保存できます()
     {
         var filePath = TestDocument.CreateTemporaryCopy(SimpleMergeFieldsPath);
-        try
+        using var temporaryFile = new TemporaryFile(filePath);
+        using (var document = Document.Open(filePath))
         {
-            using (var document = Document.Open(filePath))
+            document.MergeFields["CustomerName"].Text = "変更後";
+            // 別の読み取り用Streamで保存を妨げます。原因を取り除いた後、同じDocumentで再試行します。
+            using (var reader = File.OpenRead(filePath))
             {
-                document.MergeFields["CustomerName"].Text = "変更後";
-                // 別の読み取り用Streamで保存を妨げます。原因を取り除いた後、同じDocumentで再試行します。
-                using (var reader = File.OpenRead(filePath))
-                {
-                    FluentActions.Invoking(document.Save).Should().Throw<IOException>();
-                }
-
-                document.Save();
+                FluentActions.Invoking(document.Save).Should().Throw<IOException>();
             }
 
-            using var saved = Document.Open(filePath);
-            saved.MergeFields["CustomerName"].Text.Should().Be("変更後");
+            document.Save();
         }
-        finally
-        {
-            File.Delete(filePath);
-        }
+
+        using var saved = Document.Open(filePath);
+        saved.MergeFields["CustomerName"].Text.Should().Be("変更後");
     }
 
     [Fact]
@@ -1376,21 +1191,15 @@ public class Documentのテスト
     public void Saveは文書を閉じる前に元ファイルへ変更を反映します()
     {
         var filePath = TestDocument.CreateTemporaryCopy(SimpleMergeFieldsPath);
-        try
-        {
-            using var document = Document.Open(filePath);
-            document.MergeFields["CustomerName"].Text = "変更後";
+        using var temporaryFile = new TemporaryFile(filePath);
+        using var document = Document.Open(filePath);
+        document.MergeFields["CustomerName"].Text = "変更後";
 
-            document.Save();
+        document.Save();
 
-            // documentをDisposeする前に別の文書として読み直し、Saveの完了時点を確認します。
-            using var saved = Document.Open(filePath);
-            saved.MergeFields["CustomerName"].Text.Should().Be("変更後");
-        }
-        finally
-        {
-            File.Delete(filePath);
-        }
+        // documentをDisposeする前に別の文書として読み直し、Saveの完了時点を確認します。
+        using var saved = Document.Open(filePath);
+        saved.MergeFields["CustomerName"].Text.Should().Be("変更後");
     }
 
     [Fact]
@@ -1880,20 +1689,14 @@ public class Documentのテスト
     public void Disposeは保存元ファイルへ変更を書き込みません()
     {
         var sourcePath = TestDocument.CreateTemporaryCopy(SimpleMergeFieldsPath);
-        try
+        using var temporaryFile = new TemporaryFile(sourcePath);
+        using (var document = Document.Open(sourcePath))
         {
-            using (var document = Document.Open(sourcePath))
-            {
-                document.MergeFields["CustomerName"].Text = "変更後";
-            }
+            document.MergeFields["CustomerName"].Text = "変更後";
+        }
 
-            using var source = Document.Open(sourcePath);
-            source.MergeFields["CustomerName"].Text.Should().Be("株式会社○○");
-        }
-        finally
-        {
-            File.Delete(sourcePath);
-        }
+        using var source = Document.Open(sourcePath);
+        source.MergeFields["CustomerName"].Text.Should().Be("株式会社○○");
     }
 
     [Fact]

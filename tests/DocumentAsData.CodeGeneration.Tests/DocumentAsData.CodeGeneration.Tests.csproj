@@ -11,11 +11,10 @@
     <IsTestProject>true</IsTestProject>
   </PropertyGroup>
 
+  <Import Project="..\TestPackages.props" />
+
   <ItemGroup>
-    <PackageReference Include="FluentAssertions" Version="8.10.0" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="5.6.0" />
-    <PackageReference Include="Microsoft.Testing.Extensions.TrxReport" Version="2.5.3" />
-    <PackageReference Include="xunit.v3.mtp-v2" Version="4.0.2" />
   </ItemGroup>
 
   <ItemGroup>
@@ -56,11 +55,26 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Include="..\DocumentAsData.Tests\TestData\空の文書.docx" Link="TestData\コード生成\BasicStructure.docx" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\DocumentAsData.Tests\TestData\空の文書.docx" Link="TestData\コード生成\salesReport.docx" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\DocumentAsData.Tests\TestData\空の文書.docx" Link="TestData\コード生成\統合.docx" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\DocumentAsData.Tests\TestData\単一のContent Control.docx"
+          Link="TestData\コード生成\文字列ContentControl.docx"
+          CopyToOutputDirectory="PreserveNewest" />
     <None Include="..\DocumentAsData.Tests\TestData\複合形式のMERGEFIELD.docx"
           Link="TestData\コード生成\単一項目.docx"
           CopyToOutputDirectory="PreserveNewest" />
     <None Include="..\DocumentAsData.Tests\TestData\同名のMERGEFIELDとContent Control.docx"
           Link="TestData\コード生成\同名のMERGEFIELDとContent Control.docx"
+          CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\DocumentAsData.Tests\TestData\単純形式のMERGEFIELD.docx"
+          Link="TestData\コード生成\MERGEFIELD.docx"
+          CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\DocumentAsData.Tests\TestData\チェック済みのチェックボックス.docx"
+          Link="TestData\コード生成\チェック済みCheckBox.docx"
+          CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\DocumentAsData.Tests\TestData\日付選択のContent Control.docx"
+          Link="TestData\コード生成\日付選択ContentControl.docx"
           CopyToOutputDirectory="PreserveNewest" />
     <None Update="TestData\**\*">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
