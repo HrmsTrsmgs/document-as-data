@@ -8,7 +8,7 @@ namespace Marimo.DocumentAsData.Build;
 /// <summary>
 /// MSBuildのDocumentAsData項目から、型付きDocument用C#ソースを生成します。
 /// </summary>
-public sealed class GenerateDocumentAsData : Microsoft.Build.Utilities.Task
+public sealed partial class GenerateDocumentAsData : Microsoft.Build.Utilities.Task
 {
     /// <summary>
     /// コード生成対象のWord文書を取得または設定します。
@@ -69,7 +69,7 @@ public sealed class GenerateDocumentAsData : Microsoft.Build.Utilities.Task
     IEnumerable<ITaskItem> Generate(ITaskItem documentFile)
     {
         var documentFilePath = Path.GetFullPath(documentFile.ItemSpec);
-        var generatedFilePath = Path.ChangeExtension(documentFilePath, "DocumentAsData.g.cs");
+        var generatedFilePath = Path.ChangeExtension(documentFilePath, GeneratedFileSuffix);
         var options = new CodeGenerationOptions
         {
             NameMappings = LoadNameMappings(documentFilePath),

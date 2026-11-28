@@ -1,5 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
+  <Import Project="buildTransitive\Marimo.DocumentAsData.Build.Naming.props" />
+
   <PropertyGroup>
     <TargetFramework>net11.0</TargetFramework>
     <RootNamespace>Marimo.DocumentAsData.Build</RootNamespace>
@@ -23,6 +25,7 @@
   <ItemGroup>
     <None Update="buildTransitive\Marimo.DocumentAsData.Build.props" Pack="true" PackagePath="buildTransitive\Marimo.DocumentAsData.Build.props" />
     <None Update="buildTransitive\Marimo.DocumentAsData.Build.targets" Pack="true" PackagePath="buildTransitive\Marimo.DocumentAsData.Build.targets" />
+    <None Update="buildTransitive\Marimo.DocumentAsData.Build.Naming.props" Pack="true" PackagePath="buildTransitive\Marimo.DocumentAsData.Build.Naming.props" />
     <!-- .NET 11向けですが、利用アプリへ追加する参照DLLはないことをNuGetへ示します。 -->
     <None Update="PackagePlaceholder\_._" Pack="true" PackagePath="lib\net11.0\_._" />
   </ItemGroup>
@@ -37,6 +40,29 @@
       <Private>false</Private>
     </Reference>
   </ItemGroup>
+
+  <!-- タスク単体でも、利用側のMSBuild設定と同じ接尾辞を使います。 -->
+  <Target Name="GenerateDocumentAsDataFileSuffix" BeforeTargets="CoreCompile">
+    <PropertyGroup>
+      <_GeneratedFileSuffixSource>$(IntermediateOutputPath)DocumentAsDataFileSuffix.g.cs</_GeneratedFileSuffixSource>
+      <_GeneratedFileSuffixSourceText>// &lt;auto-generated /&gt;
+namespace Marimo.DocumentAsData.Build%3B
+
+partial class GenerateDocumentAsData
+{
+    const string GeneratedFileSuffix = "$(_DocumentAsDataGeneratedFileSuffix)"%3B
+}</_GeneratedFileSuffixSourceText>
+    </PropertyGroup>
+    <WriteLinesToFile
+      File="$(_GeneratedFileSuffixSource)"
+      Lines="$(_GeneratedFileSuffixSourceText)"
+      Overwrite="true"
+      WriteOnlyWhenDifferent="true" />
+    <ItemGroup>
+      <Compile Include="$(_GeneratedFileSuffixSource)" />
+      <FileWrites Include="$(_GeneratedFileSuffixSource)" />
+    </ItemGroup>
+  </Target>
 
   <!-- MSBuildがタスクの依存DLLを同じディレクトリから解決できるように配置します。 -->
   <Target Name="AddDocumentAsDataBuildToolsToPackage" Returns="@(TfmSpecificPackageFile)">

@@ -1,0 +1,6 @@
+<Project TreatAsLocalProperty="_DocumentAsDataGeneratedFileSuffix">
+  <PropertyGroup>
+    <_DocumentAsDataGeneratedFileSuffix>.DocumentAsData.g.cs</_DocumentAsDataGeneratedFileSuffix>
+    <_DocumentAsDataBuildNamingImported>true</_DocumentAsDataBuildNamingImported>
+  </PropertyGroup>
+</Project>
